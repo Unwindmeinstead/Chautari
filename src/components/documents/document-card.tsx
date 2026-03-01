@@ -8,7 +8,8 @@ import {
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { getDocumentUrl, deleteDocument, DOC_TYPE_LABELS } from "@/lib/document-actions";
+import { getDocumentUrl, deleteDocument } from "@/lib/document-actions";
+import { DOC_TYPE_LABELS } from "@/lib/constants";
 import type { DocumentRecord } from "@/lib/document-actions";
 
 interface DocumentCardProps {

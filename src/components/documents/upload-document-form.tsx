@@ -4,7 +4,8 @@ import * as React from "react";
 import { Upload, X, FileText, Image, Loader2, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { uploadDocument, DOC_TYPE_LABELS } from "@/lib/document-actions";
+import { uploadDocument } from "@/lib/document-actions";
+import { DOC_TYPE_LABELS } from "@/lib/constants";
 import type { DocumentRecord } from "@/lib/document-actions";
 
 interface UploadDocumentFormProps {
