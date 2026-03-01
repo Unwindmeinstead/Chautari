@@ -1,0 +1,166 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── Fonts ─────────────────────────────────────────── */
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..700&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+/* ── CSS Variables ──────────────────────────────────── */
+:root {
+  --font-fraunces: 'Fraunces', Georgia, serif;
+  --font-dm-sans: 'DM Sans', system-ui, sans-serif;
+
+  /* Brand */
+  --forest-50: #f0f5f2;
+  --forest-100: #d9e8df;
+  --forest-200: #b3d1bf;
+  --forest-600: #1A3D2B;
+  --forest-700: #163325;
+  --cream: #FFF8E7;
+  --amber-500: #E8933A;
+
+  /* Semantic tokens */
+  --background: #FFF8E7;
+  --foreground: #1A3D2B;
+  --card: #ffffff;
+  --card-foreground: #1A3D2B;
+  --primary: #1A3D2B;
+  --primary-foreground: #FFF8E7;
+  --secondary: #d9e8df;
+  --secondary-foreground: #1A3D2B;
+  --muted: #f0f5f2;
+  --muted-foreground: #4d9176;
+  --accent: #E8933A;
+  --accent-foreground: #ffffff;
+  --destructive: #dc2626;
+  --destructive-foreground: #ffffff;
+  --border: #b3d1bf;
+  --input: #d9e8df;
+  --ring: #1A3D2B;
+  --radius: 0.75rem;
+}
+
+/* ── Base Reset ────────────────────────────────────── */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-dm-sans);
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+/* ── Grain texture overlay ──────────────────────────── */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.025;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 128px 128px;
+}
+
+/* ── Typography ─────────────────────────────────────── */
+h1, h2, h3, .font-display {
+  font-family: var(--font-fraunces);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+/* ── Utility classes ─────────────────────────────────── */
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .forest-gradient {
+    background: linear-gradient(135deg, #1A3D2B 0%, #2d6b54 100%);
+  }
+
+  .cream-gradient {
+    background: linear-gradient(135deg, #FFF8E7 0%, #fff0ca 100%);
+  }
+
+  .card-elevated {
+    background: white;
+    border-radius: var(--radius);
+    box-shadow: 0 2px 8px rgba(26,61,43,0.08), 0 1px 2px rgba(26,61,43,0.06);
+  }
+
+  .card-elevated:hover {
+    box-shadow: 0 8px 24px rgba(26,61,43,0.12), 0 2px 6px rgba(26,61,43,0.08);
+  }
+
+  .focus-forest {
+    outline: 2px solid transparent;
+    outline-offset: 2px;
+  }
+
+  .focus-forest:focus-visible {
+    outline: 2px solid #1A3D2B;
+  }
+}
+
+/* ── Form elements ──────────────────────────────────── */
+input, textarea, select {
+  font-family: var(--font-dm-sans);
+}
+
+/* ── Scrollbar styling ──────────────────────────────── */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--forest-50);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--forest-200);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--forest-600);
+}
+
+/* ── Animations ──────────────────────────────────────── */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position:  200% 0; }
+}
+
+.animate-fade-in { animation: fadeIn 0.3s ease-out; }
+.animate-slide-up { animation: slideUp 0.4s ease-out; }
+
+.skeleton {
+  background: linear-gradient(90deg, #d9e8df 25%, #b3d1bf 50%, #d9e8df 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
