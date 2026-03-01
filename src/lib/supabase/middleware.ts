@@ -5,9 +5,30 @@ import type { Database } from "@/types/database";
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
 
+  const { pathname } = request.nextUrl;
+
+  // Public routes that don't need auth
+  const publicRoutes = ["/", "/auth/login", "/auth/register", "/auth/verify", "/auth/reset-password", "/agencies"];
+  const isPublicRoute = publicRoutes.some((route) => pathname === route || pathname.startsWith("/auth/"));
+
+  // If Supabase credentials are missing, allow public routes through
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+
+  if (!supabaseUrl || !supabaseKey || !supabaseKey.startsWith("eyJ")) {
+    if (isPublicRoute) {
+      return supabaseResponse;
+    }
+    // Protected routes can't work without auth — redirect to login
+    const redirectUrl = request.nextUrl.clone();
+    redirectUrl.pathname = "/auth/login";
+    redirectUrl.searchParams.set("redirectedFrom", pathname);
+    return NextResponse.redirect(redirectUrl);
+  }
+
   const supabase = createServerClient<Database>(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
+    supabaseUrl,
+    supabaseKey,
     {
       cookies: {
         getAll() {
@@ -29,12 +50,6 @@ export async function updateSession(request: NextRequest) {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-
-  const { pathname } = request.nextUrl;
-
-  // Public routes that don't need auth
-  const publicRoutes = ["/", "/auth/login", "/auth/register", "/auth/verify", "/auth/reset-password"];
-  const isPublicRoute = publicRoutes.some((route) => pathname === route || pathname.startsWith("/auth/"));
 
   // Protected route handling
   if (!user && !isPublicRoute) {
