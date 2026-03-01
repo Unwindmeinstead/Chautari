@@ -17,8 +17,7 @@ export default function RegisterPage() {
 
   const passwordStrength = getPasswordStrength(password);
 
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
+  async function clientAction(formData: FormData) {
     if (password !== confirm) {
       setError("Passwords don't match.");
       return;
@@ -26,13 +25,17 @@ export default function RegisterPage() {
     setLoading(true);
     setError(null);
 
-    const formData = new FormData(e.currentTarget);
-    const result = await signUpWithEmail(formData);
-
-    if (result?.error) {
-      setError(result.error);
+    try {
+      const result = await signUpWithEmail(formData);
+      if (result?.error) {
+        setError(result.error);
+      }
+    } catch (err) {
+      // Next.js redirect throws an error, so we must let it bubble up
+      throw err;
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   }
 
   return (
@@ -60,7 +63,7 @@ export default function RegisterPage() {
         </p>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form action={clientAction} className="space-y-4">
         <Input
           name="full_name"
           type="text"
@@ -119,11 +122,10 @@ export default function RegisterPage() {
                 {[1, 2, 3, 4].map((i) => (
                   <div
                     key={i}
-                    className={`h-1 flex-1 rounded-full transition-all duration-300 ${
-                      i <= passwordStrength.score
+                    className={`h-1 flex-1 rounded-full transition-all duration-300 ${i <= passwordStrength.score
                         ? passwordStrength.color
                         : "bg-forest-100"
-                    }`}
+                      }`}
                   />
                 ))}
               </div>
