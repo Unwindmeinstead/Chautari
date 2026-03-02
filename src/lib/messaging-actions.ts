@@ -263,7 +263,7 @@ export async function getAgencyConversations(): Promise<{
 
   // Fetch request statuses + patient profiles
   const requestIds = convs.map((c) => c.request_id);
-  const patientIds = [...new Set(convs.map((c) => c.patient_id))];
+  const patientIds = Array.from(new Set(convs.map((c) => c.patient_id)));
 
   const [requestsRes, profilesRes, lastMsgsRes] = await Promise.all([
     supabase

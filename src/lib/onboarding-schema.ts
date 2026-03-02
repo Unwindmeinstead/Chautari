@@ -33,7 +33,7 @@ export const step2Schema = z.object({
 });
 
 // Step 3 — Insurance / Payer info
-export const step3Schema = z.object({
+const step3BaseSchema = z.object({
   payer_type: z.enum(["medicaid", "medicare", "private", "self_pay", "waiver"], {
     errorMap: () => ({ message: "Please select your insurance type" }),
   }),
@@ -43,7 +43,9 @@ export const step3Schema = z.object({
     .max(20)
     .optional()
     .or(z.literal("")),
-}).superRefine((data, ctx) => {
+});
+
+export const step3Schema = step3BaseSchema.superRefine((data, ctx) => {
   if (data.payer_type === "medicaid" && !data.medicaid_plan) {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
@@ -82,7 +84,7 @@ export const step5Schema = z.object({
 // Full onboarding state
 export const onboardingSchema = step1Schema
   .merge(step2Schema)
-  .merge(step3Schema)
+  .merge(step3BaseSchema)
   .merge(step4Schema)
   .merge(step5Schema);
 

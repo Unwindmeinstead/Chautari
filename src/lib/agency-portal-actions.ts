@@ -115,7 +115,7 @@ export async function getAgencyPortalData(statusFilter?: string): Promise<Agency
   const rawRequests: any[] = requestsRes.data ?? [];
 
   // Fetch profiles separately
-  const patientIds = [...new Set(rawRequests.map((r) => r.patient_id as string))];
+  const patientIds = Array.from(new Set(rawRequests.map((r) => r.patient_id as string)));
   const profileMap: Record<string, any> = {};
   if (patientIds.length > 0) {
     const { data: profiles } = await supabase

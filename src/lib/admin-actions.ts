@@ -328,8 +328,8 @@ export async function getAdminRequests(options?: {
   const { data, count } = await q;
   if (!data?.length) return { requests: [], total: count ?? 0 };
 
-  const patientIds = [...new Set(data.map((r: any) => r.patient_id))];
-  const agencyIds = [...new Set(data.map((r: any) => r.new_agency_id))];
+  const patientIds = Array.from(new Set(data.map((r: any) => r.patient_id)));
+  const agencyIds = Array.from(new Set(data.map((r: any) => r.new_agency_id)));
 
   const [profilesRes, agenciesRes] = await Promise.all([
     supabase.from("profiles").select("id, full_name").in("id", patientIds),

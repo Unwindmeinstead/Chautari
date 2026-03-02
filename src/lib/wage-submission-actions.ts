@@ -39,12 +39,12 @@ export async function submitWage(
 
     // Validate hourly rate
     if (data.actualHourlyRate < 7.25 || data.actualHourlyRate > 75) {
-        return { error: "Hourly rate must be between $7.25 and $75.00." };
+        return { success: false, error: "Hourly rate must be between $7.25 and $75.00." };
     }
 
     // Validate management score
     if (data.managementScore < 1 || data.managementScore > 5) {
-        return { error: "Management score must be between 1 and 5." };
+        return { success: false, error: "Management score must be between 1 and 5." };
     }
 
     const submitterHash = generateSubmitterHash();
@@ -59,7 +59,7 @@ export async function submitWage(
         .single();
 
     if (!agency) {
-        return { error: "Agency not found." };
+        return { success: false, error: "Agency not found." };
     }
 
     try {
@@ -85,18 +85,19 @@ export async function submitWage(
             // Rate limit violation
             if (insertError.code === "23505") {
                 return {
+                    success: false,
                     error:
                         "You've already submitted for this agency recently. Please wait a week before submitting again.",
                 };
             }
             console.error("Wage submission error:", insertError);
-            return { error: "Failed to submit. Please try again." };
+            return { success: false, error: "Failed to submit. Please try again." };
         }
 
         return { success: true };
     } catch (err) {
         console.error("Wage submission error:", err);
-        return { error: "Something went wrong. Please try again." };
+        return { success: false, error: "Something went wrong. Please try again." };
     }
 }
 

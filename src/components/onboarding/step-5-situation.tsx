@@ -55,9 +55,9 @@ export function Step5Situation({ defaultValues, onComplete, onBack, saving }: St
     resolver: zodResolver(step5Schema),
     defaultValues: {
       has_current_agency: defaultValues.has_current_agency as Step5Data["has_current_agency"] | undefined,
-      current_agency_name: defaultValues.current_agency_name ?? "",
-      switch_reason: defaultValues.switch_reason ?? "",
-      preferred_start_date: defaultValues.preferred_start_date ?? "",
+      current_agency_name: (defaultValues.current_agency_name as string | undefined) ?? "",
+      switch_reason: (defaultValues.switch_reason as string | undefined) ?? "",
+      preferred_start_date: (defaultValues.preferred_start_date as string | undefined) ?? "",
     },
   });
 

@@ -50,14 +50,14 @@ export function Step4CareNeeds({ defaultValues, onComplete, onBack }: Step4Props
     resolver: zodResolver(step4Schema),
     defaultValues: {
       care_type: defaultValues.care_type as Step4Data["care_type"] | undefined,
-      care_needs: defaultValues.care_needs ?? [],
+      care_needs: (defaultValues.care_needs as string[] | undefined) ?? [],
       has_physician_order: false,
-      additional_notes: defaultValues.additional_notes ?? "",
+      additional_notes: (defaultValues.additional_notes as string | undefined) ?? "",
     },
   });
 
   const careType = watch("care_type");
-  const careNeeds = watch("care_needs");
+  const careNeeds = (watch("care_needs") ?? []) as string[];
 
   const showHealthServices = careType === "home_health" || careType === "both";
   const showCareServices = careType === "home_care" || careType === "both";

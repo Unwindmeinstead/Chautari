@@ -110,7 +110,7 @@ export async function submitSurveyResponse(
         .single() as any;
 
     if (!survey) {
-        return { error: "Survey not found or already completed." };
+        return { success: false, error: "Survey not found or already completed." };
     }
 
     // Update survey
@@ -128,7 +128,7 @@ export async function submitSurveyResponse(
 
     if (updateError) {
         console.error("Survey submission error:", updateError);
-        return { error: "Failed to submit survey." };
+        return { success: false, error: "Failed to submit survey." };
     }
 
     // Notify patient

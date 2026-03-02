@@ -37,7 +37,7 @@ export function OnboardingComplete({ userName, data }: OnboardingCompleteProps) 
           <p className="text-forest-500 text-lg leading-relaxed">
             Your profile is ready. We&apos;re matching you with agencies in{" "}
             <strong className="text-forest-700">{data.address_county} County</strong>{" "}
-            that accept <strong className="text-forest-700">{payerLabel(data.payer_type ?? "")}</strong>.
+            that accept <strong className="text-forest-700">{payerLabel(String(data.payer_type ?? ""))}</strong>.
           </p>
         </div>
 
@@ -48,13 +48,13 @@ export function OnboardingComplete({ userName, data }: OnboardingCompleteProps) 
             <div className="space-y-1">
               <p className="text-xs text-forest-400">Care type</p>
               <Badge variant="default" className="text-xs">
-                {careTypeLabel(data.care_type ?? "")}
+                {careTypeLabel(String(data.care_type ?? ""))}
               </Badge>
             </div>
             <div className="space-y-1">
               <p className="text-xs text-forest-400">Insurance</p>
               <Badge variant="info" className="text-xs">
-                {payerLabel(data.payer_type ?? "")}
+                {payerLabel(String(data.payer_type ?? ""))}
               </Badge>
             </div>
             <div className="space-y-1">
@@ -66,7 +66,7 @@ export function OnboardingComplete({ userName, data }: OnboardingCompleteProps) 
             <div className="space-y-1">
               <p className="text-xs text-forest-400">Services needed</p>
               <p className="text-sm font-medium text-forest-700">
-                {(data.care_needs?.length ?? 0)} selected
+                {(Array.isArray(data.care_needs) ? data.care_needs.length : 0)} selected
               </p>
             </div>
           </div>

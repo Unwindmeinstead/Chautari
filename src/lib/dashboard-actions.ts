@@ -139,7 +139,7 @@ export async function getDashboardData(): Promise<DashboardData> {
   return {
     profile: { ...profileRes.data, email: user.email ?? null },
     patientDetails: detailsRes.data ?? null,
-    switchRequests: (requestsRes.data ?? []) as DashboardData["switchRequests"],
+    switchRequests: (requestsRes.data ?? []) as unknown as DashboardData["switchRequests"],
     notifications,
     unreadCount,
     onboardingComplete,

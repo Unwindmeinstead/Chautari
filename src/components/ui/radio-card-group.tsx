@@ -10,7 +10,7 @@ interface RadioOption {
 }
 
 interface RadioCardGroupProps {
-  options: RadioOption[];
+  options: readonly RadioOption[];
   value?: string;
   onChange: (value: string) => void;
   name: string;
@@ -119,7 +119,7 @@ export function RadioCardGroup({
 
 // Smaller inline radio buttons
 interface InlineRadioProps {
-  options: { value: string; label: string }[];
+  options: readonly { value: string; label: string }[];
   value?: string;
   onChange: (value: string) => void;
   name: string;

@@ -9,7 +9,7 @@ interface Step {
 }
 
 interface StepperProps {
-  steps: Step[];
+  steps: readonly Step[];
   currentStep: number;
   className?: string;
 }

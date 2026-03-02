@@ -4,13 +4,14 @@ export type PayerType = "medicaid" | "medicare" | "private" | "self_pay" | "waiv
 export type CareType = "home_health" | "home_care" | "both";
 export type SwitchStatus =
   | "draft"
+  | "pending_payment"
   | "submitted"
   | "under_review"
   | "accepted"
+  | "denied"
   | "rejected"
   | "completed"
   | "cancelled";
-export type NotificationChannel = "email" | "sms" | "push";
 export type DocType =
   | "insurance_card"
   | "id_document"
@@ -102,10 +103,14 @@ export interface SwitchRequest {
   current_agency_id: string | null;
   new_agency_id: string;
   care_type: CareType;
-  payer_type: PayerType;
+  payer_type: PayerType | null;
   status: SwitchStatus;
   requested_start_date: string | null;
+  services_requested: string[];
   reason_for_switch: string | null;
+  switch_reason: string | null;
+  current_agency_name: string | null;
+  special_instructions: string | null;
   internal_notes: string | null;
   chautari_case_manager_id: string | null;
   current_agency_notified_at: string | null;
@@ -134,23 +139,27 @@ export interface Document {
 
 export interface ESignature {
   id: string;
-  document_id: string;
+  request_id: string;
   signer_id: string;
-  typed_name: string;
-  signature_data: string;
+  signer_role: "patient" | "agency" | "admin";
+  full_name: string;
+  signature_method: "typed" | "drawn";
+  signature_data: string | null;
+  consent_hipaa: boolean;
+  consent_current_agency_notification: boolean;
+  consent_terms: boolean;
   ip_address: string | null;
-  user_agent: string | null;
   signed_at: string;
-  checksum: string;
+  created_at: string;
 }
 
 export interface Message {
   id: string;
-  switch_request_id: string;
+  conversation_id: string;
   sender_id: string;
-  recipient_id: string;
-  content_enc: string;
-  status: MessageStatus;
+  sender_role: "patient" | "agency_staff";
+  body: string;
+  is_read: boolean;
   read_at: string | null;
   created_at: string;
 }
@@ -158,13 +167,80 @@ export interface Message {
 export interface Notification {
   id: string;
   user_id: string;
-  channel: NotificationChannel;
+  type: string;
   title: string;
   body: string;
-  data: Record<string, unknown> | null;
-  is_read: boolean;
-  sent_at: string | null;
+  reference_id: string | null;
+  reference_type: string | null;
   read_at: string | null;
+  created_at: string;
+}
+
+export interface SwitchPayment {
+  id: string;
+  switch_request_id: string;
+  patient_id: string;
+  stripe_checkout_session_id: string | null;
+  stripe_payment_intent_id: string | null;
+  amount_cents: number;
+  currency: string;
+  status: "pending" | "succeeded" | "failed" | "refunded" | "cancelled";
+  paid_at: string | null;
+  refunded_at: string | null;
+  refund_reason: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Conversation {
+  id: string;
+  request_id: string;
+  patient_id: string;
+  agency_id: string;
+  created_at: string;
+  updated_at: string;
+  last_message_at: string | null;
+  patient_unread: number;
+  agency_unread: number;
+}
+
+export interface CaregiverSubmission {
+  id: string;
+  agency_id: string;
+  role: string;
+  employment_type: string | null;
+  actual_hourly_rate: number;
+  years_at_agency: number | null;
+  benefits_json: Record<string, unknown>;
+  management_score: number | null;
+  training_score: number | null;
+  scheduling_score: number | null;
+  comment_text: string | null;
+  submitter_hash: string;
+  moderation_status: "pending" | "approved" | "rejected" | "flagged";
+  rejection_reason: string | null;
+  time_on_page_seconds: number | null;
+  is_verified: boolean;
+  submitted_at: string;
+  moderated_at: string | null;
+  moderated_by: string | null;
+  submission_week: string;
+}
+
+export interface PostSwitchSurvey {
+  id: string;
+  switch_request_id: string;
+  patient_id: string;
+  origin_agency_id: string | null;
+  destination_agency_id: string | null;
+  token: string;
+  status: "pending" | "sent" | "completed";
+  q1_better: boolean | null;
+  q2_recommend: boolean | null;
+  q3_comment: string | null;
+  q4_leave_reason: string | null;
+  sent_at: string | null;
+  responded_at: string | null;
   created_at: string;
 }
 
@@ -190,21 +266,25 @@ export type Database = {
         Row: Profile;
         Insert: Partial<Profile> & { id: string };
         Update: Partial<Profile>;
+        Relationships: [];
       };
       patient_details: {
         Row: PatientDetails;
         Insert: Partial<PatientDetails> & { patient_id: string };
         Update: Partial<PatientDetails>;
+        Relationships: [];
       };
       agencies: {
         Row: Agency;
         Insert: Partial<Agency> & { npi: string; name: string };
         Update: Partial<Agency>;
+        Relationships: [];
       };
       agency_members: {
         Row: AgencyMember;
         Insert: Omit<AgencyMember, "id" | "created_at">;
         Update: Partial<AgencyMember>;
+        Relationships: [];
       };
       switch_requests: {
         Row: SwitchRequest;
@@ -212,9 +292,9 @@ export type Database = {
           patient_id: string;
           new_agency_id: string;
           care_type: CareType;
-          payer_type: PayerType;
         };
         Update: Partial<SwitchRequest>;
+        Relationships: [];
       };
       documents: {
         Row: Document;
@@ -226,47 +306,91 @@ export type Database = {
           file_name: string;
         };
         Update: Partial<Document>;
+        Relationships: [];
       };
       e_signatures: {
         Row: ESignature;
         Insert: Omit<ESignature, "id">;
         Update: never;
+        Relationships: [];
       };
       messages: {
         Row: Message;
         Insert: Partial<Message> & {
-          switch_request_id: string;
+          conversation_id: string;
           sender_id: string;
-          recipient_id: string;
-          content_enc: string;
+          sender_role: "patient" | "agency_staff";
+          body: string;
         };
         Update: Partial<Message>;
+        Relationships: [];
       };
       notifications: {
         Row: Notification;
         Insert: Partial<Notification> & {
           user_id: string;
-          channel: NotificationChannel;
+          type: string;
           title: string;
           body: string;
         };
         Update: Partial<Notification>;
+        Relationships: [];
       };
       audit_logs: {
         Row: AuditLog;
         Insert: Partial<AuditLog> & { action: string; resource: string };
         Update: never;
+        Relationships: [];
+      };
+      switch_payments: {
+        Row: SwitchPayment;
+        Insert: Partial<SwitchPayment> & {
+          switch_request_id: string;
+          patient_id: string;
+        };
+        Update: Partial<SwitchPayment>;
+        Relationships: [];
+      };
+      conversations: {
+        Row: Conversation;
+        Insert: Partial<Conversation> & {
+          request_id: string;
+          patient_id: string;
+          agency_id: string;
+        };
+        Update: Partial<Conversation>;
+        Relationships: [];
+      };
+      caregiver_submissions: {
+        Row: CaregiverSubmission;
+        Insert: Partial<CaregiverSubmission> & {
+          agency_id: string;
+          role: string;
+          actual_hourly_rate: number;
+          submitter_hash: string;
+        };
+        Update: Partial<CaregiverSubmission>;
+        Relationships: [];
+      };
+      post_switch_surveys: {
+        Row: PostSwitchSurvey;
+        Insert: Partial<PostSwitchSurvey> & {
+          switch_request_id: string;
+          patient_id: string;
+          token: string;
+        };
+        Update: Partial<PostSwitchSurvey>;
+        Relationships: [];
       };
     };
-    Views: Record<string, never>;
-    Functions: Record<string, never>;
+    Views: {};
+    Functions: {};
     Enums: {
       user_role: UserRole;
       language_code: LanguageCode;
       payer_type: PayerType;
       care_type: CareType;
       switch_status: SwitchStatus;
-      notification_channel: NotificationChannel;
       doc_type: DocType;
       message_status: MessageStatus;
     };
