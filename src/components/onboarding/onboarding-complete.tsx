@@ -11,7 +11,7 @@ import type { OnboardingData } from "@/lib/onboarding-schema";
 interface OnboardingCompleteProps {
   userName?: string | null;
   data: Partial<OnboardingData>;
-}
+} 
 
 export function OnboardingComplete({ userName, data }: OnboardingCompleteProps) {
   const firstName = userName?.split(" ")[0] ?? "there";
