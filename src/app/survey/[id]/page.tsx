@@ -98,7 +98,7 @@ export default function SurveyPage() {
                         This survey link may have expired or already been completed.
                     </p>
                     <Link href="/" className="text-forest-600 hover:text-forest-800 text-sm underline">
-                        Go to Chautari
+                        Go to SwitchMyCare
                     </Link>
                 </div>
             </div>
@@ -122,7 +122,7 @@ export default function SurveyPage() {
                         href="/"
                         className="inline-flex items-center gap-2 bg-forest-700 text-white font-medium rounded-xl px-5 py-2.5 hover:bg-forest-800 transition-colors"
                     >
-                        Visit Chautari
+                        Visit SwitchMyCare
                     </Link>
                 </div>
             </div>
@@ -154,8 +154,8 @@ export default function SurveyPage() {
                             <button
                                 onClick={() => setQ1(true)}
                                 className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl border-2 font-medium transition-all ${q1 === true
-                                        ? "bg-emerald-50 border-emerald-500 text-emerald-800"
-                                        : "border-forest-200 text-forest-500 hover:border-forest-400"
+                                    ? "bg-emerald-50 border-emerald-500 text-emerald-800"
+                                    : "border-forest-200 text-forest-500 hover:border-forest-400"
                                     }`}
                             >
                                 <ThumbsUp className="w-5 h-5" /> Yes
@@ -163,8 +163,8 @@ export default function SurveyPage() {
                             <button
                                 onClick={() => setQ1(false)}
                                 className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl border-2 font-medium transition-all ${q1 === false
-                                        ? "bg-red-50 border-red-400 text-red-800"
-                                        : "border-forest-200 text-forest-500 hover:border-forest-400"
+                                    ? "bg-red-50 border-red-400 text-red-800"
+                                    : "border-forest-200 text-forest-500 hover:border-forest-400"
                                     }`}
                             >
                                 <ThumbsDown className="w-5 h-5" /> No
@@ -181,8 +181,8 @@ export default function SurveyPage() {
                             <button
                                 onClick={() => setQ2(true)}
                                 className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl border-2 font-medium transition-all ${q2 === true
-                                        ? "bg-emerald-50 border-emerald-500 text-emerald-800"
-                                        : "border-forest-200 text-forest-500 hover:border-forest-400"
+                                    ? "bg-emerald-50 border-emerald-500 text-emerald-800"
+                                    : "border-forest-200 text-forest-500 hover:border-forest-400"
                                     }`}
                             >
                                 <ThumbsUp className="w-5 h-5" /> Yes
@@ -190,8 +190,8 @@ export default function SurveyPage() {
                             <button
                                 onClick={() => setQ2(false)}
                                 className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl border-2 font-medium transition-all ${q2 === false
-                                        ? "bg-red-50 border-red-400 text-red-800"
-                                        : "border-forest-200 text-forest-500 hover:border-forest-400"
+                                    ? "bg-red-50 border-red-400 text-red-800"
+                                    : "border-forest-200 text-forest-500 hover:border-forest-400"
                                     }`}
                             >
                                 <ThumbsDown className="w-5 h-5" /> No

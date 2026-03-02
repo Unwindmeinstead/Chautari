@@ -27,13 +27,13 @@ export async function generateMetadata({
 }: ComparePageProps): Promise<Metadata> {
     const ids = [searchParams.a, searchParams.b, searchParams.c].filter(Boolean) as string[];
     if (ids.length < 2) {
-        return { title: "Compare Agencies | Chautari" };
+        return { title: "Compare Agencies | SwitchMyCare" };
     }
     const agencies = await getAgencies(ids);
     const names = agencies.map((a) => a.name).join(" vs ");
     return {
-        title: `Compare ${names} — Ratings, Pay, Services | Chautari`,
-        description: `Side-by-side comparison of ${names}. Compare Chautari scores, Google ratings, caregiver pay rates, services offered, and more.`,
+        title: `Compare ${names} — Ratings, Pay, Services | SwitchMyCare`,
+        description: `Side-by-side comparison of ${names}. Compare ratings, caregiver pay rates, services offered, and more on SwitchMyCare.`,
     };
 }
 
@@ -62,8 +62,8 @@ function CompareCell({
                 <td
                     key={i}
                     className={`px-4 py-3 text-sm ${i === bestIdx
-                            ? "bg-emerald-50 text-emerald-800 font-semibold"
-                            : "text-forest-700"
+                        ? "bg-emerald-50 text-emerald-800 font-semibold"
+                        : "text-forest-700"
                         }`}
                 >
                     <div className="flex items-center gap-1">
@@ -342,7 +342,7 @@ export default async function ComparePage({ searchParams }: ComparePageProps) {
                                 <p className="text-xs text-forest-400">DBA: {agency.dba_name}</p>
                             )}
                             <p className="text-xs text-forest-500">
-                                {agency.city}, {agency.state} {agency.zip}
+                                {agency.address_city}, {agency.address_state} {agency.address_zip}
                             </p>
                             {agency.is_verified_partner && (
                                 <span className="inline-flex items-center gap-1 text-xs font-medium text-emerald-700 bg-emerald-50 rounded-full px-2 py-0.5">

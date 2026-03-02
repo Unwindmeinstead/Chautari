@@ -10,16 +10,16 @@ interface LogoProps {
 }
 
 const sizes = {
-  sm: { mark: 28, text: "text-lg" },
-  md: { mark: 36, text: "text-xl" },
-  lg: { mark: 48, text: "text-2xl" },
-  xl: { mark: 64, text: "text-3xl" },
+  sm: { mark: 28, text: "text-lg", gap: "gap-2" },
+  md: { mark: 36, text: "text-xl", gap: "gap-2.5" },
+  lg: { mark: 48, text: "text-2xl", gap: "gap-3" },
+  xl: { mark: 64, text: "text-3xl", gap: "gap-3.5" },
 };
 
 export function Logo({ variant = "full", size = "md", className, light = false, invertColors = false }: LogoProps) {
   light = light || invertColors;
   const s = sizes[size];
-  const color = light ? "#FFF8E7" : "#1A3D2B";
+  const primaryColor = light ? "#FFF8E7" : "#1A3D2B";
   const accentColor = "#E8933A";
 
   const mark = (
@@ -30,46 +30,60 @@ export function Logo({ variant = "full", size = "md", className, light = false, 
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
     >
-      {/* Banyan tree roots */}
-      <path d="M24 44 L24 28" stroke={color} strokeWidth="2.5" strokeLinecap="round" />
-      <path d="M24 38 L18 44" stroke={color} strokeWidth="2" strokeLinecap="round" opacity="0.6" />
-      <path d="M24 38 L30 44" stroke={color} strokeWidth="2" strokeLinecap="round" opacity="0.6" />
-      <path d="M20 34 L14 40" stroke={color} strokeWidth="1.5" strokeLinecap="round" opacity="0.4" />
-      <path d="M28 34 L34 40" stroke={color} strokeWidth="1.5" strokeLinecap="round" opacity="0.4" />
+      {/* Rounded square frame */}
+      <rect x="4" y="4" width="40" height="40" rx="12" fill={primaryColor} opacity="0.08" />
 
-      {/* Trunk */}
-      <path d="M22 28 L26 28 L25 18 L23 18 Z" fill={color} opacity="0.9" />
+      {/* Arrow path — the "switch" */}
+      <path
+        d="M14 20L24 14L34 20"
+        stroke={accentColor}
+        strokeWidth="2.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M24 14V28"
+        stroke={accentColor}
+        strokeWidth="2.5"
+        strokeLinecap="round"
+      />
 
-      {/* Main canopy */}
-      <circle cx="24" cy="14" r="11" fill={color} />
+      {/* Heart at the base — the "care" */}
+      <path
+        d="M24 38C24 38 14 32 14 27C14 24.5 16 23 18 23C20 23 22 24.5 24 27C26 24.5 28 23 30 23C32 23 34 24.5 34 27C34 32 24 38 24 38Z"
+        fill={primaryColor}
+        opacity="0.9"
+      />
 
-      {/* Sub-canopies */}
-      <circle cx="13" cy="18" r="7" fill={color} opacity="0.85" />
-      <circle cx="35" cy="18" r="7" fill={color} opacity="0.85" />
-
-      {/* Leaf highlights */}
-      <circle cx="20" cy="10" r="3" fill={accentColor} opacity="0.7" />
-      <circle cx="28" cy="12" r="2" fill={accentColor} opacity="0.5" />
-      <circle cx="13" cy="15" r="2" fill={accentColor} opacity="0.4" />
+      {/* Home roof silhouette */}
+      <path
+        d="M12 24L24 14L36 24"
+        stroke={primaryColor}
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        opacity="0.3"
+      />
     </svg>
   );
 
   if (variant === "mark") return <div className={className}>{mark}</div>;
 
   return (
-    <div className={cn("flex items-center gap-2.5", className)}>
+    <div className={cn("flex items-center", s.gap, className)}>
       {mark}
-      {variant !== "mark" && (
-        <span
-          className={cn(
-            "font-fraunces font-semibold tracking-tight",
-            s.text,
-            light ? "text-cream-50" : "text-forest-600"
-          )}
-        >
-          Chautari
-        </span>
-      )}
+      <span
+        className={cn(
+          "font-semibold tracking-tight leading-none",
+          s.text,
+          light ? "text-cream-50" : "text-forest-800"
+        )}
+        style={{ fontFamily: "'Inter', system-ui, sans-serif" }}
+      >
+        <span className={light ? "text-cream-50" : "text-forest-800"}>Switch</span>
+        <span className="text-amber-500">My</span>
+        <span className={light ? "text-cream-50" : "text-forest-800"}>Care</span>
+      </span>
     </div>
   );
 }

@@ -44,7 +44,7 @@ export async function createCheckoutSession({
                 price_data: {
                     currency: "usd",
                     product_data: {
-                        name: "Chautari Switch Service",
+                        name: "SwitchMyCare Switch Service",
                         description: `Agency switch to ${agencyName} — includes transfer coordination, NOTAM filing, and care plan handoff.`,
                     },
                     unit_amount: 9700, // $97.00

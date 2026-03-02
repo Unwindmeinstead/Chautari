@@ -6,7 +6,7 @@ import { Logo } from "@/components/ui/logo";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
-export const metadata = { title: "Find Home Care Agencies | Chautari" };
+export const metadata = { title: "Find Home Care Agencies | SwitchMyCare" };
 
 interface AgenciesPageProps {
   searchParams: { [key: string]: string | undefined };

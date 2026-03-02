@@ -35,17 +35,17 @@ import {
    Animation helpers
    ═══════════════════════════════════════════════════════════════════════════ */
 const fadeUp = {
-  hidden: { opacity: 0, y: 24 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" } },
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] } },
 };
 
 const fadeIn = {
   hidden: { opacity: 0 },
-  visible: { opacity: 1, transition: { duration: 0.5 } },
+  visible: { opacity: 1, transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] } },
 };
 
 const stagger = {
-  visible: { transition: { staggerChildren: 0.12 } },
+  visible: { transition: { staggerChildren: 0.08 } },
 };
 
 function Section({
@@ -84,24 +84,33 @@ function AnimatedCounter({ value, suffix = "" }: { value: number; suffix?: strin
 
   React.useEffect(() => {
     if (!isInView) return;
-    let start = 0;
-    const duration = 1500;
-    const steps = 40;
-    const increment = value / steps;
-    const timer = setInterval(() => {
-      start += increment;
-      if (start >= value) {
-        setCount(value);
-        clearInterval(timer);
+    const duration = 2000;
+    let startTime: number | null = null;
+    let rafId: number;
+
+    function easeOutExpo(t: number): number {
+      return t === 1 ? 1 : 1 - Math.pow(2, -10 * t);
+    }
+
+    function animate(timestamp: number) {
+      if (!startTime) startTime = timestamp;
+      const elapsed = timestamp - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      const easedProgress = easeOutExpo(progress);
+      setCount(Math.floor(easedProgress * value));
+      if (progress < 1) {
+        rafId = requestAnimationFrame(animate);
       } else {
-        setCount(Math.floor(start));
+        setCount(value);
       }
-    }, duration / steps);
-    return () => clearInterval(timer);
+    }
+
+    rafId = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(rafId);
   }, [isInView, value]);
 
   return (
-    <span ref={ref} className="font-fraunces text-4xl sm:text-5xl font-bold text-cream">
+    <span ref={ref} className="font-fraunces text-4xl sm:text-5xl font-bold text-cream tabular-nums">
       {count}{suffix}
     </span>
   );
@@ -558,11 +567,11 @@ export default function HomePage() {
                 variants={fadeUp}
                 className="relative space-y-4 sm:space-y-5"
               >
-                <div className="flex items-start gap-4">
-                  <div className="shrink-0 font-fraunces text-5xl sm:text-6xl font-bold text-forest-100 leading-none select-none">
-                    {item.step}
+                <div className="flex items-center gap-4">
+                  <div className="h-12 w-12 rounded-2xl bg-forest-600 flex items-center justify-center shrink-0 shadow-sm">
+                    <span className="text-cream-50 font-bold text-sm">{item.step}</span>
                   </div>
-                  <div className="mt-2 h-11 w-11 rounded-xl bg-forest-100 flex items-center justify-center shrink-0">
+                  <div className="h-11 w-11 rounded-xl bg-forest-100 flex items-center justify-center shrink-0">
                     {item.icon}
                   </div>
                 </div>
@@ -570,11 +579,6 @@ export default function HomePage() {
                   {item.title}
                 </h3>
                 <p className="text-forest-500 leading-relaxed text-sm sm:text-base">{item.desc}</p>
-
-                {/* Connector line */}
-                {item.step !== "03" && (
-                  <div className="hidden md:block absolute top-10 right-0 translate-x-1/2 w-12 border-t-2 border-dashed border-forest-200" />
-                )}
               </motion.div>
             ))}
           </div>
@@ -631,44 +635,42 @@ export default function HomePage() {
                 name: "Sita Gurung",
                 location: "Allegheny County",
                 quote:
-                  "Chautari made switching so easy. I was nervous about losing care, but they handled everything. My new agency is wonderful — they even speak Nepali!",
-                image: "/images/testimonial-1.png",
+                  "SwitchMyCare made switching so easy. I was nervous about losing care, but they handled everything. My new agency is wonderful — they even speak Nepali!",
+                initials: "SG",
+                color: "bg-emerald-100 text-emerald-700",
                 stars: 5,
               },
               {
                 name: "James Mitchell",
                 location: "Westmoreland County",
                 quote:
-                  "After my stroke, my old agency wasn't meeting my needs. Chautari found me a better match in 4 days. The whole process was stress-free.",
-                image: "/images/testimonial-2.png",
+                  "After my stroke, my old agency wasn't meeting my needs. SwitchMyCare found me a better match in 4 days. The whole process was stress-free.",
+                initials: "JM",
+                color: "bg-blue-100 text-blue-700",
                 stars: 5,
               },
               {
-                name: "Priya Sharma",
-                location: "Allegheny County",
+                name: "Maria Rodriguez",
+                location: "Butler County",
                 quote:
-                  "I helped my mother switch agencies through Chautari. The team was so patient and guided us through the entire paperwork. Highly recommend!",
-                image: "/images/testimonial-3.png",
+                  "The bilingual support was incredible. They explained every step in Spanish and English. My father's new caregiver is amazing. Worth every penny.",
+                initials: "MR",
+                color: "bg-amber-100 text-amber-700",
                 stars: 5,
               },
             ].map((testimonial) => (
               <motion.div
                 key={testimonial.name}
                 variants={fadeUp}
-                className="rounded-2xl bg-cream border border-forest-100/60 p-6 sm:p-8 space-y-5 hover:shadow-card-hover transition-all duration-300"
+                className="rounded-2xl bg-cream border border-forest-100/60 p-6 sm:p-8 space-y-5 hover:shadow-card-hover transition-all duration-500"
               >
                 <Quote className="size-8 text-amber-400/60" />
                 <p className="text-forest-600 leading-relaxed text-sm sm:text-base italic">
                   &ldquo;{testimonial.quote}&rdquo;
                 </p>
                 <div className="flex items-center gap-3 pt-2">
-                  <div className="relative h-12 w-12 rounded-full overflow-hidden border-2 border-forest-100 shrink-0">
-                    <Image
-                      src={testimonial.image}
-                      alt={testimonial.name}
-                      fill
-                      className="object-cover"
-                    />
+                  <div className={`h-12 w-12 rounded-full flex items-center justify-center font-bold text-sm shrink-0 ${testimonial.color}`}>
+                    {testimonial.initials}
                   </div>
                   <div>
                     <p className="font-semibold text-forest-800 text-sm">{testimonial.name}</p>
@@ -818,7 +820,7 @@ export default function HomePage() {
                 </div>
                 <div className="flex items-center gap-2 text-sm text-forest-400">
                   <Mail className="size-4 shrink-0" />
-                  <a href="mailto:help@chautari.health" className="hover:text-forest-600 transition-colors">help@chautari.health</a>
+                  <a href="mailto:help@switchmycare.com" className="hover:text-forest-600 transition-colors">help@switchmycare.com</a>
                 </div>
                 <div className="flex items-start gap-2 text-sm text-forest-400">
                   <MapPin className="size-4 shrink-0 mt-0.5" />
@@ -836,7 +838,7 @@ export default function HomePage() {
               <Link href="/hipaa" className="hover:text-forest-700 transition-colors">{t("landing_footer_hipaa")}</Link>
             </div>
             <p className="text-forest-300 text-xs">
-              © 2026 Chautari. {t("landing_footer_disclaimer")}
+              © 2026 SwitchMyCare. {t("landing_footer_disclaimer")}
             </p>
           </div>
         </div>
