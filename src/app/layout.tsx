@@ -22,23 +22,23 @@ const dmSans = DM_Sans({
 
 export const metadata: Metadata = {
   title: {
-    default: "Chautari — Find Your Home Care",
-    template: "%s | Chautari",
+    default: "SwitchMyCare — Find Your Home Care",
+    template: "%s | SwitchMyCare",
   },
   description:
-    "Chautari helps Pennsylvania residents find and switch to the right home health and home care agency. Simple, guided, and free.",
+    "SwitchMyCare helps Pennsylvania residents find and switch to the right home health and home care agency. Simple, guided, and free.",
   keywords: ["home health", "home care", "Pennsylvania", "Medicaid", "Medicare", "agency switch"],
-  authors: [{ name: "Chautari" }],
+  authors: [{ name: "SwitchMyCare" }],
   metadataBase: new URL(
-    process.env.NEXT_PUBLIC_APP_URL ?? "https://chautari.health"
+    process.env.NEXT_PUBLIC_APP_URL ?? "https://switchmycare.com"
   ),
   openGraph: {
     type: "website",
     locale: "en_US",
-    url: "https://chautari.health",
-    title: "Chautari — Find Your Home Care",
+    url: "https://switchmycare.com",
+    title: "SwitchMyCare — Find Your Home Care",
     description: "Guided home care agency switching for Pennsylvania residents.",
-    siteName: "Chautari",
+    siteName: "SwitchMyCare",
   },
 };
 

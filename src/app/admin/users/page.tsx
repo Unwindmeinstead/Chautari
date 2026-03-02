@@ -6,13 +6,13 @@ import Link from "next/link";
 export const metadata = { title: "Users | Admin" };
 export const dynamic = "force-dynamic";
 
-const ROLE_TABS = ["all", "patient", "agency_staff", "agency_admin", "chautari_admin"] as const;
+const ROLE_TABS = ["all", "patient", "agency_staff", "agency_admin", "switchmycare_admin"] as const;
 
 const ROLE_BADGE: Record<string, { label: string; variant: "default" | "secondary" | "success" | "warning" | "destructive" }> = {
   patient:        { label: "Patient", variant: "secondary" },
   agency_staff:   { label: "Agency Staff", variant: "default" },
   agency_admin:   { label: "Agency Admin", variant: "warning" },
-  chautari_admin: { label: "Chautari Admin", variant: "destructive" },
+  switchmycare_admin: { label: "SwitchMyCare Admin", variant: "destructive" },
 };
 
 export default async function AdminUsersPage({
@@ -94,7 +94,7 @@ export default async function AdminUsersPage({
                         {new Date(u.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
                       </td>
                       <td className="px-4 py-3.5 text-right">
-                        {u.role !== "chautari_admin" && (
+                        {u.role !== "switchmycare_admin" && (
                           <form action={async (fd: FormData) => {
                             "use server";
                             const newRole = fd.get("role") as string;
@@ -109,7 +109,7 @@ export default async function AdminUsersPage({
                               <option value="patient">Patient</option>
                               <option value="agency_staff">Agency Staff</option>
                               <option value="agency_admin">Agency Admin</option>
-                              <option value="chautari_admin">Chautari Admin</option>
+                              <option value="switchmycare_admin">SwitchMyCare Admin</option>
                             </select>
                             <button
                               type="submit"
@@ -119,7 +119,7 @@ export default async function AdminUsersPage({
                             </button>
                           </form>
                         )}
-                        {u.role === "chautari_admin" && (
+                        {u.role === "switchmycare_admin" && (
                           <span className="text-xs text-gray-400 italic">Admin</span>
                         )}
                       </td>

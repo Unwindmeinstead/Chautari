@@ -1,4 +1,4 @@
-export type UserRole = "patient" | "agency_staff" | "agency_admin" | "chautari_admin";
+export type UserRole = "patient" | "agency_staff" | "agency_admin" | "switchmycare_admin";
 export type LanguageCode = "en" | "ne" | "hi";
 export type PayerType = "medicaid" | "medicare" | "private" | "self_pay" | "waiver";
 export type CareType = "home_health" | "home_care" | "both";
@@ -74,6 +74,10 @@ export interface Agency {
   avg_response_hours: number | null;
   pa_license_number: string | null;
   npi_last_synced_at: string | null;
+  pay_rates: Record<string, string> | null;
+  benefits: string[] | null;
+  google_rating: number | null;
+  google_reviews_count: number | null;
   created_at: string;
   updated_at: string;
 }

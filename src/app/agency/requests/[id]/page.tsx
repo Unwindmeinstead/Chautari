@@ -108,7 +108,7 @@ export default async function AgencyRequestDetailPage({
             <div>
               <p className="text-sm font-semibold text-red-700">Missing HIPAA authorization</p>
               <p className="text-xs text-red-600 mt-0.5">
-                No HIPAA consent on file. Contact Chautari support before accepting.
+                No HIPAA consent on file. Contact SwitchMyCare support before accepting.
               </p>
             </div>
           </div>

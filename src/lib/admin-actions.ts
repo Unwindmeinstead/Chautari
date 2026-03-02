@@ -17,7 +17,7 @@ async function requireAdmin() {
     .eq("id", user.id)
     .single();
 
-  if (profile?.role !== "chautari_admin") redirect("/dashboard");
+  if (profile?.role !== "switchmycare_admin") redirect("/dashboard");
 
   return { supabase, user, profile };
 }
@@ -35,7 +35,7 @@ async function writeAudit(
 ) {
   await supabase.from("audit_logs").insert({
     actor_id: actorId,
-    actor_role: "chautari_admin",
+    actor_role: "switchmycare_admin",
     action,
     resource,
     resource_id: resourceId,
@@ -59,6 +59,13 @@ export interface PlatformStats {
 }
 
 export async function getPlatformStats(): Promise<PlatformStats> {
+  const supabasePreview = await createClient();
+  const { data: { user } } = await supabasePreview.auth.getUser();
+  const { data: profile } = user ? await supabasePreview.from("profiles").select("role").eq("id", user.id).single() : { data: null };
+  if (!user || profile?.role !== "switchmycare_admin") {
+    return { totalUsers: 154, totalPatients: 142, totalAgencies: 12, pendingAgencyApprovals: 3, totalRequests: 89, activeRequests: 14, completedRequests: 65, requestsThisMonth: 22, avgResponseHours: 4.5 };
+  }
+
   const { supabase } = await requireAdmin();
 
   const now = new Date();
@@ -175,6 +182,13 @@ export async function getAdminAgencies(options?: {
   limit?: number;
   offset?: number;
 }): Promise<{ agencies: AdminAgency[]; total: number }> {
+  const supabasePreview = await createClient();
+  const { data: { user } } = await supabasePreview.auth.getUser();
+  const { data: profile } = user ? await supabasePreview.from("profiles").select("role").eq("id", user.id).single() : { data: null };
+  if (!user || profile?.role !== "switchmycare_admin") {
+    return { agencies: [{ id: "a1", name: "Mock Agency pending approval", address_city: "Pittsburgh", address_state: "PA", is_active: true, is_approved: false, npi: "1234567890", is_verified_partner: false, care_types: ["Personal Care"], medicare_quality_score: null, created_at: new Date().toISOString() }], total: 1 };
+  }
+
   const { supabase } = await requireAdmin();
   const { search, status, limit = 50, offset = 0 } = options ?? {};
 
@@ -293,6 +307,13 @@ export async function getAdminRequests(options?: {
   limit?: number;
   offset?: number;
 }): Promise<{ requests: AdminRequest[]; total: number }> {
+  const supabasePreview = await createClient();
+  const { data: { user } } = await supabasePreview.auth.getUser();
+  const { data: profile } = user ? await supabasePreview.from("profiles").select("role").eq("id", user.id).single() : { data: null };
+  if (!user || profile?.role !== "switchmycare_admin") {
+    return { requests: [{ id: "r1", patient_id: "p1", patient_name: "Mock Patient", new_agency_id: "a1", agency_name: "Mock Agency", care_type: "Home Health", payer_type: "Medicare", status: "submitted", created_at: new Date().toISOString(), submitted_at: new Date().toISOString() }], total: 1 };
+  }
+
   const { supabase } = await requireAdmin();
   const { status, limit = 50, offset = 0 } = options ?? {};
 
@@ -308,7 +329,7 @@ export async function getAdminRequests(options?: {
   if (!data?.length) return { requests: [], total: count ?? 0 };
 
   const patientIds = [...new Set(data.map((r: any) => r.patient_id))];
-  const agencyIds  = [...new Set(data.map((r: any) => r.new_agency_id))];
+  const agencyIds = [...new Set(data.map((r: any) => r.new_agency_id))];
 
   const [profilesRes, agenciesRes] = await Promise.all([
     supabase.from("profiles").select("id, full_name").in("id", patientIds),
@@ -316,13 +337,13 @@ export async function getAdminRequests(options?: {
   ]);
 
   const profileMap = Object.fromEntries((profilesRes.data ?? []).map((p: any) => [p.id, p.full_name]));
-  const agencyMap  = Object.fromEntries((agenciesRes.data ?? []).map((a: any) => [a.id, a.name]));
+  const agencyMap = Object.fromEntries((agenciesRes.data ?? []).map((a: any) => [a.id, a.name]));
 
   return {
     requests: data.map((r: any) => ({
       ...r,
       patient_name: profileMap[r.patient_id] ?? null,
-      agency_name:  agencyMap[r.new_agency_id] ?? null,
+      agency_name: agencyMap[r.new_agency_id] ?? null,
     })),
     total: count ?? 0,
   };

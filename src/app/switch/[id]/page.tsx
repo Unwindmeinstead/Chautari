@@ -15,7 +15,7 @@ import { CancelRequestButton } from "@/components/switch/cancel-request-button";
 import { getDocuments } from "@/lib/document-actions";
 import { DocumentManager } from "@/components/documents/document-manager";
 
-export const metadata = { title: "Switch Request | Chautari" };
+export const metadata = { title: "Switch Request | SwitchMyCare" };
 
 interface SwitchDetailPageProps {
   params: { id: string };

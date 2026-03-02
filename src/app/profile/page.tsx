@@ -13,7 +13,7 @@ import {
   Edit3, Lock
 } from "lucide-react";
 
-export const metadata = { title: "My Profile | Chautari" };
+export const metadata = { title: "My Profile | SwitchMyCare" };
 export const dynamic = "force-dynamic";
 
 const SERVICE_LABELS: Record<string, string> = {

@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { payerLabel, careTypeLabel } from "@/lib/utils";
 
-export const metadata = { title: "Agency Profile | Chautari" };
+export const metadata = { title: "Agency Profile | SwitchMyCare" };
 export const dynamic = "force-dynamic";
 
 export default async function AgencyProfilePage() {
@@ -42,7 +42,7 @@ export default async function AgencyProfilePage() {
 
         <div>
           <h1 className="font-fraunces text-3xl font-semibold text-gray-800">Agency Profile</h1>
-          <p className="text-gray-500 mt-1">How your agency appears to patients on Chautari.</p>
+          <p className="text-gray-500 mt-1">How your agency appears to patients on SwitchMyCare.</p>
         </div>
 
         <div className="grid lg:grid-cols-3 gap-6 items-start">
@@ -68,7 +68,7 @@ export default async function AgencyProfilePage() {
             <div className="rounded-2xl bg-white border border-gray-200 shadow-card p-6 space-y-5">
               <div className="flex items-center justify-between flex-wrap gap-2">
                 <h2 className="font-fraunces text-lg font-semibold text-gray-800">Licensure & Services</h2>
-                <Badge variant="secondary" className="text-xs">Set by Chautari admin</Badge>
+                <Badge variant="secondary" className="text-xs">Set by SwitchMyCare admin</Badge>
               </div>
 
               <div className="grid sm:grid-cols-2 gap-5 text-sm">

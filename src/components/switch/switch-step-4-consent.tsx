@@ -68,11 +68,11 @@ export function SwitchStep4Consent({
             <div className="space-y-1">
               <p className="font-semibold text-forest-800 text-sm">HIPAA Authorization for Release of Health Information</p>
               <p className="text-xs text-forest-500 leading-relaxed">
-                I authorize Chautari to release relevant portions of my health information 
+                I authorize SwitchMyCare to release relevant portions of my health information 
                 (including care plans, diagnosis codes, and service history) to{" "}
                 <strong className="text-forest-700">{agencyName}</strong> solely for the purpose 
                 of evaluating and processing my home care agency switch request. This authorization 
-                may be revoked at any time by contacting Chautari support.
+                may be revoked at any time by contacting SwitchMyCare support.
               </p>
             </div>
           </div>
@@ -129,7 +129,7 @@ export function SwitchStep4Consent({
               <p className="font-semibold text-forest-800 text-sm">Expected Timeline</p>
               <p className="text-xs text-forest-500 leading-relaxed">
                 Agency switches in Pennsylvania typically take <strong className="text-forest-700">3–10 business days</strong> to complete.
-                The new agency has 5 business days to respond to this request. Chautari will keep you updated 
+                The new agency has 5 business days to respond to this request. SwitchMyCare will keep you updated 
                 at every step via email and your dashboard notifications.
               </p>
             </div>
@@ -152,7 +152,7 @@ export function SwitchStep4Consent({
           values.consent_terms ? "border-forest-400 bg-forest-50" : "border-forest-200 bg-white"
         }`}>
           <Checkbox
-            label="I agree to Chautari's Terms of Service and Privacy Policy"
+            label="I agree to SwitchMyCare's Terms of Service and Privacy Policy"
             description="By agreeing, you confirm you are 18 or older, a PA resident, and have authority to make decisions about your home care."
             checked={values.consent_terms}
             onCheckedChange={(v) => setValue("consent_terms", v === true, { shouldValidate: true })}

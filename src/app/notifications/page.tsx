@@ -7,7 +7,7 @@ import { DashboardNav } from "@/components/dashboard/dashboard-nav";
 import { NotificationsList } from "@/components/dashboard/notifications-list";
 import { Button } from "@/components/ui/button";
 
-export const metadata = { title: "Notifications | Chautari" };
+export const metadata = { title: "Notifications | SwitchMyCare" };
 export const dynamic = "force-dynamic";
 
 export default async function NotificationsPage() {

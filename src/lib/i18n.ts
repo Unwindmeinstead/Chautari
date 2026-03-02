@@ -1,4 +1,4 @@
-// Chautari i18n — lightweight translation dictionary
+// SwitchMyCare i18n — lightweight translation dictionary
 // Languages: en (English), ne (Nepali), hi (Hindi)
 // Used across all patient-facing UI. Agency/admin UI stays English-only.
 
@@ -136,7 +136,7 @@ export const translations = {
   landing_hero_title_2: { en: "home care", ne: "होम केयर", hi: "होम केयर" },
   landing_hero_title_3: { en: "agency", ne: "एजेन्सी खोज्नुस्", hi: "एजेंसी खोजें" },
   landing_hero_desc: {
-    en: "Chautari guides Pennsylvania Medicaid and Medicare patients through finding and switching home health or home care agencies — simply, guided, and completely free.",
+    en: "SwitchMyCare guides Pennsylvania Medicaid and Medicare patients through finding and switching home health or home care agencies — simply, guided, and completely free.",
     ne: "चौतारीले पेन्सिल्भेनियाका मेडिकेड र मेडिकेयर बिरामीहरूलाई होम हेल्थ वा होम केयर एजेन्सी खोज्न र स्विच गर्न मार्गदर्शन गर्दछ — सरल, मार्गदर्शित, र पूर्ण रूपमा निःशुल्क।",
     hi: "चौतारी पेनसिल्वेनिया के मेडिकेड और मेडिकेयर रोगियों को होम हेल्थ या होम केयर एजेंसी खोजने और बदलने में मार्गदर्शन करती है — सरल, निर्देशित, और पूरी तरह मुफ्त।",
   },
@@ -152,7 +152,7 @@ export const translations = {
   landing_who_badge: { en: "Who is this for?", ne: "यो कसको लागि हो?", hi: "यह किसके लिए है?" },
   landing_who_title: { en: "Switching is your right", ne: "स्विच गर्नु तपाईंको अधिकार हो", hi: "बदलना आपका अधिकार है" },
   landing_who_desc: {
-    en: "Whether you're a patient, a family member, or a caregiver — Chautari makes switching home care agencies simple and stress-free.",
+    en: "Whether you're a patient, a family member, or a caregiver — SwitchMyCare makes switching home care agencies simple and stress-free.",
     ne: "तपाईं बिरामी होस्, परिवारको सदस्य होस्, वा हेरचाहकर्ता होस् — चौतारीले होम केयर एजेन्सी स्विच गर्न सरल र तनावमुक्त बनाउँछ।",
     hi: "चाहे आप मरीज़ हों, परिवार के सदस्य हों, या देखभालकर्ता — चौतारी होम केयर एजेंसी बदलना आसान और तनाव-मुक्त बनाती है।",
   },
@@ -197,7 +197,7 @@ export const translations = {
   },
   landing_step3_title: { en: "We manage the switch", ne: "हामी स्विच व्यवस्थापन गर्छौं", hi: "हम स्विच का प्रबंधन करते हैं" },
   landing_step3_desc: {
-    en: "Chautari coordinates directly with agencies, handles paperwork, and keeps you updated every step.",
+    en: "SwitchMyCare coordinates directly with agencies, handles paperwork, and keeps you updated every step.",
     ne: "चौतारीले सिधै एजेन्सीहरूसँग समन्वय गर्छ, कागजपत्र सम्हाल्छ, र तपाईंलाई प्रत्येक चरणमा अपडेट राख्छ।",
     hi: "चौतारी सीधे एजेंसियों के साथ समन्वय करती है, कागज़ी कार्रवाई संभालती है, और आपको हर कदम पर अपडेट रखती है।",
   },
@@ -210,14 +210,14 @@ export const translations = {
 
   // Testimonials
   landing_testimonials_badge: { en: "Real stories", ne: "वास्तविक कथाहरू", hi: "वास्तविक कहानियाँ" },
-  landing_testimonials_title: { en: "Families trust Chautari", ne: "परिवारहरूले चौतारीमाथि विश्वास गर्छन्", hi: "परिवार चौतारी पर भरोसा करते हैं" },
+  landing_testimonials_title: { en: "Families trust SwitchMyCare", ne: "परिवारहरूले चौतारीमाथि विश्वास गर्छन्", hi: "परिवार चौतारी पर भरोसा करते हैं" },
 
   // FAQ
   landing_faq_badge: { en: "Common questions", ne: "सामान्य प्रश्नहरू", hi: "सामान्य प्रश्न" },
   landing_faq_title: { en: "Frequently asked questions", ne: "बारम्बार सोधिने प्रश्नहरू", hi: "अक्सर पूछे जाने वाले प्रश्न" },
   landing_faq1_q: { en: "Is switching really free?", ne: "के स्विच गर्नु साँच्चै निःशुल्क छ?", hi: "क्या बदलना वाकई मुफ्त है?" },
   landing_faq1_a: {
-    en: "Yes! Chautari charges a one-time $97 coordination fee to manage the entire switch process. There are no hidden fees, and you never pay for the care itself through us.",
+    en: "Yes! SwitchMyCare charges a one-time $97 coordination fee to manage the entire switch process. There are no hidden fees, and you never pay for the care itself through us.",
     ne: "हो! चौतारीले सम्पूर्ण स्विच प्रक्रिया व्यवस्थापन गर्न एक पटकको $९७ समन्वय शुल्क लिन्छ। कुनै लुकेका शुल्कहरू छैनन्।",
     hi: "हाँ! चौतारी पूरी स्विच प्रक्रिया के प्रबंधन के लिए एकमुश्त $97 समन्वय शुल्क लेती है। कोई छिपा हुआ शुल्क नहीं है।",
   },
@@ -235,7 +235,7 @@ export const translations = {
   },
   landing_faq4_q: { en: "Is my health information safe?", ne: "मेरो स्वास्थ्य जानकारी सुरक्षित छ?", hi: "क्या मेरी स्वास्थ्य जानकारी सुरक्षित है?" },
   landing_faq4_a: {
-    en: "Absolutely. Chautari is fully HIPAA compliant. Your data is encrypted, never sold, and only shared with agencies you choose.",
+    en: "Absolutely. SwitchMyCare is fully HIPAA compliant. Your data is encrypted, never sold, and only shared with agencies you choose.",
     ne: "निश्चित रूपमा। चौतारी पूर्ण रूपमा HIPAA अनुरूप छ। तपाईंको डाटा इन्क्रिप्टेड छ, कहिल्यै बेचिँदैन, र तपाईंले छान्नुभएका एजेन्सीहरूसँग मात्र साझा गरिन्छ।",
     hi: "बिल्कुल। चौतारी पूरी तरह HIPAA अनुपालन है। आपका डेटा एन्क्रिप्टेड है, कभी बेचा नहीं जाता, और केवल उन एजेंसियों के साथ साझा किया जाता है जिन्हें आप चुनते हैं।",
   },

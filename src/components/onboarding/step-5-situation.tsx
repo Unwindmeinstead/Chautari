@@ -179,7 +179,7 @@ export function Step5Situation({ defaultValues, onComplete, onBack, saving }: St
             </li>
             <li className="flex items-start gap-2">
               <span className="text-amber-400 font-bold mt-0.5 shrink-0">03</span>
-              Chautari contacts the new agency and manages all the paperwork.
+              SwitchMyCare contacts the new agency and manages all the paperwork.
             </li>
             <li className="flex items-start gap-2">
               <span className="text-amber-400 font-bold mt-0.5 shrink-0">04</span>

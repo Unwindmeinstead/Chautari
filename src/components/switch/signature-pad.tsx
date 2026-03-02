@@ -220,7 +220,7 @@ export function SignaturePad({ onSignatureChange, legalName, error }: SignatureP
       {/* Legal notice */}
       <div className="rounded-lg bg-forest-50 border border-forest-100 p-3 text-xs text-forest-500 leading-relaxed">
         By signing, you confirm that this is your legal signature and that you are authorizing 
-        Chautari to process your home care agency switch request on your behalf.
+        SwitchMyCare to process your home care agency switch request on your behalf.
         This electronic signature is legally binding under the Electronic Signatures in Global 
         and National Commerce Act (ESIGN).
       </div>

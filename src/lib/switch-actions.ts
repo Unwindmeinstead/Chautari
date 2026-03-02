@@ -53,8 +53,8 @@ export async function createSwitchRequest(
         services_requested: data.services_requested,
         requested_start_date: data.requested_start_date,
         special_instructions: data.special_instructions || null,
-        status: "submitted",
-        submitted_at: new Date().toISOString(),
+        status: "pending_payment",
+        // submitted_at is set by the Stripe webhook after payment succeeds
       })
       .select("id")
       .single();

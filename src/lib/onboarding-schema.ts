@@ -17,7 +17,7 @@ export const step1Schema = z.object({
       const now = new Date();
       const age = (now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24 * 365.25);
       return age >= 18 && age <= 120;
-    }, "You must be 18 or older to use Chautari"),
+    }, "You must be 18 or older to use SwitchMyCare"),
 });
 
 // Step 2 — Address / Location

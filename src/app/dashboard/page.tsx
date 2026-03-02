@@ -13,14 +13,15 @@ import {
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Bell, ClipboardList } from "lucide-react";
 
-export const metadata = { title: "Dashboard | Chautari" };
+export const metadata = { title: "Dashboard | SwitchMyCare" };
 export const dynamic = "force-dynamic";
 
 export default async function DashboardPage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
-  if (!user) redirect("/auth/login");
+  // MOCK DATA PREVIEW: We don't redirect for now so you can see the UI
+  // if (!user) redirect("/auth/login");
 
   const data = await getDashboardData();
 

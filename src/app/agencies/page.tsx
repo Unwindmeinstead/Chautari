@@ -1,5 +1,4 @@
 import { Suspense } from "react";
-import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { searchAgencies, getPatientFilters } from "@/lib/agency-actions";
 import { AgencySearchClient } from "@/components/agencies/agency-search-client";
@@ -7,7 +6,7 @@ import { Logo } from "@/components/ui/logo";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
-export const metadata = { title: "Find Agencies | Chautari" };
+export const metadata = { title: "Find Home Care Agencies | Chautari" };
 
 interface AgenciesPageProps {
   searchParams: { [key: string]: string | undefined };
@@ -17,10 +16,9 @@ export default async function AgenciesPage({ searchParams }: AgenciesPageProps) 
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
-  if (!user) redirect("/auth/login");
-
-  // Load patient profile filters for the suggestion banner
-  const patientFilters = await getPatientFilters();
+  // No auth gate — agency browse is fully public
+  // If logged in, load patient filters for personalized results
+  const patientFilters = user ? await getPatientFilters() : null;
 
   // Build initial filters from URL params (for shareable links)
   const initialFilters = {
@@ -42,12 +40,22 @@ export default async function AgenciesPage({ searchParams }: AgenciesPageProps) 
         <div className="max-w-6xl mx-auto flex items-center justify-between gap-4">
           <Logo size="sm" />
           <nav className="hidden md:flex items-center gap-6 text-sm text-forest-600">
-            <Link href="/dashboard" className="hover:text-forest-800 transition-colors">Dashboard</Link>
+            {user ? (
+              <Link href="/dashboard" className="hover:text-forest-800 transition-colors">Dashboard</Link>
+            ) : (
+              <Link href="/" className="hover:text-forest-800 transition-colors">Home</Link>
+            )}
             <Link href="/agencies" className="text-forest-800 font-medium border-b-2 border-forest-600 pb-0.5">Find Agencies</Link>
           </nav>
-          <Button variant="ghost" size="sm" asChild>
-            <Link href="/dashboard">← Dashboard</Link>
-          </Button>
+          {user ? (
+            <Button variant="ghost" size="sm" asChild>
+              <Link href="/dashboard">← Dashboard</Link>
+            </Button>
+          ) : (
+            <Button variant="ghost" size="sm" asChild>
+              <Link href="/auth/login">Sign in</Link>
+            </Button>
+          )}
         </div>
       </nav>
 
@@ -58,7 +66,8 @@ export default async function AgenciesPage({ searchParams }: AgenciesPageProps) 
             Find a home care agency
           </h1>
           <p className="text-forest-500">
-            All {total > 0 ? total.toLocaleString() : ""} agencies are verified to operate in Pennsylvania and accept your insurance.
+            {total > 0 ? `Browse ${total.toLocaleString()} agencies` : "Browse agencies"} verified to operate in Pennsylvania.
+            {!user && " Sign in for personalized recommendations based on your insurance."}
           </p>
         </div>
 

@@ -3,7 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getAgencyById } from "@/lib/agency-actions";
 import { SwitchWizard } from "@/components/switch/switch-wizard";
 
-export const metadata = { title: "Start Switch Request | Chautari" };
+export const metadata = { title: "Start Switch Request | SwitchMyCare" };
 
 interface NewSwitchPageProps {
   searchParams: { agency?: string };

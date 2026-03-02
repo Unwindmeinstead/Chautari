@@ -7,8 +7,8 @@ export async function updateSession(request: NextRequest) {
 
   const { pathname } = request.nextUrl;
 
-  // Public routes that don't need auth
-  const publicRoutes = ["/", "/auth/login", "/auth/register", "/auth/verify", "/auth/reset-password", "/agencies"];
+  // Public routes that don't need auth (Added dashboards for UI mock preview)
+  const publicRoutes = ["/", "/auth/login", "/auth/register", "/auth/verify", "/auth/reset-password", "/agencies", "/dashboard", "/agency/dashboard", "/admin"];
   const isPublicRoute = publicRoutes.some((route) => pathname === route || pathname.startsWith("/auth/"));
 
   // If Supabase credentials are missing, allow public routes through

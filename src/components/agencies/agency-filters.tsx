@@ -173,7 +173,7 @@ export function AgencyFilters({ filters, onChange, resultCount, loading }: Agenc
       {/* Verified partners only */}
       <div className="rounded-xl border border-forest-100 bg-forest-50 p-4">
         <Checkbox
-          label="Verified Chautari partners only"
+          label="Verified SwitchMyCare partners only"
           description="Agencies we've vetted for quality and compliance"
           checked={filters.verified_only ?? false}
           onCheckedChange={(v) => onChange({ ...filters, verified_only: v === true })}

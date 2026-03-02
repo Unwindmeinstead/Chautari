@@ -45,7 +45,7 @@ export default function AuthLayout({
             <Link href="/privacy" className="hover:text-cream transition-colors">Privacy</Link>
             <Link href="/terms" className="hover:text-cream transition-colors">Terms</Link>
             <Link href="/hipaa" className="hover:text-cream transition-colors">HIPAA</Link>
-            <span className="ml-auto">© 2025 Chautari</span>
+            <span className="ml-auto">© 2025 SwitchMyCare</span>
           </div>
         </div>
       </div>
@@ -64,7 +64,7 @@ export default function AuthLayout({
         </main>
 
         <footer className="lg:hidden p-4 text-center text-xs text-forest-300">
-          © 2025 Chautari · {" "}
+          © 2025 SwitchMyCare · {" "}
           <Link href="/privacy" className="hover:text-forest-600">Privacy</Link>
         </footer>
       </div>

@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { careTypeLabel } from "@/lib/utils";
 
-export const metadata = { title: "Messages | Chautari" };
+export const metadata = { title: "Messages | SwitchMyCare" };
 export const dynamic = "force-dynamic";
 
 const STATUS_CONFIG: Record<string, { label: string; variant: "warning" | "success" | "secondary" | "destructive" | "default" | "info" }> = {

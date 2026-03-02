@@ -191,7 +191,7 @@ export function ESignatureDrawer({
               </Button>
 
               <p className="text-[11px] text-gray-400 text-center leading-relaxed">
-                🔒 Secured by Chautari · HIPAA-compliant · Signature checksum recorded
+                🔒 Secured by SwitchMyCare · HIPAA-compliant · Signature checksum recorded
               </p>
             </>
           )}

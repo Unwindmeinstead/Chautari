@@ -63,7 +63,7 @@ export function Step2Address({ defaultValues, onComplete, onBack }: Step2Props) 
       <div className="flex items-start gap-3 rounded-xl bg-forest-50 border border-forest-100 p-4">
         <MapPin className="size-4 text-forest-600 mt-0.5 shrink-0" />
         <p className="text-sm text-forest-600">
-          Chautari currently serves <strong>Pennsylvania residents only</strong>. 
+          SwitchMyCare currently serves <strong>Pennsylvania residents only</strong>. 
           We&apos;re expanding to more states soon.
         </p>
       </div>

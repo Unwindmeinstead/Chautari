@@ -19,7 +19,7 @@ interface AgencyDetailPageProps {
 export async function generateMetadata({ params }: AgencyDetailPageProps) {
   const agency = await getAgencyById(params.id);
   return {
-    title: agency ? `${agency.name} | Chautari` : "Agency Not Found",
+    title: agency ? `${agency.name} | SwitchMyCare` : "Agency Not Found",
   };
 }
 
@@ -97,7 +97,7 @@ export default async function AgencyDetailPage({ params }: AgencyDetailPageProps
                   {agency.is_verified_partner && (
                     <Badge variant="verified" className="gap-1">
                       <CheckCircle2 className="size-3.5" />
-                      Verified Chautari Partner
+                      Verified SwitchMyCare Partner
                     </Badge>
                   )}
                   {agency.care_types.map((ct) => (
@@ -300,7 +300,7 @@ export default async function AgencyDetailPage({ params }: AgencyDetailPageProps
                 Ready to switch?
               </h3>
               <p className="text-sm text-forest-500">
-                Chautari will handle all the paperwork and coordinate with your current and new agency.
+                SwitchMyCare will handle all the paperwork and coordinate with your current and new agency.
               </p>
 
               {existingSwitchRequest ? (

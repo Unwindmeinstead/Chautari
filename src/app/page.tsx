@@ -142,6 +142,102 @@ function FAQItem({ question, answer }: { question: string; answer: string }) {
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
+   Top Agencies List
+   ═══════════════════════════════════════════════════════════════════════════ */
+function TopAgenciesList() {
+  const [agencies, setAgencies] = React.useState<any[]>([]);
+  const [loading, setLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    async function fetchAgencies() {
+      try {
+        const { searchAgencies } = await import("@/lib/agency-actions");
+        const res = await searchAgencies({}, 1, 6);
+        if (res.agencies?.length > 0) {
+          setAgencies(res.agencies);
+        }
+      } catch (err) {
+        console.error("Failed to fetch agencies:", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchAgencies();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex justify-center py-12">
+        <div className="w-8 h-8 rounded-full border-4 border-forest-200 border-t-forest-600 animate-spin" />
+      </div>
+    );
+  }
+
+  // Display mock if empty (user hasn't seeded yet)
+  const displayAgencies = agencies.length > 0 ? agencies : [
+    { name: "UPMC Home Healthcare", service_counties: ["Allegheny"], google_rating: 4.7, payers_accepted: ["medicare", "medicaid"], services_offered: ["Skilled Nursing", "Rehab Therapies"], pay_rates: { "RN": "$39 - $55/hr", "HHA": "$17.50 - $24/hr" } },
+    { name: "Bayada Home Health Care", service_counties: ["Allegheny"], google_rating: 4.6, payers_accepted: ["medicare", "private"], services_offered: ["Skilled Nursing", "Physical Therapy"], pay_rates: { "RN": "$35 - $45/hr", "HHA": "$16 - $20/hr" } },
+    { name: "Concordia Visiting Nurses", service_counties: ["Butler"], google_rating: 4.9, payers_accepted: ["medicare", "medicaid"], services_offered: ["Skilled Nursing", "Occupational Therapy"] },
+  ];
+
+  return (
+    <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+      {displayAgencies.map((agency, i) => (
+        <motion.div
+          key={agency.name + i}
+          variants={fadeUp}
+          className="rounded-2xl bg-white border border-forest-100 shadow-card p-5 sm:p-6 space-y-3 hover:shadow-card-hover hover:border-forest-200 transition-all duration-300 group flex flex-col"
+        >
+          <div className="flex items-start justify-between gap-2">
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="h-10 w-10 rounded-xl bg-forest-100 flex items-center justify-center shrink-0">
+                <Building2 className="size-5 text-forest-600" />
+              </div>
+              <div className="min-w-0 pr-2">
+                <h3 className="font-semibold text-forest-800 text-sm group-hover:text-forest-600 transition-colors line-clamp-1">
+                  {agency.name}
+                </h3>
+                <p className="text-xs text-forest-400 truncate">
+                  <MapPin className="size-3 inline-block -mt-0.5 mr-0.5" />
+                  {(agency.service_counties?.[0] || "Allegheny")} County
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-1 shrink-0 bg-amber-50 px-2 py-1 rounded-md border border-amber-100/50">
+              <Star className="size-3.5 text-amber-500 fill-amber-500" />
+              <span className="text-xs font-bold text-amber-700">{agency.google_rating || (4.0 + Math.random()).toFixed(1)}</span>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap gap-1.5 pt-1">
+            {(agency.payers_accepted || []).slice(0, 3).map((p: string) => (
+              <Badge key={p} variant="outline" className="text-[10px] px-2 py-0 font-medium bg-forest-50/50 text-forest-600 border-forest-100 border transition-colors hover:bg-forest-100">
+                {p.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+              </Badge>
+            ))}
+          </div>
+
+          {(agency.pay_rates && Object.keys(agency.pay_rates).length > 0) && (
+            <div className="flex flex-wrap gap-3 text-xs font-medium text-forest-700 bg-green-50/30 px-3 py-2 rounded-lg border border-green-100/50">
+              {Object.entries(agency.pay_rates).slice(0, 2).map(([role, rate]) => (
+                <span key={role} className="flex items-center gap-1">
+                  <span className="text-forest-400 uppercase text-[10px] bg-white px-1.5 py-0.5 rounded shadow-sm border border-forest-100/50">{role}</span>
+                  {String(rate)}
+                </span>
+              ))}
+            </div>
+          )}
+
+          <div className="text-xs text-forest-500 line-clamp-2 leading-relaxed flex-1 mt-1">
+            <span className="font-medium text-forest-400">Services:</span> {(agency.services_offered || []).join(", ")}
+          </div>
+        </motion.div>
+      ))}
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
    Main Page Component
    ═══════════════════════════════════════════════════════════════════════════ */
 export default function HomePage() {
@@ -591,11 +687,11 @@ export default function HomePage() {
       </Section>
 
       {/* ═══════════════════  6. AGENCY PREVIEW  ═════════════════════════════ */}
-      <Section className="py-16 sm:py-24 px-4 sm:px-6" id="agencies">
-        <div className="max-w-5xl mx-auto space-y-12 sm:space-y-16">
+      <Section className="py-16 sm:py-24 px-4 sm:px-6 bg-forest-50/50" id="agencies">
+        <div className="max-w-6xl mx-auto space-y-12 sm:space-y-16">
           <div className="text-center space-y-4">
             <motion.div variants={fadeUp}>
-              <Badge variant="outline">Pittsburgh agencies</Badge>
+              <Badge variant="outline" className="bg-white">Pittsburgh agencies</Badge>
             </motion.div>
             <motion.h2 variants={fadeUp} className="font-fraunces text-3xl sm:text-4xl font-semibold text-forest-800">
               Verified agencies near you
@@ -605,53 +701,10 @@ export default function HomePage() {
             </motion.p>
           </div>
 
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {[
-              { name: "Celtic Healthcare", county: "Allegheny", rating: 4.5, payers: ["Medicare", "Medicaid"], services: ["Home Health", "Hospice"] },
-              { name: "Bayada Home Health Care", county: "Allegheny", rating: 4.3, payers: ["Medicare", "Medicaid", "Private"], services: ["Home Health", "Home Care"] },
-              { name: "UPMC Home Healthcare", county: "Allegheny", rating: 4.6, payers: ["Medicare", "UPMC Plan"], services: ["Home Health", "Hospice"] },
-              { name: "Aveanna Healthcare", county: "Allegheny", rating: 4.1, payers: ["Medicaid", "Private"], services: ["Home Care", "Adult Day"] },
-              { name: "Interim HealthCare", county: "Westmoreland", rating: 4.4, payers: ["Medicare", "Medicaid"], services: ["Home Health", "Home Care"] },
-              { name: "Amedisys Home Health", county: "Allegheny", rating: 4.2, payers: ["Medicare", "Medicaid"], services: ["Home Health"] },
-            ].map((agency) => (
-              <motion.div
-                key={agency.name}
-                variants={fadeUp}
-                className="rounded-2xl bg-white border border-forest-100 shadow-card p-5 sm:p-6 space-y-3 hover:shadow-card-hover hover:border-forest-200 transition-all duration-300 group"
-              >
-                <div className="flex items-start justify-between gap-2">
-                  <div className="flex items-center gap-3">
-                    <div className="h-10 w-10 rounded-xl bg-forest-100 flex items-center justify-center shrink-0">
-                      <Building2 className="size-5 text-forest-600" />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-forest-800 text-sm group-hover:text-forest-600 transition-colors">
-                        {agency.name}
-                      </h3>
-                      <p className="text-xs text-forest-400">{agency.county} County</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-1 shrink-0">
-                    <Star className="size-3.5 text-amber-400 fill-amber-400" />
-                    <span className="text-xs font-semibold text-forest-700">{agency.rating}</span>
-                  </div>
-                </div>
-                <div className="flex flex-wrap gap-1.5">
-                  {agency.payers.map((p) => (
-                    <span key={p} className="text-[10px] px-2 py-0.5 rounded-full bg-forest-50 text-forest-600 font-medium">
-                      {p}
-                    </span>
-                  ))}
-                </div>
-                <div className="text-xs text-forest-400">
-                  {agency.services.join(" · ")}
-                </div>
-              </motion.div>
-            ))}
-          </div>
+          <TopAgenciesList />
 
           <motion.div variants={fadeUp} className="text-center">
-            <Button variant="outline" size="lg" asChild>
+            <Button variant="outline" size="lg" asChild className="bg-white hover:bg-forest-50">
               <Link href="/auth/register">
                 See all 200+ agencies
                 <ArrowRight className="size-4" />
