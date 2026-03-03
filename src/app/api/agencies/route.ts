@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { buildAgencyListings, CMS_REFRESH_DAYS } from "@/lib/agencies/fetch";
 import type { AgenciesAPIResponse, AgenciesQueryParams } from "@/lib/agencies/types";
+import { getSupabasePublishableKey, getSupabaseUrl } from "@/lib/supabase/env";
 
 function isFresh(lastSyncedAt: string | null): boolean {
   if (!lastSyncedAt) return false;
@@ -19,7 +20,7 @@ async function refreshCache() {
 
   try {
     const service = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      getSupabaseUrl()!,
       process.env.SUPABASE_SERVICE_ROLE_KEY!,
       { auth: { persistSession: false } }
     );
@@ -84,8 +85,8 @@ export async function GET(req: NextRequest) {
   const params = parseParams(req);
 
   const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
+    getSupabaseUrl()!,
+    getSupabasePublishableKey()!,
     { auth: { persistSession: false } }
   );
 
