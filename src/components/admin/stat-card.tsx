@@ -19,7 +19,7 @@ export function StatCard({ label, value, sub, icon, highlight, alert }: StatCard
       <div className="flex items-start justify-between mb-4">
         <div className={cn(
           "p-3 rounded-2xl shadow-sm transition-colors duration-500",
-          alert ? "bg-amber-100/80 text-amber-700 group-hover:bg-amber-200" : highlight ? "bg-forest-100/80 text-forest-700 group-hover:bg-forest-200" : "bg-gray-50 text-gray-500 group-hover:bg-gray-100"
+          alert ? "bg-amber-100/80 text-amber-700 group-hover:bg-amber-200" : highlight ? "bg-forest-100/80 text-forest-700 group-hover:bg-forest-200" : "bg-forest-50 text-forest-500 group-hover:bg-forest-100"
         )}>
           {icon}
         </div>
@@ -33,18 +33,18 @@ export function StatCard({ label, value, sub, icon, highlight, alert }: StatCard
       <div className="relative z-10">
         <h3 className={cn(
           "font-fraunces text-[2.5rem] leading-none font-semibold tracking-tight transition-transform duration-500 group-hover:scale-105 origin-left",
-          alert ? "text-amber-700" : highlight ? "text-forest-800" : "text-gray-900"
+          alert ? "text-amber-700" : highlight ? "text-forest-800" : "text-forest-900"
         )}>
           {value}
         </h3>
-        <p className="text-[14px] font-semibold text-gray-500 mt-2">{label}</p>
-        {sub && <p className="text-[12px] font-medium text-gray-400 mt-1">{sub}</p>}
+        <p className="text-[14px] font-semibold text-forest-500 mt-2">{label}</p>
+        {sub && <p className="text-[12px] font-medium text-forest-400 mt-1">{sub}</p>}
       </div>
 
       {/* Decorative subtle icon in background */}
       <div className={cn(
         "absolute -right-6 -bottom-6 opacity-[0.03] transition-all duration-700 pointer-events-none transform group-hover:scale-[1.2] group-hover:-rotate-12",
-        alert ? "text-amber-900" : highlight ? "text-forest-900" : "text-gray-900"
+        alert ? "text-amber-900" : highlight ? "text-forest-900" : "text-forest-900"
       )}>
         {React.cloneElement(icon as React.ReactElement, { className: "size-32" })}
       </div>

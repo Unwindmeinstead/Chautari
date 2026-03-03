@@ -107,13 +107,13 @@ export function AgencyProfileForm({ initialData, isAdmin }: Props) {
                   "flex items-center gap-2 rounded-xl border px-3 py-2.5 text-sm text-left transition-colors",
                   checked
                     ? "border-forest-400 bg-forest-50 text-forest-700"
-                    : "border-gray-200 bg-white text-gray-600 hover:border-gray-300",
+                    : "border-forest-100 bg-white text-forest-600 hover:border-forest-300",
                   !isAdmin && "opacity-60 cursor-not-allowed"
                 )}
               >
                 <span className={cn(
                   "h-4 w-4 rounded border flex items-center justify-center shrink-0",
-                  checked ? "border-forest-500 bg-forest-600" : "border-gray-300"
+                  checked ? "border-forest-500 bg-forest-600" : "border-forest-300"
                 )}>
                   {checked && <Check className="size-2.5 text-white" />}
                 </span>
