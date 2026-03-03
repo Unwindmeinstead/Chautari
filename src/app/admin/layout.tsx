@@ -21,7 +21,7 @@ export default async function AdminLayout({
   if (profile?.role !== "switchmycare_admin") redirect("/dashboard");
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
+    <div className="min-h-screen bg-cream flex">
       <AdminSidebar adminName={profile.full_name ?? user?.email?.split("@")[0] ?? "Admin"} />
       <main className="flex-1 min-w-0 overflow-auto">
         {children}
