@@ -52,7 +52,7 @@ export default async function AgencyMessageThreadPage({
   const statusConf = STATUS_CONFIG[conversation.request_status] ?? { label: conversation.request_status, variant: "secondary" };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="min-h-screen bg-cream/60 flex flex-col">
       <AgencyNav
         agencyName={agency.name}
         staffName={staffName}
@@ -61,7 +61,7 @@ export default async function AgencyMessageThreadPage({
       />
 
       {/* Sub-header */}
-      <div className="bg-white border-b border-gray-200 sticky top-[56px] z-10">
+      <div className="bg-white border-b border-forest-100 sticky top-[56px] z-10">
         <div className="max-w-3xl mx-auto px-4 py-3 flex items-center gap-3">
           <Button variant="ghost" size="sm" asChild className="-ml-1">
             <Link href="/agency/messages">
@@ -75,14 +75,14 @@ export default async function AgencyMessageThreadPage({
               {conversation.patient_name?.[0]?.toUpperCase() ?? <User className="size-4" />}
             </div>
             <div className="min-w-0">
-              <p className="text-sm font-semibold text-gray-800 truncate leading-tight">
+              <p className="text-sm font-semibold text-forest-800 truncate leading-tight">
                 {conversation.patient_name ?? "Patient"}
               </p>
               <div className="flex items-center gap-1.5">
                 <Badge variant={statusConf.variant as any} className="text-[10px] px-1.5 py-0">
                   {statusConf.label}
                 </Badge>
-                <span className="text-[11px] text-gray-400">
+                <span className="text-[11px] text-forest-400">
                   {careTypeLabel(conversation.request_care_type)}
                 </span>
               </div>

@@ -38,7 +38,7 @@ const STATUS_COLORS: Record<string, string> = {
   accepted:     "bg-green-100 text-green-700 border-green-300",
   completed:    "bg-forest-100 text-forest-700 border-forest-300",
   denied:       "bg-red-100 text-red-600 border-red-200",
-  cancelled:    "bg-gray-100 text-gray-500 border-gray-200",
+  cancelled:    "bg-forest-50 text-forest-500 border-forest-100",
 };
 
 export default async function AgencyRequestDetailPage({
@@ -69,7 +69,7 @@ export default async function AgencyRequestDetailPage({
   const activePulse = ["submitted", "under_review"].includes(request.status);
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-cream/60">
       <AgencyNav
         agencyName={agency?.name ?? null}
         staffName={staffName}
@@ -87,9 +87,9 @@ export default async function AgencyRequestDetailPage({
         {/* Header */}
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div>
-            <p className="text-xs text-gray-400 font-mono mb-1">REQ-{request.id.slice(0, 8).toUpperCase()}</p>
-            <h1 className="font-fraunces text-3xl font-semibold text-gray-800">Switch Request</h1>
-            <p className="text-gray-500 mt-0.5">
+            <p className="text-xs text-forest-400 font-mono mb-1">REQ-{request.id.slice(0, 8).toUpperCase()}</p>
+            <h1 className="font-fraunces text-3xl font-semibold text-forest-800">Switch Request</h1>
+            <p className="text-forest-500 mt-0.5">
               Submitted {new Date(request.submitted_at ?? request.created_at).toLocaleDateString("en-US", {
                 weekday: "long", month: "long", day: "numeric", year: "numeric"
               })}
@@ -131,43 +131,43 @@ export default async function AgencyRequestDetailPage({
           <div className="lg:col-span-2 space-y-5">
 
             {/* Patient info */}
-            <div className="rounded-2xl bg-white border border-gray-200 shadow-card p-6 space-y-4">
-              <h2 className="font-fraunces text-lg font-semibold text-gray-800 flex items-center gap-2">
-                <User className="size-4 text-gray-400" /> Patient Information
+            <div className="rounded-2xl bg-white border border-forest-100 shadow-card p-6 space-y-4">
+              <h2 className="font-fraunces text-lg font-semibold text-forest-800 flex items-center gap-2">
+                <User className="size-4 text-forest-400" /> Patient Information
               </h2>
               <div className="grid sm:grid-cols-2 gap-4 text-sm">
                 <div>
-                  <p className="text-xs text-gray-400 mb-1">Full name</p>
-                  <p className="font-semibold text-gray-800">{request.patient?.full_name ?? "Not provided"}</p>
+                  <p className="text-xs text-forest-400 mb-1">Full name</p>
+                  <p className="font-semibold text-forest-800">{request.patient?.full_name ?? "Not provided"}</p>
                 </div>
                 {request.patient?.phone && (
                   <div>
-                    <p className="text-xs text-gray-400 mb-1">Phone</p>
+                    <p className="text-xs text-forest-400 mb-1">Phone</p>
                     <a href={`tel:${request.patient.phone}`} className="text-forest-600 hover:text-forest-800 font-medium">
                       {request.patient.phone}
                     </a>
                   </div>
                 )}
                 <div>
-                  <p className="text-xs text-gray-400 mb-1">Location</p>
-                  <p className="text-gray-700 flex items-center gap-1.5">
-                    <MapPin className="size-3.5 text-gray-400 shrink-0" />
+                  <p className="text-xs text-forest-400 mb-1">Location</p>
+                  <p className="text-forest-700 flex items-center gap-1.5">
+                    <MapPin className="size-3.5 text-forest-400 shrink-0" />
                     {request.patient_details?.address_city ?? "—"}, {request.patient_details?.address_county ?? "—"} County
                   </p>
                 </div>
                 <div>
-                  <p className="text-xs text-gray-400 mb-1">Insurance</p>
+                  <p className="text-xs text-forest-400 mb-1">Insurance</p>
                   <div className="flex items-center gap-1.5">
-                    <ShieldCheck className="size-3.5 text-gray-400 shrink-0" />
+                    <ShieldCheck className="size-3.5 text-forest-400 shrink-0" />
                     <Badge variant="info">
                       {request.patient_details?.payer_type ? payerLabel(request.patient_details.payer_type) : "Unknown"}
                     </Badge>
                   </div>
                 </div>
                 <div>
-                  <p className="text-xs text-gray-400 mb-1">Language</p>
-                  <p className="text-gray-700 flex items-center gap-1.5">
-                    <Languages className="size-3.5 text-gray-400 shrink-0" />
+                  <p className="text-xs text-forest-400 mb-1">Language</p>
+                  <p className="text-forest-700 flex items-center gap-1.5">
+                    <Languages className="size-3.5 text-forest-400 shrink-0" />
                     {lang ? (LANG_LABELS[lang] ?? lang) : "English"}
                   </p>
                 </div>
@@ -175,22 +175,22 @@ export default async function AgencyRequestDetailPage({
             </div>
 
             {/* Care details */}
-            <div className="rounded-2xl bg-white border border-gray-200 shadow-card p-6 space-y-4">
-              <h2 className="font-fraunces text-lg font-semibold text-gray-800 flex items-center gap-2">
-                <Stethoscope className="size-4 text-gray-400" /> Care Requested
+            <div className="rounded-2xl bg-white border border-forest-100 shadow-card p-6 space-y-4">
+              <h2 className="font-fraunces text-lg font-semibold text-forest-800 flex items-center gap-2">
+                <Stethoscope className="size-4 text-forest-400" /> Care Requested
               </h2>
               <div className="grid sm:grid-cols-2 gap-4 text-sm">
                 <div>
-                  <p className="text-xs text-gray-400 mb-1.5">Care type</p>
+                  <p className="text-xs text-forest-400 mb-1.5">Care type</p>
                   <Badge variant="default">{careTypeLabel(request.care_type)}</Badge>
                 </div>
                 <div>
-                  <p className="text-xs text-gray-400 mb-1">Reason for switching</p>
-                  <p className="text-gray-700">{SWITCH_REASONS_MAP[request.switch_reason] ?? request.switch_reason}</p>
+                  <p className="text-xs text-forest-400 mb-1">Reason for switching</p>
+                  <p className="text-forest-700">{SWITCH_REASONS_MAP[request.switch_reason] ?? request.switch_reason}</p>
                 </div>
               </div>
               <div>
-                <p className="text-xs text-gray-400 mb-2">Services requested</p>
+                <p className="text-xs text-forest-400 mb-2">Services requested</p>
                 <div className="flex flex-wrap gap-1.5">
                   {request.services_requested.map((s) => (
                     <Badge key={s} variant="secondary" className="text-xs">
@@ -200,10 +200,10 @@ export default async function AgencyRequestDetailPage({
                 </div>
               </div>
               {request.requested_start_date && (
-                <div className="flex items-center gap-2 text-sm text-gray-600">
-                  <Calendar className="size-4 text-gray-400 shrink-0" />
+                <div className="flex items-center gap-2 text-sm text-forest-600">
+                  <Calendar className="size-4 text-forest-400 shrink-0" />
                   Requested start:{" "}
-                  <strong className="text-gray-800">
+                  <strong className="text-forest-800">
                     {new Date(request.requested_start_date).toLocaleDateString("en-US", {
                       weekday: "long", month: "long", day: "numeric", year: "numeric"
                     })}
@@ -211,17 +211,17 @@ export default async function AgencyRequestDetailPage({
                 </div>
               )}
               {request.special_instructions && (
-                <div className="rounded-xl bg-gray-50 border border-gray-200 p-4">
-                  <p className="text-xs text-gray-400 mb-1.5 font-medium uppercase tracking-wide">Special instructions</p>
-                  <p className="text-sm text-gray-700 italic">"{request.special_instructions}"</p>
+                <div className="rounded-xl bg-cream/60 border border-forest-100 p-4">
+                  <p className="text-xs text-forest-400 mb-1.5 font-medium uppercase tracking-wide">Special instructions</p>
+                  <p className="text-sm text-forest-700 italic">"{request.special_instructions}"</p>
                 </div>
               )}
             </div>
 
             {/* HIPAA record */}
-            <div className="rounded-2xl bg-white border border-gray-200 shadow-card p-5 space-y-3">
-              <h2 className="font-fraunces text-base font-semibold text-gray-800 flex items-center gap-2">
-                <FileText className="size-4 text-gray-400" /> Authorization & Signature
+            <div className="rounded-2xl bg-white border border-forest-100 shadow-card p-5 space-y-3">
+              <h2 className="font-fraunces text-base font-semibold text-forest-800 flex items-center gap-2">
+                <FileText className="size-4 text-forest-400" /> Authorization & Signature
               </h2>
               {(request.e_signatures?.length ?? 0) > 0 ? (
                 <div className="space-y-2">
@@ -235,7 +235,7 @@ export default async function AgencyRequestDetailPage({
                         <p className={sig.consent_hipaa ? "text-green-700 font-medium" : "text-red-600 font-medium"}>
                           {sig.consent_hipaa ? "HIPAA authorization granted" : "HIPAA authorization NOT granted"}
                         </p>
-                        <p className="text-xs text-gray-400">
+                        <p className="text-xs text-forest-400">
                           Signed {new Date(sig.signed_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
                         </p>
                       </div>
@@ -243,7 +243,7 @@ export default async function AgencyRequestDetailPage({
                   ))}
                 </div>
               ) : (
-                <p className="text-sm text-gray-400 italic">No signature on file</p>
+                <p className="text-sm text-forest-400 italic">No signature on file</p>
               )}
             </div>
           </div>
@@ -251,7 +251,7 @@ export default async function AgencyRequestDetailPage({
           {/* Documents - full width below the two columns */}
         </div>
 
-        <div className="rounded-2xl bg-white border border-gray-200 shadow-card p-6">
+        <div className="rounded-2xl bg-white border border-forest-100 shadow-card p-6">
           <DocumentManager
             requestId={request.id}
             initialDocuments={documents}
@@ -270,33 +270,33 @@ export default async function AgencyRequestDetailPage({
           <div className="space-y-5">
 
             {/* Actions */}
-            <div className="rounded-2xl bg-white border border-gray-200 shadow-card p-5 space-y-4">
-              <h2 className="font-fraunces text-lg font-semibold text-gray-800">Actions</h2>
+            <div className="rounded-2xl bg-white border border-forest-100 shadow-card p-5 space-y-4">
+              <h2 className="font-fraunces text-lg font-semibold text-forest-800">Actions</h2>
               <RequestActions requestId={request.id} status={request.status} />
             </div>
 
             {/* Timeline */}
-            <div className="rounded-2xl bg-white border border-gray-200 shadow-card p-5 space-y-3">
-              <h2 className="font-fraunces text-base font-semibold text-gray-800 flex items-center gap-2">
-                <Clock className="size-4 text-gray-400" /> Timeline
+            <div className="rounded-2xl bg-white border border-forest-100 shadow-card p-5 space-y-3">
+              <h2 className="font-fraunces text-base font-semibold text-forest-800 flex items-center gap-2">
+                <Clock className="size-4 text-forest-400" /> Timeline
               </h2>
               <div className="space-y-2 text-xs">
                 <div className="flex justify-between">
-                  <span className="text-gray-400">Submitted</span>
-                  <span className="text-gray-700">
+                  <span className="text-forest-400">Submitted</span>
+                  <span className="text-forest-700">
                     {new Date(request.submitted_at ?? request.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-400">Last updated</span>
-                  <span className="text-gray-700">
+                  <span className="text-forest-400">Last updated</span>
+                  <span className="text-forest-700">
                     {new Date(request.updated_at).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
                   </span>
                 </div>
                 {request.requested_start_date && (
                   <div className="flex justify-between">
-                    <span className="text-gray-400">Target start</span>
-                    <span className="text-gray-700 font-medium">
+                    <span className="text-forest-400">Target start</span>
+                    <span className="text-forest-700 font-medium">
                       {new Date(request.requested_start_date).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
                     </span>
                   </div>

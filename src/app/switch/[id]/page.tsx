@@ -87,7 +87,7 @@ const SERVICE_LABELS: Record<string, string> = {
 
 export default async function SwitchDetailPage({ params }: SwitchDetailPageProps) {
   // Always show mock data for UI preview
-  const isPreview = true;
+  const isPreview = false;
 
   if (isPreview) {
     const mockRequest = {

@@ -74,7 +74,6 @@ export function AgencyFilters({ filters, onChange, resultCount, loading }: Agenc
 
   const filterContent = (
     <div className="space-y-5">
-      {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <SlidersHorizontal className="size-4 text-forest-600" />
@@ -96,12 +95,10 @@ export function AgencyFilters({ filters, onChange, resultCount, loading }: Agenc
         )}
       </div>
 
-      {/* Results count */}
       <p className="text-sm text-forest-500">
         {loading ? "Searching..." : `${resultCount.toLocaleString()} agencies found`}
       </p>
 
-      {/* County */}
       <div className="space-y-1.5">
         <Select
           value={filters.county ?? "all"}
@@ -119,7 +116,6 @@ export function AgencyFilters({ filters, onChange, resultCount, loading }: Agenc
         </Select>
       </div>
 
-      {/* Care type */}
       <div className="space-y-1.5">
         <Select
           value={filters.care_type ?? "all"}
@@ -136,7 +132,6 @@ export function AgencyFilters({ filters, onChange, resultCount, loading }: Agenc
         </Select>
       </div>
 
-      {/* Insurance */}
       <div className="space-y-1.5">
         <Select
           value={filters.payer_type ?? "all"}
@@ -153,7 +148,6 @@ export function AgencyFilters({ filters, onChange, resultCount, loading }: Agenc
         </Select>
       </div>
 
-      {/* Language */}
       <div className="space-y-1.5">
         <Select
           value={filters.language ?? "all"}
@@ -170,7 +164,6 @@ export function AgencyFilters({ filters, onChange, resultCount, loading }: Agenc
         </Select>
       </div>
 
-      {/* Verified partners only */}
       <div className="rounded-xl border border-forest-100 bg-forest-50 p-4">
         <Checkbox
           label="Verified SwitchMyCare partners only"
@@ -184,50 +177,51 @@ export function AgencyFilters({ filters, onChange, resultCount, loading }: Agenc
 
   return (
     <>
-      {/* Mobile filter toggle */}
-      <div className="lg:hidden flex items-center gap-2">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setMobileOpen(true)}
-          className="gap-2"
-        >
-          <Filter className="size-4" />
-          Filters
+      <div className="lg:hidden rounded-2xl border border-forest-100 bg-white p-3 shadow-card">
+        <div className="flex items-center justify-between gap-2">
+          <p className="text-sm font-medium text-forest-700">{loading ? "Searching..." : `${resultCount.toLocaleString()} agencies`}</p>
           {activeFilterCount > 0 && (
-            <span className="bg-forest-600 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
-              {activeFilterCount}
-            </span>
+            <Badge variant="secondary" className="text-xs">{activeFilterCount} active</Badge>
           )}
-        </Button>
-        <span className="text-sm text-forest-500">
-          {resultCount.toLocaleString()} agencies
-        </span>
+        </div>
+        <div className="mt-3 flex items-center gap-2">
+          <Button variant="outline" size="sm" onClick={() => setMobileOpen(true)} className="gap-2 flex-1">
+            <Filter className="size-4" />
+            Filter results
+          </Button>
+          {activeFilterCount > 0 && (
+            <Button variant="ghost" size="sm" onClick={clearAll} className="shrink-0">
+              Reset
+            </Button>
+          )}
+        </div>
       </div>
 
-      {/* Mobile filter drawer */}
       {mobileOpen && (
         <div className="fixed inset-0 z-50 lg:hidden">
-          <div
-            className="absolute inset-0 bg-black/40"
-            onClick={() => setMobileOpen(false)}
-          />
-          <div className="absolute right-0 top-0 bottom-0 w-80 bg-white shadow-xl p-6 overflow-y-auto animate-slide-up">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="font-fraunces text-lg font-semibold">Filters</h2>
+          <div className="absolute inset-0 bg-black/50" onClick={() => setMobileOpen(false)} />
+          <div className="absolute inset-x-0 bottom-0 max-h-[88vh] rounded-t-3xl bg-white shadow-2xl animate-slide-up flex flex-col">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-forest-100">
+              <h2 className="font-fraunces text-xl font-semibold text-forest-800">Filter agencies</h2>
               <button onClick={() => setMobileOpen(false)} className="text-forest-400 hover:text-forest-700">
                 <X className="size-5" />
               </button>
             </div>
-            {filterContent}
-            <Button className="w-full mt-6" onClick={() => setMobileOpen(false)}>
-              Show {resultCount} agencies
-            </Button>
+            <div className="overflow-y-auto px-5 py-4 pb-28">{filterContent}</div>
+            <div className="absolute bottom-0 inset-x-0 border-t border-forest-100 bg-white/95 backdrop-blur px-4 py-3 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] flex items-center gap-2">
+              {activeFilterCount > 0 && (
+                <Button variant="outline" className="flex-1" onClick={clearAll}>
+                  Clear
+                </Button>
+              )}
+              <Button className="flex-1" onClick={() => setMobileOpen(false)}>
+                Show {resultCount.toLocaleString()}
+              </Button>
+            </div>
           </div>
         </div>
       )}
 
-      {/* Desktop sidebar */}
       <div className="hidden lg:block w-64 shrink-0 sticky top-24 self-start">
         <div className="rounded-2xl bg-white border border-forest-100 shadow-card p-5">
           {filterContent}
@@ -237,7 +231,6 @@ export function AgencyFilters({ filters, onChange, resultCount, loading }: Agenc
   );
 }
 
-// Search bar component (shown at top)
 interface AgencySearchBarProps {
   value: string;
   onChange: (query: string) => void;

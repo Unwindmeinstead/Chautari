@@ -8,7 +8,6 @@ import { MessageThread } from "@/components/messaging/message-thread";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { careTypeLabel } from "@/lib/utils";
-import { Logo } from "@/components/ui/logo";
 
 export const metadata = { title: "Messages | SwitchMyCare" };
 export const dynamic = "force-dynamic";
@@ -31,71 +30,7 @@ export default async function PatientMessagesPage({
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   
-  // MOCK DATA FOR UI PREVIEW
-  if (!user || !user.id) {
-    const mockConversation = {
-      id: "conv-1",
-      request_id: requestId,
-      agency_id: "a1",
-      patient_id: "mock-patient",
-      request_status: "under_review",
-      last_message_at: new Date().toISOString(),
-      agency: { id: "a1", name: "Premium Care Agency" },
-    };
-    
-    const mockMessages = [
-      { id: "m1", content: "Hello! Thank you for your switch request. We're currently reviewing your information.", sender: "agency", created_at: new Date(Date.now() - 3600000).toISOString() },
-      { id: "m2", content: "Thank you for the quick response! I'm looking forward to working with your agency.", sender: "patient", created_at: new Date(Date.now() - 1800000).toISOString() },
-      { id: "m3", content: "We will be in touch within 2-3 business days with an update.", sender: "agency", created_at: new Date().toISOString() },
-    ];
-
-    return (
-      <div className="min-h-screen bg-cream flex flex-col">
-        <nav className="bg-white border-b border-[rgba(26,61,43,0.06)] px-6 py-4 sticky top-0 z-30">
-          <div className="max-w-4xl mx-auto flex items-center justify-between">
-            <Logo size="md" />
-            <Link href={`/switch/${requestId}`} className="flex items-center gap-2 text-sm text-forest-600 hover:text-forest-800 transition-colors">
-              ← Back to Request
-            </Link>
-          </div>
-        </nav>
-
-        <div className="flex-1 max-w-4xl mx-auto w-full px-6 py-8">
-          <div className="bg-white rounded-3xl border border-[rgba(26,61,43,0.06)] overflow-hidden">
-            <div className="p-6 border-b border-[rgba(26,61,43,0.06)]">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h1 className="font-fraunces text-xl font-semibold text-forest-800">Premium Care Agency</h1>
-                  <p className="text-sm text-[#6B7B6E]">Personal Care Services</p>
-                </div>
-                <div className="px-3 py-1.5 rounded-full bg-amber-100 text-amber-700 text-xs font-medium">Under Review</div>
-              </div>
-            </div>
-            
-            <div className="p-6 space-y-4 max-h-[400px] overflow-y-auto">
-              {mockMessages.map((msg) => (
-                <div key={msg.id} className={`flex ${msg.sender === "patient" ? "justify-end" : "justify-start"}`}>
-                  <div className={`max-w-[70%] p-4 rounded-2xl ${msg.sender === "patient" ? "bg-forest-600 text-cream" : "bg-[rgba(26,61,43,0.06)] text-forest-700"}`}>
-                    <p className="text-sm">{msg.content}</p>
-                    <p className={`text-xs mt-2 ${msg.sender === "patient" ? "text-cream/60" : "text-[#6B7B6E]"}`}>
-                      {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
-            
-            <div className="p-4 border-t border-[rgba(26,61,43,0.06)]">
-              <div className="flex gap-3">
-                <input type="text" placeholder="Type a message..." className="flex-1 px-4 py-3 rounded-full border border-[rgba(26,61,43,0.1)] text-sm focus:outline-none focus:border-forest-400" />
-                <button className="px-6 py-3 rounded-full bg-forest-600 text-cream font-medium text-sm hover:bg-forest-700 transition-colors">Send</button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  if (!user || !user.id) redirect(`/auth/login?redirectedFrom=/switch/${requestId}/messages`);
 
   const { conversation, error } = await getOrCreateConversation(requestId);
   if (error || !conversation) return notFound();
