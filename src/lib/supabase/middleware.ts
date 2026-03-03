@@ -9,15 +9,31 @@ export async function updateSession(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Public routes that don't need auth
-  const publicRoutes = ["/", "/auth/login", "/auth/register", "/auth/verify", "/auth/reset-password", "/agencies"];
-  const isPublicRoute = publicRoutes.some((route) => pathname === route || pathname.startsWith("/auth/"));
+  const publicRoutePrefixes = [
+    "/",
+    "/auth/",
+    "/agencies",
+    "/wages",
+    "/submit-wages",
+    "/compare",
+    "/privacy",
+    "/terms",
+    "/hipaa",
+  ];
+  const isPublicRoute = publicRoutePrefixes.some((route) =>
+    route === "/" ? pathname === "/" : pathname === route || pathname.startsWith(`${route}/`)
+  );
+
+  // Keep all auth pages public
+  const isAuthPage = pathname.startsWith("/auth/");
+  const shouldTreatAsPublic = isPublicRoute || isAuthPage;
 
   // If Supabase credentials are missing, allow public routes through
   const supabaseUrl = getSupabaseUrl();
   const supabaseKey = getSupabasePublishableKey();
 
   if (!supabaseUrl || !supabaseKey || !supabaseKey.startsWith("eyJ")) {
-    if (isPublicRoute) {
+    if (shouldTreatAsPublic) {
       return supabaseResponse;
     }
     // Protected routes can't work without auth — redirect to login
@@ -53,7 +69,7 @@ export async function updateSession(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   // Protected route handling
-  if (!user && !isPublicRoute) {
+  if (!user && !shouldTreatAsPublic) {
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = "/auth/login";
     redirectUrl.searchParams.set("redirectedFrom", pathname);
