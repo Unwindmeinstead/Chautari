@@ -39,7 +39,7 @@ export async function signUpWithEmail(formData: FormData) {
         phone: phone,
         role: "patient",
       },
-      emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/verify`,
+      emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/api/auth/callback?next=/onboarding`,
     },
   });
 
@@ -64,7 +64,7 @@ export async function signInWithMagicLink(formData: FormData) {
   const { error } = await supabase.auth.signInWithOtp({
     email,
     options: {
-      emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/verify`,
+      emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/api/auth/callback?next=/dashboard`,
     },
   });
 
@@ -81,7 +81,7 @@ export async function signInWithGoogle() {
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: "google",
     options: {
-      redirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/callback`,
+      redirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/api/auth/callback?next=/dashboard`,
       queryParams: {
         access_type: "offline",
         prompt: "consent",
@@ -104,7 +104,7 @@ export async function resetPassword(formData: FormData) {
   const email = formData.get("email") as string;
 
   const { error } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/reset-password`,
+    redirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/api/auth/callback?next=/auth/reset-password?type=recovery`,
   });
 
   if (error) {

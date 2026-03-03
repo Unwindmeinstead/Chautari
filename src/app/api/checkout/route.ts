@@ -1,83 +1,57 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createCheckoutSession } from "@/lib/stripe";
+import Stripe from "stripe";
 import { createClient } from "@/lib/supabase/server";
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+    apiVersion: "2024-11-20.acacia" as any,
+});
 
 export async function POST(req: NextRequest) {
     try {
         const supabase = await createClient();
-        const { data: { user }, error: authError } = await supabase.auth.getUser();
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-        if (authError || !user) {
-            return NextResponse.json(
-                { error: "You must be signed in to make a payment." },
-                { status: 401 }
-            );
+        const { agencyId, agencyName, switchData } = await req.json();
+        if (!agencyId || !switchData) {
+            return NextResponse.json({ error: "Missing data" }, { status: 400 });
         }
 
-        const body = await req.json();
-        const { switchRequestId } = body;
+        const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
 
-        if (!switchRequestId) {
-            return NextResponse.json(
-                { error: "switchRequestId is required." },
-                { status: 400 }
-            );
-        }
-
-        // Verify the switch request belongs to this user and is in pending_payment status
-        const { data: switchReq, error: switchError } = await supabase
-            .from("switch_requests")
-            .select("id, status, new_agency_id")
-            .eq("id", switchRequestId)
-            .eq("patient_id", user.id)
-            .single();
-
-        if (switchError || !switchReq) {
-            return NextResponse.json(
-                { error: "Switch request not found or unauthorized." },
-                { status: 404 }
-            );
-        }
-
-        if (switchReq.status !== "pending_payment") {
-            return NextResponse.json(
-                { error: `Switch request is in '${switchReq.status}' status. Payment not applicable.` },
-                { status: 400 }
-            );
-        }
-
-        // Get agency name for the checkout description
-        const { data: agency } = await supabase
-            .from("agencies")
-            .select("name")
-            .eq("id", switchReq.new_agency_id)
-            .single();
-
-        // Create checkout session
-        const session = await createCheckoutSession({
-            switchRequestId,
-            patientId: user.id,
-            patientEmail: user.email ?? "",
-            agencyName: agency?.name ?? "Selected Agency",
+        // Store pending switch data in session metadata (Stripe limit: 500 chars per value)
+        // We'll store the switch_request_id after creation in webhook
+        const session = await stripe.checkout.sessions.create({
+            mode: "payment",
+            payment_method_types: ["card"],
+            line_items: [{
+                price_data: {
+                    currency: "usd",
+                    unit_amount: 9700, // $97.00
+                    product_data: {
+                        name: "Chautari Switch Service",
+                        description: `Agency switch coordination to ${agencyName}`,
+                        images: [],
+                    },
+                },
+                quantity: 1,
+            }],
+            metadata: {
+                user_id: user.id,
+                agency_id: agencyId,
+                agency_name: agencyName,
+                // Store switch form data as JSON string
+                switch_data: JSON.stringify(switchData),
+            },
+            customer_email: user.email ?? undefined,
+            success_url: `${appUrl}/switch/success?session_id={CHECKOUT_SESSION_ID}`,
+            cancel_url: `${appUrl}/switch/new?agency=${agencyId}&cancelled=true`,
+            expires_at: Math.floor(Date.now() / 1000) + 30 * 60, // 30 min
         });
 
-        // Record the pending payment
-        await supabase.from("switch_payments").upsert({
-            switch_request_id: switchRequestId,
-            patient_id: user.id,
-            stripe_checkout_session_id: session.id,
-            amount_cents: 9700,
-            status: "pending",
-        }, {
-            onConflict: "switch_request_id",
-        });
-
-        return NextResponse.json({ url: session.url });
+        return NextResponse.json({ url: session.url, sessionId: session.id });
     } catch (err) {
         console.error("Checkout error:", err);
-        return NextResponse.json(
-            { error: "Failed to create checkout session." },
-            { status: 500 }
-        );
+        return NextResponse.json({ error: "Failed to create checkout session" }, { status: 500 });
     }
 }

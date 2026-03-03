@@ -636,8 +636,7 @@ export default function HomePage() {
                 location: "Allegheny County",
                 quote:
                   "SwitchMyCare made switching so easy. I was nervous about losing care, but they handled everything. My new agency is wonderful — they even speak Nepali!",
-                initials: "SG",
-                color: "bg-emerald-100 text-emerald-700",
+                image: "/images/sita.png",
                 stars: 5,
               },
               {
@@ -645,8 +644,7 @@ export default function HomePage() {
                 location: "Westmoreland County",
                 quote:
                   "After my stroke, my old agency wasn't meeting my needs. SwitchMyCare found me a better match in 4 days. The whole process was stress-free.",
-                initials: "JM",
-                color: "bg-blue-100 text-blue-700",
+                image: "/images/james.png",
                 stars: 5,
               },
               {
@@ -654,8 +652,7 @@ export default function HomePage() {
                 location: "Butler County",
                 quote:
                   "The bilingual support was incredible. They explained every step in Spanish and English. My father's new caregiver is amazing. Worth every penny.",
-                initials: "MR",
-                color: "bg-amber-100 text-amber-700",
+                image: "/images/maria.png",
                 stars: 5,
               },
             ].map((testimonial) => (
@@ -669,8 +666,14 @@ export default function HomePage() {
                   &ldquo;{testimonial.quote}&rdquo;
                 </p>
                 <div className="flex items-center gap-3 pt-2">
-                  <div className={`h-12 w-12 rounded-full flex items-center justify-center font-bold text-sm shrink-0 ${testimonial.color}`}>
-                    {testimonial.initials}
+                  <div className="h-12 w-12 rounded-full overflow-hidden shrink-0 border-2 border-white shadow-sm">
+                    <Image
+                      src={testimonial.image}
+                      alt={testimonial.name}
+                      width={48}
+                      height={48}
+                      className="object-cover w-full h-full"
+                    />
                   </div>
                   <div>
                     <p className="font-semibold text-forest-800 text-sm">{testimonial.name}</p>

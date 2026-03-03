@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Logo } from "@/components/ui/logo";
 import { Stepper } from "@/components/ui/stepper";
-import { createSwitchRequest } from "@/lib/switch-actions";
 import type { SwitchRequestData } from "@/lib/switch-schema";
 import { SWITCH_STEPS } from "@/lib/switch-schema";
 import type { Agency } from "@/types/database";
@@ -17,7 +16,6 @@ import { SwitchStep2Situation } from "./switch-step-2-situation";
 import { SwitchStep3Care } from "./switch-step-3-care";
 import { SwitchStep4Consent } from "./switch-step-4-consent";
 import { SwitchStep5Sign } from "./switch-step-5-sign";
-import { SwitchRequestSuccess } from "./switch-request-success";
 
 interface SwitchWizardProps {
   agency: Agency;
@@ -28,9 +26,8 @@ const TOTAL_STEPS = 5;
 
 export function SwitchWizard({ agency, userName }: SwitchWizardProps) {
   const [currentStep, setCurrentStep] = React.useState(0);
-  const [saving, setSaving] = React.useState(false);
-  const [saveError, setSaveError] = React.useState<string | null>(null);
-  const [requestId, setRequestId] = React.useState<string | null>(null);
+  const [redirecting, setRedirecting] = React.useState(false);
+  const [error, setError] = React.useState<string | null>(null);
   const [formData, setFormData] = React.useState<Partial<SwitchRequestData>>({
     new_agency_id: agency.id,
   });
@@ -42,7 +39,7 @@ export function SwitchWizard({ agency, userName }: SwitchWizardProps) {
     const newData = { ...formData, ...stepData };
     setFormData(newData);
     if (isLastStep) {
-      handleSubmit(newData as SwitchRequestData);
+      handleCheckout(newData as SwitchRequestData);
     } else {
       setCurrentStep((s) => s + 1);
       window.scrollTo({ top: 0, behavior: "smooth" });
@@ -56,29 +53,29 @@ export function SwitchWizard({ agency, userName }: SwitchWizardProps) {
     }
   }
 
-  async function handleSubmit(data: SwitchRequestData) {
-    setSaving(true);
-    setSaveError(null);
-    const result = await createSwitchRequest(data);
-    setSaving(false);
-
-    if (result?.error) {
-      setSaveError(result.error);
-    } else if (result?.requestId) {
-      setRequestId(result.requestId);
+  async function handleCheckout(data: SwitchRequestData) {
+    setRedirecting(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          agencyId: agency.id,
+          agencyName: agency.dba_name ?? agency.name,
+          switchData: data,
+        }),
+      });
+      const json = await res.json();
+      if (!res.ok || !json.url) {
+        throw new Error(json.error ?? "Failed to start checkout");
+      }
+      // Redirect to Stripe Checkout
+      window.location.href = json.url;
+    } catch (err: any) {
+      setError(err.message ?? "Something went wrong. Please try again.");
+      setRedirecting(false);
     }
-  }
-
-  // Success screen
-  if (requestId) {
-    return (
-      <SwitchRequestSuccess
-        requestId={requestId}
-        agencyName={agency.name}
-        requestedStartDate={formData.requested_start_date}
-        userName={userName}
-      />
-    );
   }
 
   return (
@@ -108,10 +105,31 @@ export function SwitchWizard({ agency, userName }: SwitchWizardProps) {
           Step {currentStep + 1} of {TOTAL_STEPS} — {SWITCH_STEPS[currentStep].label}
         </div>
 
-        {/* Save error */}
-        {saveError && (
+        {/* Fee notice on last step */}
+        {isLastStep && (
+          <div className="rounded-xl bg-amber-50 border border-amber-200 px-4 py-3 flex items-center gap-3">
+            <span className="text-2xl">💳</span>
+            <div>
+              <p className="text-sm font-semibold text-amber-800">$97 coordination fee</p>
+              <p className="text-xs text-amber-700">
+                Clicking &quot;Submit &amp; Pay&quot; takes you to a secure Stripe checkout. Your switch request is created after payment completes.
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Error */}
+        {error && (
           <div className="rounded-xl bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
-            {saveError}
+            {error}
+          </div>
+        )}
+
+        {/* Redirecting overlay */}
+        {redirecting && (
+          <div className="rounded-xl bg-forest-50 border border-forest-200 px-4 py-4 flex items-center gap-3">
+            <Loader2 className="size-5 text-forest-600 animate-spin shrink-0" />
+            <p className="text-sm text-forest-700">Redirecting to secure checkout…</p>
           </div>
         )}
 
@@ -155,7 +173,7 @@ export function SwitchWizard({ agency, userName }: SwitchWizardProps) {
               onComplete={handleStepComplete}
               onBack={handleBack}
               agency={agency}
-              saving={saving}
+              saving={redirecting}
               userName={userName}
             />
           )}
@@ -193,7 +211,7 @@ export function StepNav({ onBack, isFirst, isLast, loading, nextLabel, disabled 
           <Loader2 className="size-4 animate-spin" />
         ) : (
           <>
-            {nextLabel ?? (isLast ? "Submit request" : "Continue")}
+            {nextLabel ?? (isLast ? "Submit & Pay $97" : "Continue")}
             <ArrowRight className="size-4" />
           </>
         )}

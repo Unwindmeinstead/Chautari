@@ -612,49 +612,64 @@ ALTER TABLE public.agencies ADD COLUMN IF NOT EXISTS is_approved BOOLEAN NOT NUL
 DROP POLICY IF EXISTS "admin_read_all_profiles" ON public.profiles;
 CREATE POLICY "admin_read_all_profiles"
   ON public.profiles FOR SELECT
-  USING (EXISTS (SELECT 1 FROM public.profiles p WHERE p.id = auth.uid() AND p.role = 'chautari_admin'));
+  USING (public.is_chautari_admin());
 
 DROP POLICY IF EXISTS "admin_update_profiles" ON public.profiles;
 CREATE POLICY "admin_update_profiles"
   ON public.profiles FOR UPDATE
-  USING (EXISTS (SELECT 1 FROM public.profiles p WHERE p.id = auth.uid() AND p.role = 'chautari_admin'));
+  USING (public.is_chautari_admin());
 
 DROP POLICY IF EXISTS "admin_read_all_agencies" ON public.agencies;
 CREATE POLICY "admin_read_all_agencies"
   ON public.agencies FOR SELECT
-  USING (EXISTS (SELECT 1 FROM public.profiles p WHERE p.id = auth.uid() AND p.role = 'chautari_admin'));
+  USING (public.is_chautari_admin());
 
 DROP POLICY IF EXISTS "admin_update_agencies" ON public.agencies;
 CREATE POLICY "admin_update_agencies"
   ON public.agencies FOR UPDATE
-  USING (EXISTS (SELECT 1 FROM public.profiles p WHERE p.id = auth.uid() AND p.role = 'chautari_admin'));
+  USING (public.is_chautari_admin());
 
 DROP POLICY IF EXISTS "admin_read_all_requests" ON public.switch_requests;
 CREATE POLICY "admin_read_all_requests"
   ON public.switch_requests FOR SELECT
-  USING (EXISTS (SELECT 1 FROM public.profiles p WHERE p.id = auth.uid() AND p.role = 'chautari_admin'));
+  USING (public.is_chautari_admin());
 
 DROP POLICY IF EXISTS "admin_update_requests" ON public.switch_requests;
 CREATE POLICY "admin_update_requests"
   ON public.switch_requests FOR UPDATE
-  USING (EXISTS (SELECT 1 FROM public.profiles p WHERE p.id = auth.uid() AND p.role = 'chautari_admin'));
+  USING (public.is_chautari_admin());
 
 DROP POLICY IF EXISTS "admin_read_all_documents" ON public.documents;
 CREATE POLICY "admin_read_all_documents"
   ON public.documents FOR SELECT
-  USING (EXISTS (SELECT 1 FROM public.profiles p WHERE p.id = auth.uid() AND p.role = 'chautari_admin'));
+  USING (public.is_chautari_admin());
 
 DROP POLICY IF EXISTS "admin_read_all_conversations" ON public.conversations;
 CREATE POLICY "admin_read_all_conversations"
   ON public.conversations FOR SELECT
-  USING (EXISTS (SELECT 1 FROM public.profiles p WHERE p.id = auth.uid() AND p.role = 'chautari_admin'));
+  USING (public.is_chautari_admin());
 
 CREATE OR REPLACE FUNCTION public.is_chautari_admin()
-RETURNS BOOLEAN AS $$
-  SELECT EXISTS (
-    SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'chautari_admin'
-  );
-$$ LANGUAGE sql SECURITY DEFINER STABLE;
+RETURNS BOOLEAN
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+STABLE
+AS $$
+DECLARE
+  _is_admin boolean;
+BEGIN
+  IF auth.uid() IS NULL THEN
+    RETURN false;
+  END IF;
+
+  SELECT role = 'chautari_admin' INTO _is_admin
+  FROM public.profiles
+  WHERE id = auth.uid();
+  
+  RETURN COALESCE(_is_admin, false);
+END;
+$$;
 
 
 -- ── DONE ────────────────────────────────────────────────────────────────────────
