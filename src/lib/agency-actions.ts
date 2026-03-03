@@ -1,7 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
-import type { Agency, CareType, PayerType } from "@/types/database";
+import type { Agency, CareType, LanguageCode, PayerType } from "@/types/database";
 
 export interface AgencySearchFilters {
   county?: string;
@@ -17,6 +17,20 @@ export interface AgencySearchResult {
   agencies: Agency[];
   total: number;
   error?: string;
+}
+
+const LANGUAGE_NORMALIZATION_MAP: Record<string, LanguageCode> = {
+  en: "en",
+  english: "en",
+  ne: "ne",
+  nepali: "ne",
+  hi: "hi",
+  hindi: "hi",
+};
+
+function normalizeLanguageFilter(language?: string): LanguageCode | undefined {
+  if (!language || language === "all") return undefined;
+  return LANGUAGE_NORMALIZATION_MAP[language.trim().toLowerCase()];
 }
 
 export async function searchAgencies(
@@ -54,8 +68,9 @@ export async function searchAgencies(
   }
 
   // Language filter
-  if (filters.language && filters.language !== "all") {
-    query = query.contains("languages_spoken", [filters.language]);
+  const normalizedLanguage = normalizeLanguageFilter(filters.language);
+  if (normalizedLanguage) {
+    query = query.contains("languages_spoken", [normalizedLanguage]);
   }
 
   // Verified partner filter
