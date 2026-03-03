@@ -2,7 +2,9 @@
   "framework": "nextjs",
   "buildCommand": "npm run build",
   "installCommand": "npm install",
-  "regions": ["iad1"],
+  "regions": [
+    "iad1"
+  ],
   "headers": [
     {
       "source": "/(.*)",
@@ -54,6 +56,12 @@
       "source": "/signup",
       "destination": "/auth/signup",
       "permanent": true
+    }
+  ],
+  "crons": [
+    {
+      "path": "/api/crons/sync-agencies",
+      "schedule": "0 3 1 * *"
     }
   ]
 }
