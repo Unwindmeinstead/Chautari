@@ -28,6 +28,7 @@ const LANGUAGE_NORMALIZATION_MAP: Record<string, LanguageCode> = {
   hindi: "hi",
 };
 
+const DEFAULT_SEARCH_ERROR = "We couldn't load agencies right now. Please try again.";
 function normalizeLanguageFilter(language?: string): LanguageCode | undefined {
   if (!language || language === "all") return undefined;
   return LANGUAGE_NORMALIZATION_MAP[language.trim().toLowerCase()];
@@ -94,7 +95,7 @@ export async function searchAgencies(
 
   if (error) {
     console.error("Agency search error:", error);
-    return { agencies: [], total: 0, error: error.message };
+    return { agencies: [], total: 0, error: DEFAULT_SEARCH_ERROR };
   }
 
   return { agencies: (data as Agency[]) ?? [], total: count ?? 0 };

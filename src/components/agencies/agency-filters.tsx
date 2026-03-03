@@ -41,13 +41,9 @@ const PAYER_OPTIONS = [
 
 const LANGUAGE_OPTIONS = [
   { value: "all", label: "Any language" },
-  { value: "Spanish", label: "Spanish" },
-  { value: "Nepali", label: "Nepali" },
-  { value: "Hindi", label: "Hindi" },
-  { value: "Chinese", label: "Chinese" },
-  { value: "Vietnamese", label: "Vietnamese" },
-  { value: "Arabic", label: "Arabic" },
-  { value: "Korean", label: "Korean" },
+  { value: "en", label: "English" },
+  { value: "ne", label: "Nepali" },
+  { value: "hi", label: "Hindi" },
 ];
 
 export function AgencyFilters({ filters, onChange, resultCount, loading }: AgencyFiltersProps) {

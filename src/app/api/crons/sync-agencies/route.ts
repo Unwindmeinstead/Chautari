@@ -1,12 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { buildAgencyListings } from "@/lib/agencies/fetch";
+import { getSupabaseUrl } from "@/lib/supabase/env";
 
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!,
-  { auth: { persistSession: false } }
-);
+function createSupabaseAdminClient() {
+  const supabaseUrl = getSupabaseUrl();
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+  if (!supabaseUrl || !serviceRoleKey) {
+    return null;
+  }
+
+  return createClient(supabaseUrl, serviceRoleKey, {
+    auth: { persistSession: false },
+  });
+}
 
 export async function GET(req: NextRequest) {
   const authHeader = req.headers.get("authorization");
@@ -20,6 +28,20 @@ export async function GET(req: NextRequest) {
   console.log("[CronSync] Starting quarterly agency sync...");
 
   try {
+    const supabaseAdmin = createSupabaseAdminClient();
+
+    if (!supabaseAdmin) {
+      console.error("[CronSync] Missing Supabase admin environment configuration");
+      return NextResponse.json(
+        {
+          success: false,
+          error:
+            "Missing Supabase URL or SUPABASE_SERVICE_ROLE_KEY environment variables",
+        },
+        { status: 500 }
+      );
+    }
+
     const listings = await buildAgencyListings("PA", "Pittsburgh");
 
     const { error } = await supabaseAdmin.from("agencies").upsert(listings, {
