@@ -46,6 +46,23 @@ const LANGUAGE_OPTIONS = [
   { value: "hi", label: "Hindi" },
 ];
 
+
+const SERVICE_OPTIONS = [
+  { value: "Skilled Nursing", label: "Skilled Nursing" },
+  { value: "Physical Therapy", label: "Physical Therapy" },
+  { value: "Occupational Therapy", label: "Occupational Therapy" },
+  { value: "Speech Therapy", label: "Speech Therapy" },
+  { value: "Personal Care", label: "Personal Care" },
+  { value: "Companion Care", label: "Companion Care" },
+];
+
+const QUALITY_SCORE_OPTIONS = [
+  { value: "all", label: "Any CMS quality score" },
+  { value: "4", label: "4.0+ stars" },
+  { value: "4.5", label: "4.5+ stars" },
+  { value: "5", label: "5.0 stars" },
+];
+
 export function AgencyFilters({ filters, onChange, resultCount, loading }: AgencyFiltersProps) {
   const [mobileOpen, setMobileOpen] = React.useState(false);
 
@@ -54,6 +71,8 @@ export function AgencyFilters({ filters, onChange, resultCount, loading }: Agenc
     filters.care_type && filters.care_type !== "all",
     filters.payer_type && filters.payer_type !== "all",
     filters.language && filters.language !== "all",
+    filters.services && filters.services.length > 0,
+    filters.min_quality_score && filters.min_quality_score !== "all",
     filters.verified_only,
   ].filter(Boolean).length;
 
@@ -64,6 +83,8 @@ export function AgencyFilters({ filters, onChange, resultCount, loading }: Agenc
       care_type: "all",
       payer_type: "all",
       language: "all",
+      services: [],
+      min_quality_score: "all",
       verified_only: false,
     });
   }
@@ -154,6 +175,44 @@ export function AgencyFilters({ filters, onChange, resultCount, loading }: Agenc
           </SelectTrigger>
           <SelectContent>
             {LANGUAGE_OPTIONS.map((o) => (
+              <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div className="space-y-2">
+        <label className="text-xs font-medium text-forest-600">Services offered</label>
+        <div className="grid grid-cols-1 gap-2">
+          {SERVICE_OPTIONS.map((service) => {
+            const checked = filters.services?.includes(service.value) ?? false;
+            return (
+              <Checkbox
+                key={service.value}
+                label={service.label}
+                checked={checked}
+                onCheckedChange={(v) => {
+                  const next = new Set(filters.services ?? []);
+                  if (v === true) next.add(service.value);
+                  else next.delete(service.value);
+                  onChange({ ...filters, services: Array.from(next) });
+                }}
+              />
+            );
+          })}
+        </div>
+      </div>
+
+      <div className="space-y-1.5">
+        <Select
+          value={String(filters.min_quality_score ?? "all")}
+          onValueChange={(v) => onChange({ ...filters, min_quality_score: v === "all" ? undefined : Number(v) })}
+        >
+          <SelectTrigger label="CMS quality score">
+            <SelectValue placeholder="Any CMS quality score" />
+          </SelectTrigger>
+          <SelectContent>
+            {QUALITY_SCORE_OPTIONS.map((o) => (
               <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
             ))}
           </SelectContent>

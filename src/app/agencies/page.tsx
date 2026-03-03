@@ -26,6 +26,8 @@ export default async function AgenciesPage({ searchParams }: AgenciesPageProps) 
     care_type: searchParams.care_type as any,
     payer_type: searchParams.payer_type as any,
     language: searchParams.language,
+    services: searchParams.services ? searchParams.services.split(",").filter(Boolean) : undefined,
+    min_quality_score: searchParams.min_quality_score ? Number(searchParams.min_quality_score) : undefined,
     verified_only: searchParams.verified === "true",
     query: searchParams.q,
   };

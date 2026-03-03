@@ -8,6 +8,7 @@ export interface AgencySearchFilters {
   care_type?: CareType | "all";
   payer_type?: PayerType | "all";
   services?: string[];
+  min_quality_score?: number | "all";
   language?: string;
   verified_only?: boolean;
   query?: string;
@@ -67,6 +68,11 @@ export async function searchAgencies(
   // Services filter
   if (filters.services && filters.services.length > 0) {
     query = query.overlaps("services_offered", filters.services);
+  }
+
+  // Minimum Medicare quality score filter
+  if (filters.min_quality_score && filters.min_quality_score !== "all") {
+    query = query.gte("medicare_quality_score", filters.min_quality_score);
   }
 
   // Language filter
