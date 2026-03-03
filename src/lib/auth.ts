@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getUserRedirectPath } from "@/lib/auth-redirect";
+import { getAppUrl } from "@/lib/app-url";
 
 export async function signInWithEmail(formData: FormData) {
   const supabase = await createClient();
@@ -43,7 +44,7 @@ export async function signUpWithEmail(formData: FormData) {
         phone: phone,
         role: "patient",
       },
-      emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/api/auth/callback?next=/onboarding`,
+      emailRedirectTo: `${getAppUrl()}/api/auth/callback?next=/onboarding`,
     },
   });
 
@@ -68,7 +69,7 @@ export async function signInWithMagicLink(formData: FormData) {
   const { error } = await supabase.auth.signInWithOtp({
     email,
     options: {
-      emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/api/auth/callback?next=/dashboard`,
+      emailRedirectTo: `${getAppUrl()}/api/auth/callback?next=/dashboard`,
     },
   });
 
@@ -85,7 +86,7 @@ export async function signInWithGoogle() {
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: "google",
     options: {
-      redirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/api/auth/callback?next=/dashboard`,
+      redirectTo: `${getAppUrl()}/api/auth/callback?next=/dashboard`,
       queryParams: {
         access_type: "offline",
         prompt: "consent",
@@ -108,7 +109,7 @@ export async function resetPassword(formData: FormData) {
   const email = formData.get("email") as string;
 
   const { error } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/api/auth/callback?next=/auth/reset-password?type=recovery`,
+    redirectTo: `${getAppUrl()}/api/auth/callback?next=/auth/reset-password?type=recovery`,
   });
 
   if (error) {

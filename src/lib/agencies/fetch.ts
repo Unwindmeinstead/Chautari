@@ -3,21 +3,38 @@ import type { CMSAgencyRaw, NPIRaw, AgencyListing } from "./types";
 const CMS_API_BASE = "https://data.cms.gov/provider-data/api/1/datastore/sql";
 const HHA_DATASET_ID = "6jpm-sxkc";
 const NPPES_API_BASE = "https://npiregistry.cms.hhs.gov/api";
-const PITTSBURGH_ZIP_PREFIXES = ["150", "151", "152", "153", "154", "155", "156"];
+const PITTSBURGH_ZIP_PREFIXES = ["150", "151", "152"];
 export const CMS_REFRESH_DAYS = 91;
 
-export async function fetchCMSAgencies(stateCode = "PA", limit = 500): Promise<CMSAgencyRaw[]> {
-  const query = [`[SELECT * FROM ${HHA_DATASET_ID}]`, `[WHERE \`state\` = \"${stateCode}\"]`, `[LIMIT ${limit}]`].join("");
-  const url = `${CMS_API_BASE}?query=${encodeURIComponent(query)}&show_db_columns`;
+export async function fetchCMSAgencies(stateCode = "PA", pageSize = 500): Promise<CMSAgencyRaw[]> {
+  const all: CMSAgencyRaw[] = [];
+  let offset = 0;
 
-  const res = await fetch(url, {
-    next: { revalidate: CMS_REFRESH_DAYS * 86400 },
-    headers: { Accept: "application/json" },
-  });
+  while (true) {
+    const query = [
+      `[SELECT * FROM ${HHA_DATASET_ID}]`,
+      `[WHERE \`state\` = "${stateCode}"]`,
+      `[LIMIT ${pageSize}]`,
+      `[OFFSET ${offset}]`,
+    ].join("");
+    const url = `${CMS_API_BASE}?query=${encodeURIComponent(query)}&show_db_columns`;
 
-  if (!res.ok) throw new Error(`CMS PDC API error: ${res.status} ${res.statusText}`);
+    const res = await fetch(url, {
+      next: { revalidate: CMS_REFRESH_DAYS * 86400 },
+      headers: { Accept: "application/json" },
+    });
 
-  return (await res.json()) as CMSAgencyRaw[];
+    if (!res.ok) throw new Error(`CMS PDC API error: ${res.status} ${res.statusText}`);
+
+    const rows = (await res.json()) as CMSAgencyRaw[];
+    all.push(...rows);
+
+    if (rows.length < pageSize) break;
+    offset += pageSize;
+    if (offset >= 10000) break;
+  }
+
+  return all;
 }
 
 export function filterPittsburghAgencies(agencies: CMSAgencyRaw[]): CMSAgencyRaw[] {
