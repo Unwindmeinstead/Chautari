@@ -102,7 +102,7 @@ export default async function SwitchDetailPage({ params }: SwitchDetailPageProps
       new_agency: { id: "a1", name: "Premium Care Agency", phone: "(555) 123-4567", email: "info@premiumcare.com", address_city: "Pittsburgh", address_zip: "15222", website: "https://premiumcare.com" },
       e_signatures: [],
     };
-    
+
     return (
       <div className="min-h-screen bg-cream">
         <nav className="bg-white border-b border-[rgba(26,61,43,0.06)] px-6 py-4 sticky top-0 z-30">
@@ -137,9 +137,8 @@ export default async function SwitchDetailPage({ params }: SwitchDetailPageProps
               ].map((step, i) => (
                 <React.Fragment key={step.label}>
                   <div className="flex flex-col items-center">
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-semibold ${
-                      step.done ? "bg-forest-600 text-cream" : step.current ? "bg-amber-500 text-white" : "bg-[rgba(26,61,43,0.08)] text-[#6B7B6E]"
-                    }`}>
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-semibold ${step.done ? "bg-forest-600 text-cream" : step.current ? "bg-amber-500 text-white" : "bg-[rgba(26,61,43,0.08)] text-[#6B7B6E]"
+                      }`}>
                       {step.done ? "✓" : i + 1}
                     </div>
                     <span className={`text-xs mt-2 font-medium ${step.done || step.current ? "text-forest-600" : "text-[#6B7B6E]"}`}>{step.label}</span>
@@ -169,90 +168,6 @@ export default async function SwitchDetailPage({ params }: SwitchDetailPageProps
             </div>
           </div>
 
-          <div className="flex gap-4">
-            <Link href={`/switch/${params.id}/messages`} className="flex-1 flex items-center justify-center gap-2 px-6 py-3.5 rounded-full bg-forest-600 text-cream font-medium hover:bg-forest-700 transition-colors">
-              Messages
-            </Link>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect("/auth/login");
-  
-  return (
-      <div className="min-h-screen bg-cream">
-        <nav className="bg-white border-b border-[rgba(26,61,43,0.06)] px-6 py-4 sticky top-0 z-30">
-          <div className="max-w-4xl mx-auto flex items-center justify-between">
-            <Logo size="md" />
-            <Link href="/dashboard" className="flex items-center gap-2 text-sm text-forest-600 hover:text-forest-800 transition-colors">
-              ← Back to Dashboard
-            </Link>
-          </div>
-        </nav>
-
-        <div className="max-w-4xl mx-auto px-6 py-10 space-y-8">
-          {/* Header */}
-          <div className="flex items-start justify-between gap-4 flex-wrap">
-            <div>
-              <p className="font-mono text-xs text-[#6B7B6E] uppercase tracking-wider mb-2">Request ID</p>
-              <h1 className="font-fraunces text-3xl font-bold text-forest-800">{mockRequest.new_agency.name}</h1>
-              <p className="text-[#6B7B6E] mt-1">Personal Care Services</p>
-            </div>
-            <div className="px-4 py-2 rounded-full bg-amber-100 text-amber-700 border border-amber-200 text-sm font-medium">
-              Under Review
-            </div>
-          </div>
-
-          {/* Progress */}
-          <div className="bg-white rounded-3xl border border-[rgba(26,61,43,0.06)] p-6">
-            <h3 className="font-fraunces text-lg font-semibold text-forest-800 mb-5">Progress</h3>
-            <div className="flex items-center justify-between">
-              {[
-                { label: "Submitted", done: true },
-                { label: "Under Review", done: true, current: true },
-                { label: "Accepted", done: false },
-                { label: "Complete", done: false },
-              ].map((step, i) => (
-                <React.Fragment key={step.label}>
-                  <div className="flex flex-col items-center">
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-semibold ${
-                      step.done ? "bg-forest-600 text-cream" : step.current ? "bg-amber-500 text-white" : "bg-[rgba(26,61,43,0.08)] text-[#6B7B6E]"
-                    }`}>
-                      {step.done ? "✓" : i + 1}
-                    </div>
-                    <span className={`text-xs mt-2 font-medium ${step.done || step.current ? "text-forest-600" : "text-[#6B7B6E]"}`}>{step.label}</span>
-                  </div>
-                  {i < 3 && <div className={`flex-1 h-0.5 ${step.done ? "bg-forest-600" : "bg-[rgba(26,61,43,0.08)]"}`} />}
-                </React.Fragment>
-              ))}
-            </div>
-          </div>
-
-          {/* Details */}
-          <div className="grid md:grid-cols-2 gap-6">
-            <div className="bg-white rounded-3xl border border-[rgba(26,61,43,0.06)] p-6">
-              <h3 className="font-fraunces text-lg font-semibold text-forest-800 mb-4">Request Details</h3>
-              <div className="space-y-4">
-                <div><p className="text-xs text-[#6B7B6E] uppercase tracking-wider">Started</p><p className="text-sm font-medium text-forest-700">Jan 15, 2026</p></div>
-                <div><p className="text-xs text-[#6B7B6E] uppercase tracking-wider">Reason</p><p className="text-sm font-medium text-forest-700">Better care quality</p></div>
-                <div><p className="text-xs text-[#6B7B6E] uppercase tracking-wider">Requested Start</p><p className="text-sm font-medium text-forest-700">As soon as possible</p></div>
-              </div>
-            </div>
-            <div className="bg-white rounded-3xl border border-[rgba(26,61,43,0.06)] p-6">
-              <h3 className="font-fraunces text-lg font-semibold text-forest-800 mb-4">Agency Info</h3>
-              <div className="space-y-4">
-                <div><p className="text-xs text-[#6B7B6E] uppercase tracking-wider">Agency</p><p className="text-sm font-medium text-forest-700">{mockRequest.new_agency.name}</p></div>
-                <div><p className="text-xs text-[#6B7B6E] uppercase tracking-wider">Location</p><p className="text-sm font-medium text-forest-700">{mockRequest.new_agency.address_city}, PA</p></div>
-                <div><p className="text-xs text-[#6B7B6E] uppercase tracking-wider">Phone</p><p className="text-sm font-medium text-forest-700">{mockRequest.new_agency.phone}</p></div>
-              </div>
-            </div>
-          </div>
-
-          {/* Actions */}
           <div className="flex gap-4">
             <Link href={`/switch/${params.id}/messages`} className="flex-1 flex items-center justify-center gap-2 px-6 py-3.5 rounded-full bg-forest-600 text-cream font-medium hover:bg-forest-700 transition-colors">
               Messages
@@ -349,8 +264,8 @@ export default async function SwitchDetailPage({ params }: SwitchDetailPageProps
                       <div className={cn(
                         "h-8 w-8 rounded-full flex items-center justify-center border-2 transition-all z-10",
                         isDone ? "bg-forest-600 border-forest-600 text-white" :
-                        isCurrent ? "bg-white border-forest-600 text-forest-600" :
-                        "bg-white border-forest-200 text-forest-300"
+                          isCurrent ? "bg-white border-forest-600 text-forest-600" :
+                            "bg-white border-forest-200 text-forest-300"
                       )}>
                         {isDone ? <CheckCircle2 className="size-4" /> : step.icon}
                       </div>
@@ -443,8 +358,8 @@ export default async function SwitchDetailPage({ params }: SwitchDetailPageProps
                 <p className="text-forest-700 font-medium">
                   {request.requested_start_date
                     ? new Date(request.requested_start_date).toLocaleDateString("en-US", {
-                        month: "long", day: "numeric", year: "numeric",
-                      })
+                      month: "long", day: "numeric", year: "numeric",
+                    })
                     : "Not specified"}
                 </p>
               </div>
