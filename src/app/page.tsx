@@ -19,20 +19,20 @@ function AnimatedCounter({ value, suffix = "", prefix = "" }: { value: number; s
     if (!isInView) return;
     const duration = 2000;
     const startTime = Date.now();
-    
+
     const animate = () => {
       const elapsed = Date.now() - startTime;
       const progress = Math.min(elapsed / duration, 1);
       const eased = 1 - Math.pow(1 - progress, 4);
       setCount(Math.round(eased * value));
-      
+
       if (progress < 1) {
         requestAnimationFrame(animate);
       } else {
         setCount(value);
       }
     };
-    
+
     requestAnimationFrame(animate);
   }, [isInView, value]);
 
@@ -153,8 +153,8 @@ export default function HomePage() {
         {/* ═══════════════════  NAV  ═══════════════════════════════════════════ */}
         <nav
           className={`fixed top-0 left-0 right-0 z-[200] h-[68px] flex items-center justify-between px-6 md:px-12 transition-all duration-400 border-b ${navDark
-              ? "bg-[#0F2419]/97 border-transparent"
-              : "bg-cream/90 border-[rgba(26,61,43,0.08)]"
+            ? "bg-[#0F2419]/97 border-transparent"
+            : "bg-cream/90 border-[rgba(26,61,43,0.08)]"
             }`}
           style={{ backdropFilter: "blur(20px) saturate(1.4)" }}
         >
@@ -225,14 +225,14 @@ export default function HomePage() {
 
           {/* Right — hero image */}
           <div className="relative bg-forest-600 overflow-hidden hidden lg:block" style={{ minHeight: '650px' }}>
-            <Image src="/images/hero-caregiver.png" alt="Home care caregiver with patient" fill className="object-cover object-center" priority />
+            <Image src="/images/hero-home-care.png" alt="Home care caregiver with patient" fill className="object-cover object-center" priority />
             <div className="absolute bottom-0 left-0 right-0 h-[200px]" style={{ background: "linear-gradient(to top, rgba(15,36,25,0.4), transparent)" }} />
 
             {/* Floating review card */}
-            <div className="bob absolute top-8 left-8 z-10 bg-white rounded-[14px] p-3.5 px-[18px] shadow-modal border border-[rgba(26,61,43,0.06)] max-w-[220px]">
-              <div className="flex gap-0.5 mb-1">{[1, 2, 3, 4, 5].map(i => <span key={i} className="text-amber-500 text-xs">★</span>)}</div>
-              <div className="text-[11px] text-[#6B7B6E] italic leading-[1.4]">&ldquo;Found a better agency in 10 minutes. Couldn&apos;t believe how easy it was.&rdquo;</div>
-              <div className="text-[10px] font-semibold text-forest-600 mt-1.5">— Sita G., Allegheny County</div>
+            <div className="bob absolute top-8 left-8 z-10 bg-white rounded-[16px] p-4 px-5 shadow-modal border border-[rgba(26,61,43,0.06)] max-w-[250px]">
+              <div className="flex gap-0.5 mb-1.5">{[1, 2, 3, 4, 5].map(i => <span key={i} className="text-amber-500 text-sm">★</span>)}</div>
+              <div className="text-[14px] font-semibold text-forest-800 leading-[1.45]">&ldquo;Found a better agency in 10 minutes. Couldn&apos;t believe how easy it was.&rdquo;</div>
+              <div className="text-[12px] font-bold text-forest-600 mt-2">— Sita G., Allegheny County</div>
             </div>
 
             {/* Floating badge */}
@@ -246,7 +246,7 @@ export default function HomePage() {
           </div>
           {/* Mobile hero image */}
           <div className="relative h-[360px] lg:hidden overflow-hidden">
-            <Image src="/images/hero-caregiver.png" alt="Home care caregiver" fill className="object-cover object-center" priority />
+            <Image src="/images/hero-home-care.png" alt="Home care caregiver" fill className="object-cover object-center" priority />
             <div className="absolute bottom-0 left-0 right-0 h-[120px]" style={{ background: "linear-gradient(to top, rgba(15,36,25,0.4), transparent)" }} />
           </div>
         </section>
@@ -331,7 +331,7 @@ export default function HomePage() {
                     HHA pay <b className="text-[#7DD4A0] font-medium">{a.rate}</b>
                   </div>
                   <div className={`inline-flex items-center gap-1.5 text-[11px] font-medium ${a.accepting ? "text-[#7DD4A0]" : "text-[rgba(255,210,100,0.75)]"}`}>
-                  <div className={`w-1.5 h-1.5 rounded-full ${a.accepting ? "bg-[#7DD4A0] pulse-dot" : "bg-[rgba(255,210,100,0.75)] pulse-dot-slow"}`} aria-hidden="true" />
+                    <div className={`w-1.5 h-1.5 rounded-full ${a.accepting ? "bg-[#7DD4A0] pulse-dot" : "bg-[rgba(255,210,100,0.75)] pulse-dot-slow"}`} aria-hidden="true" />
                     {a.accepting ? "Accepting" : "Waitlist"}
                   </div>
                 </div>
