@@ -1,10 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import Stripe from "stripe";
+import { getStripe } from "@/lib/stripe";
 import { createClient } from "@/lib/supabase/server";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-    apiVersion: "2024-11-20.acacia" as any,
-});
 
 export async function POST(req: NextRequest) {
     try {
@@ -21,7 +18,7 @@ export async function POST(req: NextRequest) {
 
         // Store pending switch data in session metadata (Stripe limit: 500 chars per value)
         // We'll store the switch_request_id after creation in webhook
-        const session = await stripe.checkout.sessions.create({
+        const session = await getStripe().checkout.sessions.create({
             mode: "payment",
             payment_method_types: ["card"],
             line_items: [{

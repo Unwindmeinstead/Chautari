@@ -1,11 +1,8 @@
 import { redirect } from "next/navigation";
-import Stripe from "stripe";
+import { getStripe } from "@/lib/stripe";
 import { SwitchRequestSuccess } from "@/components/switch/switch-request-success";
 import { createClient } from "@/lib/supabase/server";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-    apiVersion: "2024-11-20.acacia" as any,
-});
 
 interface Props {
     searchParams: Promise<{ session_id?: string }>;
@@ -15,7 +12,7 @@ export default async function SwitchSuccessPage({ searchParams }: Props) {
     const params = await searchParams;
     if (!params.session_id) redirect("/agencies");
 
-    const session = await stripe.checkout.sessions.retrieve(params.session_id);
+    const session = await getStripe().checkout.sessions.retrieve(params.session_id);
     if (session.payment_status !== "paid") redirect("/agencies");
 
     const supabase = await createClient();
