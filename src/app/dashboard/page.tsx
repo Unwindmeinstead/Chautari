@@ -12,9 +12,7 @@ export const dynamic = "force-dynamic";
 export default async function DashboardPage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-
-  // MOCK DATA PREVIEW
-  // if (!user) redirect("/auth/login");
+  if (!user) redirect("/auth/login");
 
   const data = await getDashboardData();
 
