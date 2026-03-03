@@ -4,848 +4,571 @@ import Link from "next/link";
 import Image from "next/image";
 import * as React from "react";
 import { motion, useInView } from "framer-motion";
+import { User, Users, Building2, Globe, Heart, Stethoscope, Search, CircleCheck, Handshake } from "lucide-react";
 import { Logo } from "@/components/ui/logo";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { LanguageSwitcher } from "@/components/ui/language-switcher";
-import { useTranslation } from "@/lib/i18n-context";
-import {
-  ArrowRight,
-  ShieldCheck,
-  Clock,
-  Star,
-  ChevronRight,
-  ChevronDown,
-  Heart,
-  FileText,
-  MessageSquare,
-  Search,
-  Users,
-  UserCheck,
-  Stethoscope,
-  Phone,
-  Mail,
-  MapPin,
-  Quote,
-  CheckCircle2,
-  Building2,
-} from "lucide-react";
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   Animation helpers
+   Animated Counter Component
    ═══════════════════════════════════════════════════════════════════════════ */
-const fadeUp = {
-  hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] } },
-};
-
-const fadeIn = {
-  hidden: { opacity: 0 },
-  visible: { opacity: 1, transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] } },
-};
-
-const stagger = {
-  visible: { transition: { staggerChildren: 0.08 } },
-};
-
-function Section({
-  children,
-  className = "",
-  id,
-}: {
-  children: React.ReactNode;
-  className?: string;
-  id?: string;
-}) {
+function AnimatedCounter({ value, suffix = "", prefix = "" }: { value: number; suffix?: string; prefix?: string }) {
   const ref = React.useRef(null);
-  const isInView = useInView(ref, { once: true, margin: "-60px" });
-
-  return (
-    <motion.section
-      ref={ref}
-      id={id}
-      initial="hidden"
-      animate={isInView ? "visible" : "hidden"}
-      variants={stagger}
-      className={className}
-    >
-      {children}
-    </motion.section>
-  );
-}
-
-/* ═══════════════════════════════════════════════════════════════════════════
-   Animated counter
-   ═══════════════════════════════════════════════════════════════════════════ */
-function AnimatedCounter({ value, suffix = "" }: { value: number; suffix?: string }) {
-  const ref = React.useRef(null);
-  const isInView = useInView(ref, { once: true });
+  const isInView = useInView(ref, { once: true, margin: "-100px" });
   const [count, setCount] = React.useState(0);
 
   React.useEffect(() => {
     if (!isInView) return;
     const duration = 2000;
-    let startTime: number | null = null;
-    let rafId: number;
-
-    function easeOutExpo(t: number): number {
-      return t === 1 ? 1 : 1 - Math.pow(2, -10 * t);
-    }
-
-    function animate(timestamp: number) {
-      if (!startTime) startTime = timestamp;
-      const elapsed = timestamp - startTime;
+    const startTime = Date.now();
+    
+    const animate = () => {
+      const elapsed = Date.now() - startTime;
       const progress = Math.min(elapsed / duration, 1);
-      const easedProgress = easeOutExpo(progress);
-      setCount(Math.floor(easedProgress * value));
+      const eased = 1 - Math.pow(1 - progress, 4);
+      setCount(Math.round(eased * value));
+      
       if (progress < 1) {
-        rafId = requestAnimationFrame(animate);
+        requestAnimationFrame(animate);
       } else {
         setCount(value);
       }
-    }
-
-    rafId = requestAnimationFrame(animate);
-    return () => cancelAnimationFrame(rafId);
+    };
+    
+    requestAnimationFrame(animate);
   }, [isInView, value]);
 
   return (
-    <span ref={ref} className="font-fraunces text-4xl sm:text-5xl font-bold text-cream tabular-nums">
-      {count}{suffix}
+    <span ref={ref} className="font-fraunces text-[38px] font-bold text-cream leading-none tracking-tight tabular-nums">
+      {prefix}{count}{suffix}
     </span>
   );
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   FAQ Accordion
+   Landing Page — SwitchMyCare
+   Design: editorial serif + monospace accents, dark agency cards, scroll reveals
    ═══════════════════════════════════════════════════════════════════════════ */
-function FAQItem({ question, answer }: { question: string; answer: string }) {
-  const [open, setOpen] = React.useState(false);
 
-  return (
-    <div className="border-b border-forest-100 last:border-0">
-      <button
-        onClick={() => setOpen(!open)}
-        className="w-full flex items-center justify-between gap-4 py-5 sm:py-6 text-left group"
-      >
-        <span className="font-fraunces text-base sm:text-lg font-semibold text-forest-800 group-hover:text-forest-600 transition-colors">
-          {question}
-        </span>
-        <ChevronDown
-          className={`size-5 text-forest-400 shrink-0 transition-transform duration-300 ${open ? "rotate-180" : ""
-            }`}
-        />
-      </button>
-      <motion.div
-        initial={false}
-        animate={open ? { height: "auto", opacity: 1 } : { height: 0, opacity: 0 }}
-        transition={{ duration: 0.3, ease: "easeInOut" }}
-        className="overflow-hidden"
-      >
-        <p className="pb-5 sm:pb-6 text-forest-500 leading-relaxed text-sm sm:text-base pr-8">
-          {answer}
-        </p>
-      </motion.div>
-    </div>
-  );
-}
-
-/* ═══════════════════════════════════════════════════════════════════════════
-   Top Agencies List
-   ═══════════════════════════════════════════════════════════════════════════ */
-function TopAgenciesList() {
-  const [agencies, setAgencies] = React.useState<any[]>([]);
-  const [loading, setLoading] = React.useState(true);
+export default function HomePage() {
+  const [navDark, setNavDark] = React.useState(false);
+  const [mobileMenu, setMobileMenu] = React.useState(false);
 
   React.useEffect(() => {
-    async function fetchAgencies() {
-      try {
-        const { searchAgencies } = await import("@/lib/agency-actions");
-        const res = await searchAgencies({}, 1, 6);
-        if (res.agencies?.length > 0) {
-          setAgencies(res.agencies);
-        }
-      } catch (err) {
-        console.error("Failed to fetch agencies:", err);
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchAgencies();
+    const onScroll = () => setNavDark(window.scrollY > 60);
+    window.addEventListener("scroll", onScroll);
+    return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  if (loading) {
-    return (
-      <div className="flex justify-center py-12">
-        <div className="w-8 h-8 rounded-full border-4 border-forest-200 border-t-forest-600 animate-spin" />
-      </div>
+  // scroll reveal
+  React.useEffect(() => {
+    const obs = new IntersectionObserver(
+      (entries) => entries.forEach((e) => { if (e.isIntersecting) e.target.classList.add("reveal-in"); }),
+      { threshold: 0.08 }
     );
-  }
+    document.querySelectorAll(".reveal").forEach((el) => obs.observe(el));
+    return () => obs.disconnect();
+  }, []);
 
-  // Display mock if empty (user hasn't seeded yet)
-  const displayAgencies = agencies.length > 0 ? agencies : [
-    { name: "UPMC Home Healthcare", service_counties: ["Allegheny"], google_rating: 4.7, payers_accepted: ["medicare", "medicaid"], services_offered: ["Skilled Nursing", "Rehab Therapies"], pay_rates: { "RN": "$39 - $55/hr", "HHA": "$17.50 - $24/hr" } },
-    { name: "Bayada Home Health Care", service_counties: ["Allegheny"], google_rating: 4.6, payers_accepted: ["medicare", "private"], services_offered: ["Skilled Nursing", "Physical Therapy"], pay_rates: { "RN": "$35 - $45/hr", "HHA": "$16 - $20/hr" } },
-    { name: "Concordia Visiting Nurses", service_counties: ["Butler"], google_rating: 4.9, payers_accepted: ["medicare", "medicaid"], services_offered: ["Skilled Nursing", "Occupational Therapy"] },
-  ];
+  const handleSmoothScroll = (e: React.MouseEvent<HTMLAnchorElement>, target: string) => {
+    e.preventDefault();
+    const element = document.querySelector(target);
+    if (element) {
+      const offset = 80;
+      const bodyRect = document.body.getBoundingClientRect().top;
+      const elementRect = element.getBoundingClientRect().top;
+      const elementPosition = elementRect - bodyRect;
+      const offsetPosition = elementPosition - offset;
+
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: 'smooth'
+      });
+    }
+  };
 
   return (
-    <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-      {displayAgencies.map((agency, i) => (
-        <motion.div
-          key={agency.name + i}
-          variants={fadeUp}
-          className="rounded-2xl bg-white border border-forest-100 shadow-card p-5 sm:p-6 space-y-3 hover:shadow-card-hover hover:border-forest-200 transition-all duration-300 group flex flex-col"
-        >
-          <div className="flex items-start justify-between gap-2">
-            <div className="flex items-center gap-3 min-w-0">
-              <div className="h-10 w-10 rounded-xl bg-forest-100 flex items-center justify-center shrink-0">
-                <Building2 className="size-5 text-forest-600" />
-              </div>
-              <div className="min-w-0 pr-2">
-                <h3 className="font-semibold text-forest-800 text-sm group-hover:text-forest-600 transition-colors line-clamp-1">
-                  {agency.name}
-                </h3>
-                <p className="text-xs text-forest-400 truncate">
-                  <MapPin className="size-3 inline-block -mt-0.5 mr-0.5" />
-                  {(agency.service_counties?.[0] || "Allegheny")} County
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center gap-1 shrink-0 bg-amber-50 px-2 py-1 rounded-md border border-amber-100/50">
-              <Star className="size-3.5 text-amber-500 fill-amber-500" />
-              <span className="text-xs font-bold text-amber-700">{agency.google_rating || (4.0 + Math.random()).toFixed(1)}</span>
-            </div>
-          </div>
+    <>
+      <style jsx global>{`
+        /* ── CSS Variables ── */
+        :root {
+          --forest: #1A3D2B;
+          --forest-d: #0F2419;
+          --forest-m: #2A5C41;
+          --forest-l: #3D7A57;
+          --cream: #FFF8E7;
+          --cream-d: #F5EDDA;
+          --amber: #E8933A;
+          --amber-l: #F2AC5C;
+          --muted: #6B7B6E;
+          --white: #FFFFFF;
+        }
 
-          <div className="flex flex-wrap gap-1.5 pt-1">
-            {(agency.payers_accepted || []).slice(0, 3).map((p: string) => (
-              <Badge key={p} variant="outline" className="text-[10px] px-2 py-0 font-medium bg-forest-50/50 text-forest-600 border-forest-100 border transition-colors hover:bg-forest-100">
-                {p.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
-              </Badge>
+        /* noise grain */
+        body::after {
+          content: '';
+          position: fixed; inset: 0; pointer-events: none; z-index: 999;
+          opacity: 0.025;
+          background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+          body::after { display: none; }
+        }
+
+        /* Reveal animations */
+        .reveal {
+          opacity: 0; transform: translateY(28px);
+          transition: opacity 0.7s ease, transform 0.7s ease;
+        }
+        .reveal-in { opacity: 1; transform: none; }
+        .d1 { transition-delay: 0.1s; }
+        .d2 { transition-delay: 0.2s; }
+        .d3 { transition-delay: 0.3s; }
+        .d4 { transition-delay: 0.4s; }
+
+        /* bob / pulse animations */
+        @keyframes bob { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-7px)} }
+        @keyframes pulse-dot { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(.75)} }
+
+        .bob,
+        .pulse-dot,
+        .pulse-dot-slow {
+          animation: none;
+        }
+
+        @media (prefers-reduced-motion: no-preference) {
+          .bob { animation: bob 5s ease-in-out infinite; }
+          .pulse-dot { animation: pulse-dot 2s ease-in-out infinite; }
+          .pulse-dot-slow { animation: pulse-dot 3s ease-in-out infinite; }
+        }
+
+        /* FAQ answer styling */
+        .faq-ans {
+          padding: 10px 22px 20px;
+        }
+        .faq-open .faq-icon-plus { background: var(--amber); border-color: var(--amber); color: var(--forest-d); transform: rotate(45deg); }
+      `}</style>
+
+      <div className="min-h-screen bg-cream overflow-x-hidden" style={{ fontFamily: "var(--font-dm-sans), 'DM Sans', sans-serif" }}>
+
+        {/* ═══════════════════  NAV  ═══════════════════════════════════════════ */}
+        <nav
+          className={`fixed top-0 left-0 right-0 z-[200] h-[68px] flex items-center justify-between px-6 md:px-12 transition-all duration-400 border-b ${navDark
+              ? "bg-[#0F2419]/97 border-transparent"
+              : "bg-cream/90 border-[rgba(26,61,43,0.08)]"
+            }`}
+          style={{ backdropFilter: "blur(20px) saturate(1.4)" }}
+        >
+          <Link href="/" className="transition-colors">
+            <Logo size="md" />
+          </Link>
+          <div className="hidden md:flex items-center gap-8">
+            {[["#how-it-works", "How it works"], ["#agencies", "Find agencies"], ["#rights", "Your rights"], ["#faq", "FAQ"]].map(([href, label]) => (
+              <Link key={href} href={href} onClick={(e) => handleSmoothScroll(e, href)} className={`text-[13px] no-underline transition-colors cursor-pointer ${navDark ? "text-cream/55 hover:text-cream" : "text-[#6B7B6E] hover:text-forest-600"}`}>{label}</Link>
             ))}
           </div>
-
-          {(agency.pay_rates && Object.keys(agency.pay_rates).length > 0) && (
-            <div className="flex flex-wrap gap-3 text-xs font-medium text-forest-700 bg-green-50/30 px-3 py-2 rounded-lg border border-green-100/50">
-              {Object.entries(agency.pay_rates).slice(0, 2).map(([role, rate]) => (
-                <span key={role} className="flex items-center gap-1">
-                  <span className="text-forest-400 uppercase text-[10px] bg-white px-1.5 py-0.5 rounded shadow-sm border border-forest-100/50">{role}</span>
-                  {String(rate)}
-                </span>
-              ))}
-            </div>
-          )}
-
-          <div className="text-xs text-forest-500 line-clamp-2 leading-relaxed flex-1 mt-1">
-            <span className="font-medium text-forest-400">Services:</span> {(agency.services_offered || []).join(", ")}
-          </div>
-        </motion.div>
-      ))}
-    </div>
-  );
-}
-
-/* ═══════════════════════════════════════════════════════════════════════════
-   Main Page Component
-   ═══════════════════════════════════════════════════════════════════════════ */
-export default function HomePage() {
-  const { t } = useTranslation();
-  const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
-
-  return (
-    <div className="min-h-screen bg-cream overflow-hidden">
-
-      {/* ═══════════════════  NAV  ═══════════════════════════════════════════ */}
-      <nav className="fixed top-0 inset-x-0 z-50 bg-cream/90 backdrop-blur-md border-b border-forest-100/60">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 flex h-16 items-center justify-between">
-          <Logo size="sm" />
-
-          <div className="hidden md:flex items-center gap-6 text-sm text-forest-600">
-            <Link href="#how-it-works" className="hover:text-forest-800 transition-colors">
-              {t("landing_cta_how")}
+          <div className="flex items-center gap-3">
+            <Link href="/auth/login" className={`text-[13px] no-underline transition-colors hidden sm:inline ${navDark ? "text-cream/45 hover:text-cream" : "text-[#6B7B6E] hover:text-forest-600"}`}>Sign in</Link>
+            <Link href="/auth/register" className={`text-[13px] font-medium tracking-wide px-5 py-2 rounded-full no-underline transition-all hover:-translate-y-px ${navDark ? "bg-amber-500 text-[#0F2419]" : "bg-forest-600 text-cream"}`} style={{ boxShadow: "0 8px 24px rgba(26,61,43,0.15)" }}>
+              Start for free
             </Link>
-            <Link href="#agencies" className="hover:text-forest-800 transition-colors">
-              {t("search_title")}
-            </Link>
-            <Link href="#faq" className="hover:text-forest-800 transition-colors">
-              FAQ
-            </Link>
-          </div>
-
-          <div className="flex items-center gap-1.5 sm:gap-2">
-            <LanguageSwitcher compact />
-            <Button variant="ghost" size="sm" asChild className="hidden sm:inline-flex">
-              <Link href="/auth/login">{t("nav_sign_out").replace("out", "in")}</Link>
-            </Button>
-            <Button size="sm" asChild className="text-xs sm:text-sm px-3 sm:px-5">
-              <Link href="/auth/register">{t("landing_cta_start")}</Link>
-            </Button>
-            {/* Mobile menu toggle */}
-            <button
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden ml-1 p-2 rounded-lg hover:bg-forest-50 text-forest-600"
-              aria-label="Menu"
-            >
-              <svg className="size-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                {mobileMenuOpen ? (
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                ) : (
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                )}
+            {/* Mobile toggle */}
+            <button onClick={() => setMobileMenu(!mobileMenu)} className="md:hidden p-2 rounded-lg" aria-label="Menu">
+              <svg className="w-5 h-5" fill="none" stroke={navDark ? "#FFF8E7" : "#1A3D2B"} viewBox="0 0 24 24">
+                {mobileMenu ? <path strokeLinecap="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /> : <path strokeLinecap="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />}
               </svg>
             </button>
           </div>
+          {mobileMenu && (
+            <div className="absolute top-[68px] left-0 right-0 bg-cream border-b border-forest-100 px-6 py-4 space-y-3 md:hidden">
+              {[["#how-it-works", "How it works"], ["#agencies", "Find agencies"], ["#rights", "Your rights"], ["#faq", "FAQ"],
+              ["/auth/login", "Sign in"]].map(([h, l]) => (
+                <Link key={h} href={h} onClick={(e) => { if (h.startsWith('#')) { e.preventDefault(); const element = document.querySelector(h); if (element) { element.scrollIntoView({ behavior: 'smooth' }); } } setMobileMenu(false); }} className="block py-2 text-forest-600 font-medium text-sm">{l}</Link>
+              ))}
+            </div>
+          )}
+        </nav>
+
+        {/* ═══════════════════  HERO  ═══════════════════════════════════════ */}
+        <section className="min-h-screen grid grid-cols-1 lg:grid-cols-[55%_45%] pt-[68px] relative overflow-hidden">
+          {/* Left */}
+          <div className="flex flex-col justify-center px-8 sm:px-12 lg:px-20 py-16 lg:py-20 relative z-[2]">
+            <div className="absolute top-[-200px] right-[-100px] w-[600px] h-[600px] rounded-full pointer-events-none" style={{ background: "radial-gradient(circle, rgba(232,147,58,0.06), transparent 70%)" }} />
+
+            <div className="inline-flex items-center gap-2.5 mb-8 font-mono text-[11px] font-medium tracking-[0.12em] uppercase text-amber-500">
+              <span className="w-7 h-px bg-amber-500" />Serving Pennsylvania residents
+            </div>
+
+            <h1 className="font-fraunces text-[clamp(42px,5.5vw,78px)] font-black leading-[1.0] tracking-[-2.5px] text-forest-600 mb-7">
+              Find your<br />perfect home<br />care <em className="italic text-amber-500">agency.</em>
+            </h1>
+
+            <p className="text-[17px] font-light leading-[1.75] text-[#6B7B6E] max-w-[460px] mb-11">
+              SwitchMyCare guides Pennsylvania Medicaid and Medicare patients through finding and switching home health or home care agencies — simply, guided, and free to browse. When you decide to switch, there&apos;s a one-time $97 coordination fee for paperwork and support.
+            </p>
+
+            <div className="flex items-center gap-3.5 flex-wrap mb-12">
+              <Link href="/agencies" className="bg-forest-600 text-cream text-sm font-medium tracking-wide px-7 py-3.5 rounded-full no-underline inline-flex items-center gap-2 transition-all hover:bg-[#2A5C41] hover:-translate-y-0.5" style={{ boxShadow: "0 12px 36px rgba(26,61,43,0.22)" }}>
+                Browse agencies
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8H13M13 8L9 4M13 8L9 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
+              </Link>
+              <Link href="#how-it-works" onClick={(e) => handleSmoothScroll(e, '#how-it-works')} className="text-base text-[#6B7B6E] no-underline inline-flex items-center gap-1.5 hover:text-forest-600 transition-colors font-medium cursor-pointer">See how it works ↓</Link>
+            </div>
+
+            <div className="flex items-center gap-7 flex-wrap pt-7 border-t border-[rgba(26,61,43,0.08)]">
+              {["HIPAA compliant", "Free for patients to browse", "PA-verified agencies only", "English · नेपाली · हिन्दी"].map((t) => (
+                <div key={t} className="flex items-center gap-2 text-sm text-[#6B7B6E] font-medium">
+                  <div className="w-[5px] h-[5px] rounded-full bg-[#3D7A57] shrink-0" />{t}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Right — hero image */}
+          <div className="relative bg-forest-600 overflow-hidden hidden lg:block" style={{ minHeight: '650px' }}>
+            <Image src="/images/hero-caregiver.png" alt="Home care caregiver with patient" fill className="object-cover object-center" priority />
+            <div className="absolute bottom-0 left-0 right-0 h-[200px]" style={{ background: "linear-gradient(to top, rgba(15,36,25,0.4), transparent)" }} />
+
+            {/* Floating review card */}
+            <div className="bob absolute top-8 left-8 z-10 bg-white rounded-[14px] p-3.5 px-[18px] shadow-modal border border-[rgba(26,61,43,0.06)] max-w-[220px]">
+              <div className="flex gap-0.5 mb-1">{[1, 2, 3, 4, 5].map(i => <span key={i} className="text-amber-500 text-xs">★</span>)}</div>
+              <div className="text-[11px] text-[#6B7B6E] italic leading-[1.4]">&ldquo;Found a better agency in 10 minutes. Couldn&apos;t believe how easy it was.&rdquo;</div>
+              <div className="text-[10px] font-semibold text-forest-600 mt-1.5">— Sita G., Allegheny County</div>
+            </div>
+
+            {/* Floating badge */}
+            <div className="absolute bottom-8 left-7 z-10 bg-cream/95 rounded-2xl p-4 px-5 flex items-center gap-3.5 min-w-[210px] shadow-modal" style={{ backdropFilter: "blur(8px)" }}>
+              <div className="w-[38px] h-[38px] rounded-[10px] bg-[rgba(26,61,43,0.08)] flex items-center justify-center shrink-0"><Building2 className="w-5 h-5 text-forest-600" /></div>
+              <div>
+                <div className="text-[10px] font-medium text-[#6B7B6E] tracking-[0.04em] uppercase">Pittsburgh agencies</div>
+                <div className="text-[17px] font-bold text-forest-600 leading-tight font-fraunces">27+ listed</div>
+              </div>
+            </div>
+          </div>
+          {/* Mobile hero image */}
+          <div className="relative h-[360px] lg:hidden overflow-hidden">
+            <Image src="/images/hero-caregiver.png" alt="Home care caregiver" fill className="object-cover object-center" priority />
+            <div className="absolute bottom-0 left-0 right-0 h-[120px]" style={{ background: "linear-gradient(to top, rgba(15,36,25,0.4), transparent)" }} />
+          </div>
+        </section>
+
+        {/* ═══════════════════  STATS BAR  ═══════════════════════════════════ */}
+        <div className="bg-forest-600 flex flex-wrap">
+          {[
+            { value: 27, suffix: "+", label: "Verified agencies" },
+            { value: 97, prefix: "$", label: "Flat coordination fee" },
+            { value: 7, suffix: " days", label: "Average switch time" },
+            { value: 3, suffix: "+", label: "Languages supported" },
+          ].map((stat, i) => (
+            <div key={i} className="flex-1 min-w-[50%] sm:min-w-0 py-7 px-5 text-center border-r border-b sm:border-b-0 border-cream/[0.07] last:border-r-0 hover:bg-white/[0.03] transition-colors">
+              <AnimatedCounter value={stat.value} prefix={stat.prefix} suffix={stat.suffix} />
+              <div className="text-[11px] text-cream/40 mt-1.5 tracking-[0.05em] uppercase font-mono">{stat.label}</div>
+            </div>
+          ))}
         </div>
 
-        {/* Mobile menu */}
-        {mobileMenuOpen && (
-          <motion.div
-            initial={{ opacity: 0, y: -8 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="md:hidden border-t border-forest-100 bg-cream px-4 py-4 space-y-3"
-          >
-            <Link href="#how-it-works" onClick={() => setMobileMenuOpen(false)} className="block py-2 text-forest-600 font-medium">
-              {t("landing_cta_how")}
-            </Link>
-            <Link href="#faq" onClick={() => setMobileMenuOpen(false)} className="block py-2 text-forest-600 font-medium">
-              FAQ
-            </Link>
-            <Link href="/auth/login" onClick={() => setMobileMenuOpen(false)} className="block py-2 text-forest-600 font-medium">
-              Sign in
-            </Link>
-          </motion.div>
-        )}
-      </nav>
+        {/* ═══════════════════  HOW IT WORKS  ═══════════════════════════════ */}
+        <section className="py-20 lg:py-28 px-8 lg:px-20" id="how-it-works">
+          <div className="inline-flex items-center gap-2.5 font-mono text-[11px] font-medium tracking-[0.12em] uppercase text-amber-500 mb-5">
+            Simple process<span className="w-8 h-px bg-amber-500" />
+          </div>
+          <h2 className="font-fraunces text-[clamp(40px,4.5vw,62px)] font-bold leading-[1.05] tracking-[-1.5px] text-forest-600 reveal">
+            Switching is easier<br />than you think.
+          </h2>
+          <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-[3px] rounded-[28px] overflow-hidden">
+            {[
+              { icon: Search, title: "Tell us your situation", body: "Answer a few quick questions about your care needs, insurance, and location. Takes under 5 minutes. No account required to browse.", cta: "Browse agencies", href: "/agencies", num: "01" },
+              { icon: CircleCheck, title: "We match you to agencies", body: "Browse verified Pennsylvania agencies that accept your insurance and serve your area — with real pay rates, CMS star ratings, and Google scores.", cta: "Start your switch", href: "/auth/register", num: "02" },
+              { icon: Handshake, title: "We manage the switch", body: "SwitchMyCare coordinates directly with both agencies, handles all CMS-compliant paperwork, and keeps you updated every step. Usually 5–7 business days.", cta: "30-day support included", href: "", num: "03" },
+            ].map((s) => (
+              <div key={s.num} className={`reveal d${s.num === "01" ? "1" : s.num === "02" ? "2" : "3"} bg-[#0F2419] p-10 lg:p-[52px_40px_44px] relative overflow-hidden group hover:bg-[#2A5C41] transition-colors`}>
+                <div className="w-[50px] h-[50px] rounded-[14px] bg-amber-500/[0.12] flex items-center justify-center text-[22px] mb-7"><s.icon className="w-6 h-6 text-amber-500" /></div>
+                <div className="font-fraunces text-2xl font-bold text-cream mb-3.5 leading-tight">{s.title}</div>
+                <div className="text-sm font-light leading-[1.8] text-cream/70">{s.body}</div>
+                {s.href ? (
+                  <Link href={s.href} className="inline-flex items-center gap-1.5 text-[13px] text-amber-400 no-underline mt-7 hover:gap-2.5 transition-all">{s.cta} →</Link>
+                ) : (
+                  <div className="text-[13px] text-cream/50 mt-7">{s.cta}</div>
+                )}
+                <div className="absolute bottom-3 right-5 font-fraunces text-[100px] font-black text-cream/[0.08] leading-none tracking-[-5px] pointer-events-none group-hover:text-amber-500/[0.1] transition-colors">{s.num}</div>
+              </div>
+            ))}
+          </div>
+        </section>
 
-      {/* ═══════════════════  1. HERO  ═══════════════════════════════════════ */}
-      <section className="pt-28 sm:pt-32 pb-16 sm:pb-24 px-4 sm:px-6 relative">
-        {/* Decorative blobs */}
-        <div className="absolute top-20 right-0 w-[500px] h-[500px] rounded-full bg-forest-100 opacity-25 -translate-y-1/4 translate-x-1/3 blur-3xl pointer-events-none" />
-        <div className="absolute bottom-0 left-0 w-[400px] h-[400px] rounded-full bg-amber-200 opacity-20 translate-y-1/2 -translate-x-1/4 blur-3xl pointer-events-none" />
+        {/* ═══════════════════  AGENCIES  ═══════════════════════════════════ */}
+        <section className="bg-[#0F2419] py-20 lg:py-28 px-8 lg:px-20" id="agencies">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-end mb-14 reveal">
+            <div>
+              <div className="inline-flex items-center gap-2.5 font-mono text-[11px] font-medium tracking-[0.12em] uppercase text-amber-300 mb-5">Pittsburgh directory<span className="w-8 h-px bg-amber-300" /></div>
+              <h2 className="font-fraunces text-[clamp(40px,4.5vw,62px)] font-bold leading-[1.05] tracking-[-1.5px] text-cream">Agencies in<br />one place.</h2>
+            </div>
+            <p className="text-[15px] font-light leading-[1.75] text-cream/45">Pay rates from public job postings, Google ratings, and Medicare CMS scores. In the app, we keep listings for Allegheny County agencies up to date from public data sources.</p>
+          </div>
 
-        <div className="max-w-6xl mx-auto relative z-10">
-          <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
-
-            {/* Left — text + search */}
-            <motion.div
-              initial="hidden"
-              animate="visible"
-              variants={stagger}
-              className="space-y-6 sm:space-y-8"
-            >
-              <motion.div variants={fadeUp}>
-                <Badge variant="default" className="gap-2 py-1.5 px-4">
-                  <span className="size-2 rounded-full bg-amber-500 inline-block animate-pulse-soft" />
-                  {t("landing_badge")}
-                </Badge>
-              </motion.div>
-
-              <motion.h1
-                variants={fadeUp}
-                className="font-fraunces text-4xl sm:text-5xl lg:text-6xl font-semibold text-forest-800 leading-[1.08] text-balance"
-              >
-                {t("landing_hero_title_1")}{" "}
-                <span className="relative inline-block">
-                  <span className="text-forest-600">{t("landing_hero_title_2")}</span>
-                  <svg className="absolute -bottom-1.5 left-0 w-full" viewBox="0 0 300 12" fill="none">
-                    <path d="M2 8C60 3 130 1 298 8" stroke="#E8933A" strokeWidth="3" strokeLinecap="round" />
-                  </svg>
-                </span>{" "}
-                {t("landing_hero_title_3")}
-              </motion.h1>
-
-              <motion.p
-                variants={fadeUp}
-                className="text-base sm:text-lg text-forest-500 leading-relaxed max-w-xl"
-              >
-                {t("landing_hero_desc")}
-              </motion.p>
-
-              {/* Search bar */}
-              <motion.div variants={fadeUp} className="max-w-md">
-                <div className="flex items-center rounded-2xl bg-white border-2 border-forest-100 shadow-card hover:shadow-card-hover hover:border-forest-200 transition-all duration-300 overflow-hidden">
-                  <div className="pl-4 pr-2">
-                    <Search className="size-5 text-forest-400" />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
+            {[
+              { name: "UPMC Home Healthcare", score: "4.5", type: "Home Health · Pittsburgh", payers: "Medicare · Medicaid · Private Pay", lang: "English", rate: "$16–$21/hr", cms: "★★★★☆", accepting: true },
+              { name: "BAYADA Home Health Care", score: "4.0", type: "Home Health · Pittsburgh", payers: "Medicare · Medicaid", lang: "English · Spanish", rate: "$15–$19/hr", cms: "★★★★☆", accepting: true },
+              { name: "Allegheny Health Network", score: "4.5", type: "Home Health · Pittsburgh", payers: "Medicare · Medicaid · CHC", lang: "English", rate: "$17–$22/hr", cms: "★★★★★", accepting: true },
+              { name: "Interim Healthcare Pittsburgh", score: "4.0", type: "Home Health & Care · Pittsburgh", payers: "Medicare · Medicaid · Private", lang: "English", rate: "$14–$18/hr", cms: "★★★☆☆", accepting: true },
+              { name: "Presbyterian SeniorCare", score: "4.5", type: "Home Care · Pittsburgh", payers: "Medicaid · CHC · Private Pay", lang: "English", rate: "$15–$19/hr", cms: "★★★★☆", accepting: false },
+            ].map((a, i) => (
+              <div key={a.name} className={`reveal d${(i % 3) + 1} bg-white/[0.04] border border-cream/[0.07] rounded-[20px] p-6 relative overflow-hidden group hover:bg-white/[0.07] hover:-translate-y-1 hover:border-cream/[0.12] transition-all cursor-pointer`}>
+                <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-amber-500 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                <div className="flex justify-between items-start mb-3.5">
+                  <div className="font-fraunces text-[16px] font-semibold text-cream leading-tight max-w-[190px]">{a.name}</div>
+                  <div className="bg-amber-500/[0.1] border border-amber-500/[0.18] rounded-lg px-2.5 py-1 font-mono text-xs text-amber-300 shrink-0">★ {a.score}</div>
+                </div>
+                <div className="flex flex-col gap-1.5 mb-4.5 text-xs text-cream/35">
+                  {[a.type, a.payers, a.lang].map((t, j) => (
+                    <div key={j} className="flex items-center gap-1.5">
+                      <div className="w-[3px] h-[3px] rounded-full bg-cream/20 shrink-0" />{t}
+                    </div>
+                  ))}
+                </div>
+                <div className="flex gap-1.5 items-center flex-wrap mt-4">
+                  <div className="bg-forest-600/50 border border-[#3D7A57]/25 rounded-lg px-2.5 py-1 text-[11px] font-mono text-cream/60">
+                    HHA pay <b className="text-[#7DD4A0] font-medium">{a.rate}</b>
                   </div>
-                  <input
-                    type="text"
-                    placeholder={t("landing_search_placeholder")}
-                    className="flex-1 py-3.5 sm:py-4 pr-2 bg-transparent text-sm sm:text-base text-forest-800 placeholder:text-forest-300 outline-none"
-                  />
+                  <div className={`inline-flex items-center gap-1.5 text-[11px] font-medium ${a.accepting ? "text-[#7DD4A0]" : "text-[rgba(255,210,100,0.75)]"}`}>
+                  <div className={`w-1.5 h-1.5 rounded-full ${a.accepting ? "bg-[#7DD4A0] pulse-dot" : "bg-[rgba(255,210,100,0.75)] pulse-dot-slow"}`} aria-hidden="true" />
+                    {a.accepting ? "Accepting" : "Waitlist"}
+                  </div>
+                </div>
+                <div className="flex justify-between items-center mt-4 pt-4 border-t border-cream/[0.06]">
+                  <div className="text-[10px] text-cream/20 font-mono">CMS {a.cms}</div>
                   <Link
-                    href="/auth/register"
-                    className="m-1.5 sm:m-2 shrink-0 bg-forest-600 text-cream-50 hover:bg-forest-700 transition-colors rounded-xl px-4 sm:px-6 py-2.5 sm:py-3 text-sm font-semibold flex items-center gap-1.5"
+                    href="/agencies"
+                    aria-label={a.accepting ? `Start a switch with ${a.name}` : `View profile for ${a.name}`}
+                    className="text-xs font-medium text-amber-300 bg-transparent border-none cursor-pointer flex items-center gap-1 hover:gap-2 transition-all no-underline"
+                    style={{ fontFamily: "inherit" }}
                   >
-                    {t("btn_search")}
-                    <ArrowRight className="size-4" />
+                    {a.accepting ? "Start switch" : "View profile"} →
                   </Link>
                 </div>
-              </motion.div>
-
-              {/* Trust badges */}
-              <motion.div
-                variants={fadeUp}
-                className="flex flex-wrap items-center gap-4 sm:gap-6 text-xs sm:text-sm text-forest-400"
-              >
-                <div className="flex items-center gap-1.5">
-                  <ShieldCheck className="size-4 text-forest-500" />
-                  {t("landing_hipaa")}
-                </div>
-                <div className="hidden sm:block h-4 w-px bg-forest-200" />
-                <div className="flex items-center gap-1.5">
-                  <Clock className="size-4 text-forest-500" />
-                  {t("landing_free")}
-                </div>
-                <div className="hidden sm:block h-4 w-px bg-forest-200" />
-                <div className="flex items-center gap-1.5">
-                  <Star className="size-4 text-amber-500" />
-                  {t("landing_verified")}
-                </div>
-              </motion.div>
-            </motion.div>
-
-            {/* Right — hero image */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95, x: 20 }}
-              animate={{ opacity: 1, scale: 1, x: 0 }}
-              transition={{ duration: 0.7, delay: 0.2 }}
-              className="relative hidden lg:block"
-            >
-              <div className="rounded-3xl overflow-hidden shadow-modal border-4 border-white/80">
-                <Image
-                  src="/images/hero-caregiver.png"
-                  alt="Home care caregiver with patient"
-                  width={600}
-                  height={600}
-                  className="w-full h-auto object-cover"
-                  priority
-                />
               </div>
-              {/* Floating stat card */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.8, duration: 0.5 }}
-                className="absolute -bottom-6 -left-6 bg-white rounded-2xl shadow-card-hover border border-forest-100 p-4 flex items-center gap-3"
-              >
-                <div className="h-11 w-11 rounded-xl bg-green-100 flex items-center justify-center shrink-0">
-                  <CheckCircle2 className="size-6 text-green-600" />
-                </div>
-                <div>
-                  <p className="text-sm font-semibold text-forest-800">200+ Verified</p>
-                  <p className="text-xs text-forest-400">PA agencies ready</p>
-                </div>
-              </motion.div>
-
-              {/* Floating rating card */}
-              <motion.div
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 1, duration: 0.5 }}
-                className="absolute -top-4 -right-4 bg-white rounded-2xl shadow-card-hover border border-forest-100 px-4 py-3 flex items-center gap-2"
-              >
-                <div className="flex -space-x-1">
-                  {[1, 2, 3, 4, 5].map((i) => (
-                    <Star key={i} className="size-4 text-amber-400 fill-amber-400" />
-                  ))}
-                </div>
-                <span className="text-sm font-semibold text-forest-800">4.9/5</span>
-              </motion.div>
-            </motion.div>
-          </div>
-
-          {/* Language availability */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.6 }}
-            className="flex flex-wrap items-center justify-center lg:justify-start gap-3 pt-8 sm:pt-12 text-sm text-forest-400"
-          >
-            <span className="font-medium text-forest-600">{t("landing_available_in")}</span>
-            <span className="rounded-full bg-forest-50 border border-forest-100 px-3 py-1">English</span>
-            <span className="rounded-full bg-forest-50 border border-forest-100 px-3 py-1">नेपाली</span>
-            <span className="rounded-full bg-forest-50 border border-forest-100 px-3 py-1">हिन्दी</span>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* ═══════════════════  2. WHO IS THIS FOR  ════════════════════════════ */}
-      <Section className="py-16 sm:py-24 px-4 sm:px-6 bg-white" id="who">
-        <div className="max-w-5xl mx-auto space-y-12 sm:space-y-16">
-          <div className="text-center space-y-4">
-            <motion.div variants={fadeUp}>
-              <Badge variant="outline">{t("landing_who_badge")}</Badge>
-            </motion.div>
-            <motion.h2 variants={fadeUp} className="font-fraunces text-3xl sm:text-4xl font-semibold text-forest-800">
-              {t("landing_who_title")}
-            </motion.h2>
-            <motion.p variants={fadeUp} className="text-forest-500 max-w-2xl mx-auto text-sm sm:text-base">
-              {t("landing_who_desc")}
-            </motion.p>
-          </div>
-
-          <div className="grid sm:grid-cols-3 gap-6">
-            {[
-              {
-                icon: <UserCheck className="size-6 text-forest-600" />,
-                title: t("landing_persona_patient_title"),
-                desc: t("landing_persona_patient_desc"),
-                gradient: "from-forest-50 to-forest-100/50",
-              },
-              {
-                icon: <Users className="size-6 text-forest-600" />,
-                title: t("landing_persona_family_title"),
-                desc: t("landing_persona_family_desc"),
-                gradient: "from-amber-50 to-amber-100/50",
-              },
-              {
-                icon: <Stethoscope className="size-6 text-forest-600" />,
-                title: t("landing_persona_caregiver_title"),
-                desc: t("landing_persona_caregiver_desc"),
-                gradient: "from-cream to-cream-200/50",
-              },
-            ].map((item) => (
-              <motion.div
-                key={item.title}
-                variants={fadeUp}
-                className={`relative rounded-2xl bg-gradient-to-br ${item.gradient} border border-forest-100/60 p-6 sm:p-8 space-y-4 hover:shadow-card-hover hover:border-forest-200 transition-all duration-300 group`}
-              >
-                <div className="h-12 w-12 rounded-xl bg-white shadow-sm flex items-center justify-center group-hover:scale-105 transition-transform">
-                  {item.icon}
-                </div>
-                <h3 className="font-fraunces text-lg sm:text-xl font-semibold text-forest-800">
-                  {item.title}
-                </h3>
-                <p className="text-forest-500 leading-relaxed text-sm sm:text-base">
-                  {item.desc}
-                </p>
-              </motion.div>
             ))}
-          </div>
-        </div>
-      </Section>
-
-      {/* ═══════════════════  3. HOW IT WORKS  ═══════════════════════════════ */}
-      <Section className="py-16 sm:py-24 px-4 sm:px-6" id="how-it-works">
-        <div className="max-w-5xl mx-auto space-y-12 sm:space-y-16">
-          <div className="text-center space-y-4">
-            <motion.div variants={fadeUp}>
-              <Badge variant="outline">{t("landing_how_badge")}</Badge>
-            </motion.div>
-            <motion.h2 variants={fadeUp} className="font-fraunces text-3xl sm:text-4xl font-semibold text-forest-800">
-              {t("landing_how_title")}
-            </motion.h2>
-            <motion.p variants={fadeUp} className="text-forest-500 max-w-xl mx-auto text-sm sm:text-base">
-              {t("landing_how_desc")}
-            </motion.p>
+            {/* More card */}
+            <div className="reveal d3 border border-dashed border-cream/[0.08] rounded-[20px] p-6 flex flex-col justify-center items-center text-center gap-2.5 cursor-pointer hover:border-cream/[0.15] transition-colors">
+              <div className="text-[28px] text-cream/15">＋</div>
+              <div className="font-fraunces text-lg text-cream/40">22 more agencies</div>
+              <div className="text-xs text-cream/20 font-light">Filter by insurance, language,<br />services &amp; location</div>
+              <Link href="/agencies" className="text-xs text-amber-300 no-underline flex items-center gap-1 hover:gap-2 transition-all mt-1">View all agencies →</Link>
+            </div>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8 sm:gap-10">
-            {[
-              {
-                step: "01",
-                icon: <FileText className="size-6 text-forest-600" />,
-                title: t("landing_step1_title"),
-                desc: t("landing_step1_desc"),
-              },
-              {
-                step: "02",
-                icon: <Heart className="size-6 text-forest-600" />,
-                title: t("landing_step2_title"),
-                desc: t("landing_step2_desc"),
-              },
-              {
-                step: "03",
-                icon: <MessageSquare className="size-6 text-forest-600" />,
-                title: t("landing_step3_title"),
-                desc: t("landing_step3_desc"),
-              },
-            ].map((item) => (
-              <motion.div
-                key={item.step}
-                variants={fadeUp}
-                className="relative space-y-4 sm:space-y-5"
-              >
-                <div className="flex items-center gap-4">
-                  <div className="h-12 w-12 rounded-2xl bg-forest-600 flex items-center justify-center shrink-0 shadow-sm">
-                    <span className="text-cream-50 font-bold text-sm">{item.step}</span>
-                  </div>
-                  <div className="h-11 w-11 rounded-xl bg-forest-100 flex items-center justify-center shrink-0">
-                    {item.icon}
-                  </div>
+          <div className="text-center mt-11 reveal">
+            <Link href="/agencies" className="bg-amber-500 text-[#0F2419] text-sm font-medium px-8 py-3.5 rounded-full no-underline inline-flex items-center gap-2 transition-all hover:bg-amber-300 hover:-translate-y-0.5" style={{ boxShadow: "0 12px 36px rgba(232,147,58,0.3)" }}>
+              See all 27+ agencies →
+            </Link>
+          </div>
+        </section>
+
+        {/* ═══════════════════  YOUR RIGHTS  ═══════════════════════════════ */}
+        <section className="bg-[#F5EDDA] grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24 items-center py-20 lg:py-28 px-8 lg:px-20" id="rights">
+          <div className="reveal">
+            <div className="inline-flex items-center gap-2.5 font-mono text-[11px] font-medium tracking-[0.12em] uppercase text-amber-500 mb-5">Federal law<span className="w-8 h-px bg-amber-500" /></div>
+            <h2 className="font-fraunces text-[52px] font-bold tracking-[-1.5px] leading-[1.05] text-forest-600 mb-5">Switching is<br />your <em className="italic text-amber-500">right.</em></h2>
+            <p className="text-[16px] font-light leading-[1.75] text-[#6B7B6E] mb-9">Under Medicare&apos;s Conditions of Participation, you can change your home health agency at any time, for any reason — or no reason at all.</p>
+            <div className="flex flex-col gap-3">
+              {[
+                ["01", "You choose your agency", "— not your hospital, doctor, or discharge planner."],
+                ["02", "Your agency cannot refuse to discharge you.", "They must cooperate with your transfer by law."],
+                ["03", "10 days written notice required", "before any involuntary discharge — you must receive this in writing."],
+                ["04", "Switching cannot interrupt your Medicare benefits.", "Coverage continues through your transfer."],
+              ].map(([n, b, r]) => (
+                <div key={n} className="flex gap-4 items-start bg-white border border-[rgba(26,61,43,0.07)] rounded-[14px] px-5 py-4 hover:border-[rgba(26,61,43,0.14)] hover:translate-x-1 hover:shadow-card transition-all">
+                  <span className="font-mono text-[11px] text-amber-500 shrink-0 pt-0.5">{n}</span>
+                  <span className="text-sm leading-relaxed text-forest-600"><strong className="font-medium">{b}</strong> {r}</span>
                 </div>
-                <h3 className="font-fraunces text-lg sm:text-xl font-semibold text-forest-800">
-                  {item.title}
-                </h3>
-                <p className="text-forest-500 leading-relaxed text-sm sm:text-base">{item.desc}</p>
-              </motion.div>
-            ))}
+              ))}
+            </div>
           </div>
+          <div className="reveal d2">
+            <div className="relative h-[500px] lg:h-[650px] rounded-3xl overflow-hidden shadow-modal">
+              <Image src="/images/hero-caregiver.png" alt="Care coordinator with patient" fill className="object-cover" />
+              <div className="absolute bottom-6 left-6 bg-forest-600 text-cream p-5 px-6 rounded-[16px] shadow-modal max-w-[260px]">
+                <div className="font-mono text-[10px] tracking-[0.1em] uppercase text-amber-300 mb-2">Federal law</div>
+                <div className="text-sm font-light leading-[1.55] text-cream/80">Medicare Conditions of Participation §484.50 — Patient Rights</div>
+              </div>
+            </div>
+          </div>
+        </section>
 
-          <motion.div variants={fadeUp} className="text-center pt-4">
-            <Button size="xl" asChild>
-              <Link href="/auth/register">
-                {t("landing_cta_start")}
-                <ArrowRight className="size-5" />
-              </Link>
-            </Button>
-          </motion.div>
-        </div>
-      </Section>
-
-      {/* ═══════════════════  4. STATS BAR (animated)  ═══════════════════════ */}
-      <section className="py-16 sm:py-20 px-4 sm:px-6 bg-forest-600 relative overflow-hidden">
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-0 left-1/4 w-64 h-64 rounded-full bg-white/20 blur-3xl" />
-          <div className="absolute bottom-0 right-1/4 w-48 h-48 rounded-full bg-amber-400/30 blur-3xl" />
-        </div>
-        <div className="max-w-5xl mx-auto relative z-10">
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-8 sm:gap-6 text-center">
+        {/* ═══════════════════  WHO WE SERVE  ═══════════════════════════════ */}
+        <section className="py-20 lg:py-28 px-8 lg:px-20">
+          <div className="inline-flex items-center gap-2.5 font-mono text-[11px] font-medium tracking-[0.12em] uppercase text-amber-500 mb-5">Who we serve<span className="w-8 h-px bg-amber-500" /></div>
+          <h2 className="font-fraunces text-[clamp(40px,4.5vw,62px)] font-bold leading-[1.05] tracking-[-1.5px] text-forest-600 reveal">Built for<br />Pennsylvania families.</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mt-14">
             {[
-              { value: 67, suffix: "", label: t("landing_stat_counties") },
-              { value: 200, suffix: "+", label: t("landing_stat_agencies") },
-              { value: 5, suffix: "+", label: t("landing_stat_payers") },
-              { value: 5, suffix: " days", label: t("landing_stat_time") },
-            ].map((stat) => (
-              <div key={stat.label} className="space-y-2">
-                <AnimatedCounter value={stat.value} suffix={stat.suffix} />
-                <p className="text-forest-200 text-xs sm:text-sm">{stat.label}</p>
+              { icon: Heart, title: "Current patients", body: "Not happy with your current home care? Nurse misses visits, care feels rushed. You have the right to switch to a better agency at any time." },
+              { icon: Users, title: "Family members", body: "Helping a parent or loved one get better care? We guide you through every step of the process — no guesswork, no bureaucracy." },
+              { icon: Building2, title: "Hospital discharge", body: "Going home after a hospital stay? You don't have to accept who your discharge planner suggests. Choose any certified agency in your area." },
+              { icon: Globe, title: "Non-English speakers", body: "Pittsburgh's Nepali, Bhutanese, Hindi, and other communities deserve agencies with staff who speak their language. Filter by language spoken." },
+            ].map((c, i) => (
+              <div key={c.title} className={`reveal d${i + 1} bg-white border border-[rgba(26,61,43,0.09)] rounded-[20px] p-8 relative overflow-hidden group hover:shadow-modal hover:-translate-y-1.5 transition-all`}>
+                <div className="absolute bottom-0 left-0 right-0 h-[3px] bg-gradient-to-r from-forest-600 to-amber-500 scale-x-0 origin-left group-hover:scale-x-100 transition-transform" />
+                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-forest-600 to-forest-700 flex items-center justify-center mb-5">
+                  <c.icon className="w-7 h-7 text-cream" />
+                </div>
+                <div className="font-fraunces text-[19px] font-semibold text-forest-600 mb-2.5 leading-tight">{c.title}</div>
+                <div className="text-[13px] font-light text-[#6B7B6E] leading-[1.75]">{c.body}</div>
               </div>
             ))}
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* ═══════════════════  5. TESTIMONIALS  ═══════════════════════════════ */}
-      <Section className="py-16 sm:py-24 px-4 sm:px-6 bg-white" id="testimonials">
-        <div className="max-w-5xl mx-auto space-y-12 sm:space-y-16">
-          <div className="text-center space-y-4">
-            <motion.div variants={fadeUp}>
-              <Badge variant="outline">{t("landing_testimonials_badge")}</Badge>
-            </motion.div>
-            <motion.h2 variants={fadeUp} className="font-fraunces text-3xl sm:text-4xl font-semibold text-forest-800">
-              {t("landing_testimonials_title")}
-            </motion.h2>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-6">
+        {/* ═══════════════════  TESTIMONIALS  ═══════════════════════════════ */}
+        <section className="bg-forest-600 py-20 lg:py-28 px-8 lg:px-20">
+          <div className="inline-flex items-center gap-2.5 font-mono text-[11px] font-medium tracking-[0.12em] uppercase text-amber-300 mb-5">Real stories<span className="w-8 h-px bg-amber-300" /></div>
+          <h2 className="font-fraunces text-[clamp(40px,4.5vw,62px)] font-bold leading-[1.05] tracking-[-1.5px] text-cream mb-14 reveal">Families trust<br />SwitchMyCare.</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {[
-              {
-                name: "Sita Gurung",
-                location: "Allegheny County",
-                quote:
-                  "SwitchMyCare made switching so easy. I was nervous about losing care, but they handled everything. My new agency is wonderful — they even speak Nepali!",
-                image: "/images/sita.png",
-                stars: 5,
-              },
-              {
-                name: "James Mitchell",
-                location: "Westmoreland County",
-                quote:
-                  "After my stroke, my old agency wasn't meeting my needs. SwitchMyCare found me a better match in 4 days. The whole process was stress-free.",
-                image: "/images/james.png",
-                stars: 5,
-              },
-              {
-                name: "Maria Rodriguez",
-                location: "Butler County",
-                quote:
-                  "The bilingual support was incredible. They explained every step in Spanish and English. My father's new caregiver is amazing. Worth every penny.",
-                image: "/images/maria.png",
-                stars: 5,
-              },
-            ].map((testimonial) => (
-              <motion.div
-                key={testimonial.name}
-                variants={fadeUp}
-                className="rounded-2xl bg-cream border border-forest-100/60 p-6 sm:p-8 space-y-5 hover:shadow-card-hover transition-all duration-500"
-              >
-                <Quote className="size-8 text-amber-400/60" />
-                <p className="text-forest-600 leading-relaxed text-sm sm:text-base italic">
-                  &ldquo;{testimonial.quote}&rdquo;
-                </p>
-                <div className="flex items-center gap-3 pt-2">
-                  <div className="h-12 w-12 rounded-full overflow-hidden shrink-0 border-2 border-white shadow-sm">
-                    <Image
-                      src={testimonial.image}
-                      alt={testimonial.name}
-                      width={48}
-                      height={48}
-                      className="object-cover w-full h-full"
-                    />
+              { q: "SwitchMyCare made switching so easy. I was nervous about losing care, but they handled everything. My new agency is wonderful — they even speak Nepali!", name: "Sita Gurung", loc: "Allegheny County", img: "/images/sita.png", bg: "bg-[#2A5C41]" },
+              { q: "After my stroke, my old agency wasn't meeting my needs. SwitchMyCare found me a better match in 4 days. The whole process was completely stress-free.", name: "James Mitchell", loc: "Westmoreland County", img: "/images/james.png", bg: "bg-amber-500" },
+              { q: "The bilingual support was incredible. They explained every step in Spanish and English. My father's new caregiver is amazing. Worth every penny.", name: "Maria Rodriguez", loc: "Butler County", img: "/images/maria.png", bg: "bg-[#3D7A57]" },
+            ].map((t, i) => (
+              <div key={t.name} className={`reveal d${i + 1} bg-white/[0.05] border border-cream/[0.07] rounded-[20px] p-8 flex flex-col gap-5 hover:bg-white/[0.08] transition-colors`}>
+                <div className="flex gap-0.5">{[1, 2, 3, 4, 5].map(s => <span key={s} className="text-amber-500 text-sm">★</span>)}</div>
+                <p className="text-sm font-light leading-[1.8] text-cream/65 italic flex-1">&ldquo;{t.q}&rdquo;</p>
+                <div className="flex items-center gap-3 pt-4 border-t border-cream/[0.07]">
+                  <div className={`w-[38px] h-[38px] rounded-full overflow-hidden shrink-0 ${t.bg}`}>
+                    <Image src={t.img} alt={t.name} width={38} height={38} className="object-cover w-full h-full" />
                   </div>
                   <div>
-                    <p className="font-semibold text-forest-800 text-sm">{testimonial.name}</p>
-                    <p className="text-xs text-forest-400">{testimonial.location}</p>
+                    <div className="text-[13px] font-medium text-cream">{t.name}</div>
+                    <div className="text-[11px] text-cream/35">{t.loc}</div>
                   </div>
                 </div>
-                <div className="flex gap-0.5">
-                  {Array.from({ length: testimonial.stars }).map((_, i) => (
-                    <Star key={i} className="size-4 text-amber-400 fill-amber-400" />
-                  ))}
-                </div>
-              </motion.div>
+              </div>
             ))}
           </div>
-        </div>
-      </Section>
+        </section>
 
-      {/* ═══════════════════  6. AGENCY PREVIEW  ═════════════════════════════ */}
-      <Section className="py-16 sm:py-24 px-4 sm:px-6 bg-forest-50/50" id="agencies">
-        <div className="max-w-6xl mx-auto space-y-12 sm:space-y-16">
-          <div className="text-center space-y-4">
-            <motion.div variants={fadeUp}>
-              <Badge variant="outline" className="bg-white">Pittsburgh agencies</Badge>
-            </motion.div>
-            <motion.h2 variants={fadeUp} className="font-fraunces text-3xl sm:text-4xl font-semibold text-forest-800">
-              Verified agencies near you
-            </motion.h2>
-            <motion.p variants={fadeUp} className="text-forest-500 max-w-xl mx-auto text-sm sm:text-base">
-              Here are some of the top-rated home care agencies serving the Pittsburgh area. Sign up to see the full directory.
-            </motion.p>
+        {/* ═══════════════════  FAQ  ═══════════════════════════════════════ */}
+        <section className="bg-[#F5EDDA] grid grid-cols-1 lg:grid-cols-[340px_1fr] gap-16 lg:gap-24 py-20 lg:py-28 px-8 lg:px-20" id="faq">
+          <div className="reveal">
+            <div className="inline-flex items-center gap-2.5 font-mono text-[11px] font-medium tracking-[0.12em] uppercase text-amber-500 mb-5">Common questions<span className="w-8 h-px bg-amber-500" /></div>
+            <h2 className="font-fraunces text-[clamp(36px,4vw,52px)] font-bold leading-[1.05] tracking-[-1.5px] text-forest-600 mb-4">We're here<br />to help.</h2>
+            <p className="text-[15px] font-light text-[#6B7B6E] leading-[1.75] mt-4">Need assistance? Our team is here for you. Call <a href="tel:+14125551234" className="text-forest-600 font-medium no-underline">(412) 555-1234</a></p>
           </div>
+          <div className="reveal d2 flex flex-col gap-3">
+            {[
+              [
+                "Is switching really free?",
+                "Browsing and comparing agencies is always 100% free — no account needed. When you're ready to formally switch, there’s a one-time $97 coordination fee that covers paperwork, both-agency coordination, and 30 days of human support."
+              ],
+              [
+                "Will I lose my current care during the switch?",
+                "No. Your current care continues until your new agency is fully set up. We coordinate an exact start date with both agencies so there is zero gap in service — your new agency starts the day your old one ends."
+              ],
+              [
+                "Do I need my doctor's permission to switch?",
+                "You do not need anyone’s “permission” to change agencies. Under Medicare’s Conditions of Participation, you have the right to choose your home health agency. Your doctor certifies that you need care, but the agency you pick is up to you."
+              ],
+              [
+                "How long does the switch take?",
+                "Most switches complete in 5–7 business days. You’ll see every step in your dashboard and get notifications when forms are sent, signed, and approved. If there’s a safety issue or care gap, we flag your case as urgent."
+              ],
+              [
+                "What insurances do you work with?",
+                "We work with all major Pennsylvania payers: Medicare, Medicaid, UPMC Health Plan, Highmark, Aetna Better Health, Community HealthChoices (CHC), and private pay. Each agency profile clearly shows which plans they accept."
+              ],
+            ].map(([q, a], i) => (
+              <FAQItem key={i} question={q} answer={a} defaultOpen={i === 0} />
+            ))}
+          </div>
+        </section>
 
-          <TopAgenciesList />
+        {/* ═══════════════════  AGENCY JOIN BAR  ═══════════════════════════ */}
+        <div className="bg-cream px-8 lg:px-20 py-16 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-8 border-y border-[rgba(26,61,43,0.08)] reveal">
+          <div className="flex items-center gap-5">
+            <div className="w-[60px] h-[60px] bg-forest-600 rounded-2xl flex items-center justify-center text-[26px] shrink-0">🏢</div>
+            <div>
+              <div className="font-fraunces text-[26px] font-semibold text-forest-600 leading-tight">Are you a home health agency?</div>
+              <div className="text-sm font-light text-[#6B7B6E] mt-1 leading-relaxed">Join SwitchMyCare&apos;s Pennsylvania network. Receive structured referrals from patients ready to switch. No per-referral fees.</div>
+            </div>
+          </div>
+          <Link href="/auth/register?type=agency" className="border-[1.5px] border-forest-600 text-forest-600 text-sm font-medium px-7 py-3 rounded-full no-underline shrink-0 hover:bg-forest-600 hover:text-cream transition-all">
+            Join as an agency
+          </Link>
+        </div>
 
-          <motion.div variants={fadeUp} className="text-center">
-            <Button variant="outline" size="lg" asChild className="bg-white hover:bg-forest-50">
-              <Link href="/auth/register">
-                See all 200+ agencies
-                <ArrowRight className="size-4" />
+        {/* ═══════════════════  FINAL CTA  ═══════════════════════════════ */}
+        <section className="bg-[#0F2419] py-28 lg:py-40 px-8 text-center relative overflow-hidden">
+          <div className="absolute top-[-300px] left-1/2 -translate-x-1/2 w-[800px] h-[700px] rounded-full pointer-events-none" style={{ background: "radial-gradient(circle, rgba(232,147,58,0.07), transparent 65%)" }} />
+          <h2 className="font-fraunces text-[clamp(52px,7vw,92px)] font-black italic tracking-[-2.5px] text-cream leading-[1.0] mb-5 reveal relative z-10">
+            Ready for<br /><span className="text-amber-500">better care?</span>
+          </h2>
+          <p className="text-[16px] font-light text-cream/70 max-w-[460px] mx-auto mb-12 leading-[1.75] reveal d1 relative z-10">
+            27+ Pittsburgh agencies. Real pay rates. Real ratings. Switching takes 5–7 days and $97. Browse completely free — no account needed.
+          </p>
+          <div className="flex items-center justify-center gap-4 flex-wrap reveal d2 relative z-10">
+            <Link href="/auth/register" className="bg-amber-500 text-[#0F2419] text-sm font-medium px-8 py-3.5 rounded-full no-underline inline-flex items-center gap-2 transition-all hover:bg-amber-300 hover:-translate-y-0.5" style={{ boxShadow: "0 12px 36px rgba(232,147,58,0.3)" }}>
+              Get started free →
+            </Link>
+            <Link href="/auth/login" className="text-sm text-cream/60 no-underline hover:text-cream transition-colors">Already have an account →</Link>
+          </div>
+          <p className="text-xs text-cream/50 mt-5 relative z-10">Or call us: <a href="tel:+14125551234" className="text-cream/50 no-underline">(412) 555-1234</a></p>
+        </section>
+
+        {/* ═══════════════════  FOOTER  ═══════════════════════════════════ */}
+        <footer className="bg-[#0A1A10] px-8 lg:px-20 pt-14 pb-9 border-t border-cream/[0.04]">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[2.2fr_1fr_1fr_1fr] gap-10 lg:gap-14 mb-12">
+            <div>
+              <Link href="/" className="block mb-3">
+                <Logo size="md" light />
               </Link>
-            </Button>
-          </motion.div>
-        </div>
-      </Section>
-
-      {/* ═══════════════════  7. FAQ  ════════════════════════════════════════ */}
-      <Section className="py-16 sm:py-24 px-4 sm:px-6 bg-white" id="faq">
-        <div className="max-w-3xl mx-auto space-y-10 sm:space-y-12">
-          <div className="text-center space-y-4">
-            <motion.div variants={fadeUp}>
-              <Badge variant="outline">{t("landing_faq_badge")}</Badge>
-            </motion.div>
-            <motion.h2 variants={fadeUp} className="font-fraunces text-3xl sm:text-4xl font-semibold text-forest-800">
-              {t("landing_faq_title")}
-            </motion.h2>
-          </div>
-
-          <motion.div variants={fadeUp} className="rounded-2xl bg-cream border border-forest-100/60 px-6 sm:px-8">
-            <FAQItem question={t("landing_faq1_q")} answer={t("landing_faq1_a")} />
-            <FAQItem question={t("landing_faq2_q")} answer={t("landing_faq2_a")} />
-            <FAQItem question={t("landing_faq3_q")} answer={t("landing_faq3_a")} />
-            <FAQItem question={t("landing_faq4_q")} answer={t("landing_faq4_a")} />
-            <FAQItem question={t("landing_faq5_q")} answer={t("landing_faq5_a")} />
-          </motion.div>
-        </div>
-      </Section>
-
-      {/* ═══════════════════  8. FINAL CTA  ═════════════════════════════════ */}
-      <Section className="py-16 sm:py-24 px-4 sm:px-6 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-cream via-cream to-amber-50 opacity-60" />
-        <div className="max-w-3xl mx-auto text-center relative z-10 space-y-6 sm:space-y-8">
-          <motion.h2
-            variants={fadeUp}
-            className="font-fraunces text-3xl sm:text-4xl lg:text-5xl font-semibold text-forest-800 text-balance"
-          >
-            {t("landing_final_title")}
-          </motion.h2>
-          <motion.p variants={fadeUp} className="text-forest-500 text-base sm:text-lg max-w-xl mx-auto">
-            {t("landing_final_desc")}
-          </motion.p>
-          <motion.div variants={fadeUp} className="flex flex-col sm:flex-row gap-3 justify-center">
-            <Button size="xl" asChild>
-              <Link href="/auth/register">
-                {t("landing_cta_get_started")}
-                <ChevronRight className="size-5" />
-              </Link>
-            </Button>
-          </motion.div>
-          <motion.p variants={fadeUp} className="text-sm text-forest-400 flex items-center justify-center gap-2">
-            <Phone className="size-4" />
-            {t("landing_cta_call")}{" "}
-            <a href="tel:+14125551234" className="font-semibold text-forest-600 hover:underline">
-              (412) 555-1234
-            </a>
-          </motion.p>
-        </div>
-      </Section>
-
-      {/* ═══════════════════  9. FOOTER  ════════════════════════════════════ */}
-      <footer className="border-t border-forest-100 bg-white">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Top footer */}
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8 py-12 sm:py-16">
-            <div className="space-y-4 sm:col-span-2 lg:col-span-1">
-              <Logo size="sm" />
-              <p className="text-sm text-forest-400 leading-relaxed max-w-xs">
-                Helping Pennsylvania families find and switch to the right home care agency — guided, simple, and affordable.
-              </p>
+              <p className="text-[13px] font-light text-cream/50 leading-[1.7] max-w-[300px] mb-4">Helping Pennsylvania families find and switch to the right home care agency — guided, simple, and affordable.</p>
+              <div className="flex gap-2">{["English", "नेपाली", "हिन्दी"].map(l => <span key={l} className="bg-white/[0.05] border border-white/[0.06] rounded-full px-3 py-0.5 text-[11px] text-cream/50">{l}</span>)}</div>
             </div>
-
-            <div className="space-y-3">
-              <h4 className="font-fraunces text-sm font-semibold text-forest-800">For Patients</h4>
-              <div className="space-y-2">
-                <Link href="/auth/register" className="block text-sm text-forest-400 hover:text-forest-600 transition-colors">
-                  Get Started
-                </Link>
-                <Link href="#how-it-works" className="block text-sm text-forest-400 hover:text-forest-600 transition-colors">
-                  How it Works
-                </Link>
-                <Link href="#agencies" className="block text-sm text-forest-400 hover:text-forest-600 transition-colors">
-                  Find Agencies
-                </Link>
-                <Link href="#faq" className="block text-sm text-forest-400 hover:text-forest-600 transition-colors">
-                  FAQ
-                </Link>
+            {[
+              { title: "For Patients", links: [["/auth/register", "Get Started"], ["#how-it-works", "How it Works"], ["/agencies", "Find Agencies"], ["#faq", "FAQ"]] },
+              { title: "For Agencies", links: [["/auth/login", "Agency Portal"], ["/auth/register", "Partner With Us"]] },
+              { title: "Contact", links: [["tel:+14125551234", "(412) 555-1234"], ["mailto:help@switchmycare.com", "help@switchmycare.com"], ["#", "Pittsburgh, PA 15213"]] },
+            ].map(col => (
+              <div key={col.title}>
+                <h4 className="font-mono text-[10px] tracking-[0.1em] uppercase text-cream/40 font-medium mb-4">{col.title}</h4>
+                {col.links.map(([href, label]) => (
+                  <Link key={label} href={href} onClick={(e) => href.startsWith('#') ? handleSmoothScroll(e, href) : undefined} className="block text-[13px] font-light text-cream/55 no-underline mb-2.5 hover:text-cream transition-colors">{label}</Link>
+                ))}
               </div>
-            </div>
-
-            <div className="space-y-3">
-              <h4 className="font-fraunces text-sm font-semibold text-forest-800">{t("landing_footer_agencies")}</h4>
-              <div className="space-y-2">
-                <Link href="/auth/login" className="block text-sm text-forest-400 hover:text-forest-600 transition-colors">
-                  Agency Portal
-                </Link>
-                <Link href="/auth/register" className="block text-sm text-forest-400 hover:text-forest-600 transition-colors">
-                  Partner with Us
-                </Link>
-              </div>
-            </div>
-
-            <div className="space-y-3">
-              <h4 className="font-fraunces text-sm font-semibold text-forest-800">{t("landing_footer_contact")}</h4>
-              <div className="space-y-2.5">
-                <div className="flex items-center gap-2 text-sm text-forest-400">
-                  <Phone className="size-4 shrink-0" />
-                  <a href="tel:+14125551234" className="hover:text-forest-600 transition-colors">(412) 555-1234</a>
-                </div>
-                <div className="flex items-center gap-2 text-sm text-forest-400">
-                  <Mail className="size-4 shrink-0" />
-                  <a href="mailto:help@switchmycare.com" className="hover:text-forest-600 transition-colors">help@switchmycare.com</a>
-                </div>
-                <div className="flex items-start gap-2 text-sm text-forest-400">
-                  <MapPin className="size-4 shrink-0 mt-0.5" />
-                  <span>Pittsburgh, PA 15213</span>
-                </div>
-              </div>
-            </div>
+            ))}
           </div>
-
-          {/* Bottom footer */}
-          <div className="border-t border-forest-100 py-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-4 sm:gap-6 text-xs text-forest-400">
-              <Link href="/privacy" className="hover:text-forest-700 transition-colors">{t("landing_footer_privacy")}</Link>
-              <Link href="/terms" className="hover:text-forest-700 transition-colors">{t("landing_footer_terms")}</Link>
-              <Link href="/hipaa" className="hover:text-forest-700 transition-colors">{t("landing_footer_hipaa")}</Link>
-            </div>
-            <p className="text-forest-300 text-xs">
-              © 2026 SwitchMyCare. {t("landing_footer_disclaimer")}
-            </p>
+          <div className="border-t border-white/[0.04] pt-6 flex flex-wrap justify-between items-center text-[11px] text-cream/40 font-light gap-2">
+            <span>© 2026 SwitchMyCare. Not affiliated with DHHS or CMS.</span>
+            <span>
+              <Link href="/privacy" className="text-inherit no-underline">Privacy</Link> · <Link href="/terms" className="text-inherit no-underline">Terms</Link> · <Link href="/hipaa" className="text-inherit no-underline">HIPAA</Link>
+            </span>
           </div>
+        </footer>
+
+      </div>
+    </>
+  );
+}
+
+/* ═══════════════════  FAQ Item Component  ═══════════════════════════════ */
+function FAQItem({ question, answer, defaultOpen = false }: { question: string; answer: string; defaultOpen?: boolean }) {
+  const [open, setOpen] = React.useState(defaultOpen);
+  const answerId = React.useId();
+  return (
+    <div className={`rounded-[14px] overflow-hidden bg-white border border-[rgba(26,61,43,0.08)] ${open ? "faq-open border-[rgba(26,61,43,0.14)]" : ""}`}>
+      <button
+        onClick={() => setOpen(!open)}
+        className="w-full text-left bg-transparent border-none p-5 px-[22px] cursor-pointer flex justify-between items-center gap-3 text-[15px] text-forest-600 hover:text-[#2A5C41] transition-colors"
+        aria-expanded={open}
+        aria-controls={answerId}
+        style={{ fontFamily: "inherit" }}
+      >
+        {question}
+        <span className="faq-icon-plus w-6 h-6 rounded-md border border-[rgba(26,61,43,0.15)] flex items-center justify-center text-[16px] text-[rgba(26,61,43,0.4)] shrink-0 transition-all">+</span>
+      </button>
+      {open && (
+        <div id={answerId} className="faq-ans text-sm font-light leading-[1.8] text-[#6B7B6E] px-5 pb-5">
+          {answer}
         </div>
-      </footer>
+      )}
     </div>
   );
 }
