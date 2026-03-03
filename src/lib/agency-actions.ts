@@ -31,6 +31,29 @@ const LANGUAGE_NORMALIZATION_MAP: Record<string, LanguageCode> = {
 
 const DEFAULT_SEARCH_ERROR = "We couldn't load agencies right now. Please try again.";
 
+function dedupeAgencies(agencies: Agency[]): Agency[] {
+  const map = new Map<string, Agency>();
+
+  for (const agency of agencies) {
+    const keyBase = agency.npi?.trim() || `${agency.name.toLowerCase()}|${agency.address_zip}`;
+    const key = keyBase.toLowerCase();
+    const existing = map.get(key);
+
+    if (!existing) {
+      map.set(key, agency);
+      continue;
+    }
+
+    const existingScore = (existing.medicare_quality_score ?? 0) + (existing.is_verified_partner ? 1 : 0);
+    const incomingScore = (agency.medicare_quality_score ?? 0) + (agency.is_verified_partner ? 1 : 0);
+    if (incomingScore > existingScore) {
+      map.set(key, agency);
+    }
+  }
+
+  return Array.from(map.values());
+}
+
 function normalizeLanguageFilter(language?: string): LanguageCode | undefined {
   if (!language || language === "all") return undefined;
   return LANGUAGE_NORMALIZATION_MAP[language.trim().toLowerCase()];
@@ -150,9 +173,12 @@ async function searchAgenciesPipelineFallback(filters: AgencySearchFilters, page
     return { agencies: [], total: 0, error: DEFAULT_SEARCH_ERROR };
   }
 
+  const mapped = ((data as PipelineAgencyRow[] | null) ?? []).map(mapPipelineToAgency);
+  const agencies = dedupeAgencies(mapped);
+
   return {
-    agencies: ((data as PipelineAgencyRow[] | null) ?? []).map(mapPipelineToAgency),
-    total: count ?? 0,
+    agencies,
+    total: count ?? agencies.length,
   };
 }
 
@@ -219,7 +245,8 @@ export async function searchAgencies(
     return { agencies: [], total: 0, error: DEFAULT_SEARCH_ERROR };
   }
 
-  return { agencies: (data as Agency[]) ?? [], total: count ?? 0 };
+  const agencies = dedupeAgencies((data as Agency[]) ?? []);
+  return { agencies, total: count ?? agencies.length };
 }
 
 export async function getAgencyById(id: string): Promise<Agency | null> {

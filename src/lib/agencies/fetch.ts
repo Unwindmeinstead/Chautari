@@ -3,7 +3,7 @@ import type { CMSAgencyRaw, NPIRaw, AgencyListing } from "./types";
 const CMS_API_BASE = "https://data.cms.gov/provider-data/api/1/datastore/sql";
 const HHA_DATASET_ID = "6jpm-sxkc";
 const NPPES_API_BASE = "https://npiregistry.cms.hhs.gov/api";
-const PITTSBURGH_ZIP_PREFIXES = ["150", "151", "152"];
+const PITTSBURGH_ZIP_PREFIXES = ["150", "151", "152", "153", "154", "155", "156"];
 export const CMS_REFRESH_DAYS = 91;
 
 export async function fetchCMSAgencies(stateCode = "PA", pageSize = 500): Promise<CMSAgencyRaw[]> {
@@ -45,11 +45,11 @@ export function filterPittsburghAgencies(agencies: CMSAgencyRaw[]): CMSAgencyRaw
   });
 }
 
-export async function fetchNPIAgencies(city = "Pittsburgh", state = "PA", skip = 0): Promise<NPIRaw[]> {
+export async function fetchNPIAgencies(city = "Pittsburgh", state = "PA", skip = 0, taxonomyDescription = "Home Health"): Promise<NPIRaw[]> {
   const params = new URLSearchParams({
     version: "2.1",
     enumeration_type: "NPI-2",
-    taxonomy_description: "Home Health",
+    taxonomy_description: taxonomyDescription,
     city,
     state,
     limit: "200",
@@ -67,19 +67,23 @@ export async function fetchNPIAgencies(city = "Pittsburgh", state = "PA", skip =
 }
 
 export async function fetchAllNPIAgencies(city = "Pittsburgh", state = "PA"): Promise<NPIRaw[]> {
-  const all: NPIRaw[] = [];
-  let skip = 0;
-  const pageSize = 200;
+  const taxonomies = ["Home Health", "In Home Supportive Care"];
+  const allByNumber = new Map<string, NPIRaw>();
 
-  while (true) {
-    const page = await fetchNPIAgencies(city, state, skip);
-    all.push(...page);
-    if (page.length < pageSize) break;
-    skip += pageSize;
-    if (skip >= 1000) break;
+  for (const taxonomy of taxonomies) {
+    let skip = 0;
+    const pageSize = 200;
+
+    while (true) {
+      const page = await fetchNPIAgencies(city, state, skip, taxonomy);
+      page.forEach((record) => allByNumber.set(record.number, record));
+      if (page.length < pageSize) break;
+      skip += pageSize;
+      if (skip >= 2000) break;
+    }
   }
 
-  return all;
+  return Array.from(allByNumber.values());
 }
 
 function normalizeName(raw: string): string {
@@ -178,6 +182,44 @@ function mergeAgency(cms: CMSAgencyRaw, npi: NPIRaw | undefined): AgencyListing 
   };
 }
 
+
+function toListingFromNPI(rec: NPIRaw): AgencyListing {
+  const loc = rec.addresses.find((a) => a.address_purpose === "LOCATION") ?? rec.addresses[0];
+  const hasSupportiveCare = rec.taxonomies.some((t) => /supportive care/i.test(t.desc));
+
+  return {
+    id: `npi-${rec.number}`,
+    npi: rec.number,
+    name: titleCase(rec.basic.organization_name),
+    address: titleCase(loc?.address_1 ?? ""),
+    city: titleCase(loc?.city ?? "Pittsburgh"),
+    state: loc?.state ?? "PA",
+    zip: zip5(loc?.postal_code ?? ""),
+    phone: formatPhone(loc?.telephone_number ?? ""),
+    type_of_ownership: "",
+    date_certified: "",
+    is_medicare_certified: false,
+    is_medicaid_certified: rec.identifiers.some((id) => id.code === "05"),
+    offers_nursing: false,
+    offers_physical_therapy: false,
+    offers_occupational_therapy: false,
+    offers_speech_pathology: false,
+    offers_medical_social: false,
+    offers_home_health_aide: hasSupportiveCare,
+    cms_star_rating: null,
+    patient_survey_star_rating: null,
+    accepting_patients: true,
+    accepting_updated_at: null,
+    hha_pay_min: null,
+    hha_pay_max: null,
+    pay_updated_at: null,
+    languages: [],
+    data_source: "cms_pdcatalog",
+    last_synced_at: new Date().toISOString(),
+    cms_refresh_quarter: currentRefreshQuarter(),
+  };
+}
+
 export async function buildAgencyListings(state = "PA", city = "Pittsburgh"): Promise<AgencyListing[]> {
   console.log("[AgencyPipeline] Fetching from CMS PDC...");
   const cmsAll = await fetchCMSAgencies(state);
@@ -190,20 +232,42 @@ export async function buildAgencyListings(state = "PA", city = "Pittsburgh"): Pr
 
   const npiIndex = buildNPIIndex(npiAll);
 
+  const matchedNpis = new Set<string>();
+
   const listings = cmsPgh.map((cms) => {
     const cmsName = normalizeName(cms.provider_name);
     const cmsZip = zip5(cms.zip_code);
     const npiMatch = npiIndex.get(`${cmsName}|${cmsZip}`) ?? npiIndex.get(cmsName);
+    if (npiMatch?.number) matchedNpis.add(npiMatch.number);
     return mergeAgency(cms, npiMatch);
   });
 
-  listings.sort((a, b) => {
+  const npiOnly = npiAll
+    .filter((rec) => !matchedNpis.has(rec.number))
+    .filter((rec) => {
+      const loc = rec.addresses.find((a) => a.address_purpose === "LOCATION") ?? rec.addresses[0];
+      return PITTSBURGH_ZIP_PREFIXES.includes(zip5(loc?.postal_code ?? "").slice(0, 3));
+    })
+    .map(toListingFromNPI);
+
+  const deduped = new Map<string, AgencyListing>();
+  [...listings, ...npiOnly].forEach((agency) => {
+    const key = `${normalizeName(agency.name)}|${zip5(agency.zip)}`;
+    const existing = deduped.get(key);
+    if (!existing || (agency.cms_star_rating ?? 0) > (existing.cms_star_rating ?? 0)) {
+      deduped.set(key, agency);
+    }
+  });
+
+  const finalListings = Array.from(deduped.values());
+
+  finalListings.sort((a, b) => {
     const starA = a.cms_star_rating ?? 0;
     const starB = b.cms_star_rating ?? 0;
     if (starB !== starA) return starB - starA;
     return a.name.localeCompare(b.name);
   });
 
-  console.log(`[AgencyPipeline] Built ${listings.length} enriched agency listings`);
-  return listings;
+  console.log(`[AgencyPipeline] Built ${finalListings.length} enriched agency listings (${npiOnly.length} NPI-only)`);
+  return finalListings;
 }
