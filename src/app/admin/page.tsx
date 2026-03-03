@@ -37,10 +37,10 @@ export default async function AdminDashboardPage() {
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 animate-slide-up">
           <div className="space-y-2">
-            <h1 className="font-fraunces text-4xl md:text-5xl font-semibold text-gray-900 tracking-tight leading-tight">
+            <h1 className="font-fraunces text-4xl md:text-5xl font-semibold text-forest-900 tracking-tight leading-tight">
               Platform Overview
             </h1>
-            <p className="text-gray-500 text-lg font-medium">SwitchMyCare admin console — {new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}</p>
+            <p className="text-forest-500 text-lg font-medium">SwitchMyCare admin console — {new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}</p>
           </div>
         </div>
 
@@ -54,10 +54,10 @@ export default async function AdminDashboardPage() {
                     <AlertTriangle className="size-6 text-amber-500" />
                   </div>
                   <div>
-                    <h2 className="font-fraunces text-xl font-bold text-gray-900">
+                    <h2 className="font-fraunces text-xl font-bold text-forest-900">
                       {stats.pendingAgencyApprovals} {stats.pendingAgencyApprovals === 1 ? "agency" : "agencies"} pending approval
                     </h2>
-                    <p className="text-gray-500 font-medium mt-0.5">
+                    <p className="text-forest-500 font-medium mt-0.5">
                       Review their applications to allow them into the network.
                     </p>
                   </div>
@@ -86,35 +86,35 @@ export default async function AdminDashboardPage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 animate-slide-up" style={{ animationDelay: "200ms" }}>
           {/* Pending agency approvals */}
-          <div className="rounded-[32px] bg-white border border-gray-900/5 shadow-[0_4px_24px_rgba(0,0,0,0.02)] overflow-hidden flex flex-col">
-            <div className="px-8 py-6 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
-              <h2 className="font-fraunces text-xl font-semibold text-gray-900 tracking-tight">Pending Approvals</h2>
-              <Button variant="outline" size="sm" asChild className="text-xs font-semibold rounded-xl hover:bg-white hover:text-gray-900">
+          <div className="rounded-[32px] bg-white border border-forest-900/5 shadow-[0_4px_24px_rgba(0,0,0,0.02)] overflow-hidden flex flex-col">
+            <div className="px-8 py-6 border-b border-forest-100 flex items-center justify-between bg-cream/60">
+              <h2 className="font-fraunces text-xl font-semibold text-forest-900 tracking-tight">Pending Approvals</h2>
+              <Button variant="outline" size="sm" asChild className="text-xs font-semibold rounded-xl hover:bg-white hover:text-forest-900">
                 <Link href="/admin/agencies?status=pending">View all</Link>
               </Button>
             </div>
             {pendingAgencies.agencies.length === 0 ? (
-              <div className="py-16 text-center text-sm text-gray-500 flex-1 flex flex-col items-center justify-center">
+              <div className="py-16 text-center text-sm text-forest-500 flex-1 flex flex-col items-center justify-center">
                 <div className="h-16 w-16 rounded-full bg-green-50 flex items-center justify-center mb-4">
                   <CheckCircle2 className="size-8 text-green-500" />
                 </div>
-                <p className="font-semibold text-gray-900 text-lg mb-1">All Caught Up</p>
+                <p className="font-semibold text-forest-900 text-lg mb-1">All Caught Up</p>
                 <p>There are no agencies waiting for approval.</p>
               </div>
             ) : (
-              <div className="divide-y divide-gray-50">
+              <div className="divide-y divide-forest-100">
                 {pendingAgencies.agencies.map((a) => (
                   <Link
                     key={a.id}
                     href={`/admin/agencies/${a.id}`}
-                    className="flex items-center gap-4 px-8 py-5 hover:bg-gray-50/80 transition-colors group cursor-pointer"
+                    className="flex items-center gap-4 px-8 py-5 hover:bg-cream/40 transition-colors group cursor-pointer"
                   >
                     <div className="h-12 w-12 rounded-2xl bg-amber-50 flex items-center justify-center shrink-0 border border-amber-100 group-hover:scale-105 transition-transform duration-300">
                       <Building2 className="size-5 text-amber-600" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-base font-semibold text-gray-900 truncate">{a.name}</p>
-                      <p className="text-sm font-medium text-gray-500">{a.address_city}, {a.address_state}</p>
+                      <p className="text-base font-semibold text-forest-900 truncate">{a.name}</p>
+                      <p className="text-sm font-medium text-forest-500">{a.address_city}, {a.address_state}</p>
                     </div>
                     <Badge variant="warning" className="text-xs font-bold shadow-sm px-2.5 py-1">Pending</Badge>
                   </Link>
@@ -124,36 +124,36 @@ export default async function AdminDashboardPage() {
           </div>
 
           {/* Recent switch requests */}
-          <div className="rounded-[32px] bg-white border border-gray-900/5 shadow-[0_4px_24px_rgba(0,0,0,0.02)] overflow-hidden flex flex-col">
-            <div className="px-8 py-6 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
-              <h2 className="font-fraunces text-xl font-semibold text-gray-900 tracking-tight">Recent Requests</h2>
-              <Button variant="outline" size="sm" asChild className="text-xs font-semibold rounded-xl hover:bg-white hover:text-gray-900">
+          <div className="rounded-[32px] bg-white border border-forest-900/5 shadow-[0_4px_24px_rgba(0,0,0,0.02)] overflow-hidden flex flex-col">
+            <div className="px-8 py-6 border-b border-forest-100 flex items-center justify-between bg-cream/60">
+              <h2 className="font-fraunces text-xl font-semibold text-forest-900 tracking-tight">Recent Requests</h2>
+              <Button variant="outline" size="sm" asChild className="text-xs font-semibold rounded-xl hover:bg-white hover:text-forest-900">
                 <Link href="/admin/requests">View all</Link>
               </Button>
             </div>
-            <div className="divide-y divide-gray-50">
+            <div className="divide-y divide-forest-100">
               {recentRequests.requests.map((r) => {
                 const badge = STATUS_BADGE[r.status] ?? { label: r.status, variant: "secondary" as const };
                 return (
                   <Link
                     key={r.id}
                     href={`/admin/requests/${r.id}`}
-                    className="flex items-center gap-4 px-8 py-5 hover:bg-gray-50/80 transition-colors group cursor-pointer"
+                    className="flex items-center gap-4 px-8 py-5 hover:bg-cream/40 transition-colors group cursor-pointer"
                   >
                     <div className="h-10 w-10 rounded-full bg-indigo-50 flex items-center justify-center shrink-0 border border-indigo-100 text-indigo-600 font-bold text-sm">
                       {(r.patient_name ?? "?")[0]?.toUpperCase()}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-gray-900 truncate line-clamp-1">
+                      <p className="text-sm font-semibold text-forest-900 truncate line-clamp-1">
                         {r.patient_name ?? "Unknown patient"}
                       </p>
-                      <p className="text-xs font-medium text-gray-500 truncate mt-0.5 flex items-center gap-1">
+                      <p className="text-xs font-medium text-forest-500 truncate mt-0.5 flex items-center gap-1">
                         <ArrowLeftRight className="size-3" /> {r.agency_name ?? "Unknown agency"}
                       </p>
                     </div>
                     <div className="flex flex-col items-end gap-1.5 shrink-0">
                       <Badge variant={badge.variant} className="text-[11px] font-bold px-2 py-0.5">{badge.label}</Badge>
-                      <span className="text-xs font-medium text-gray-400">
+                      <span className="text-xs font-medium text-forest-400">
                         {new Date(r.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
                       </span>
                     </div>

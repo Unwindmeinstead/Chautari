@@ -129,7 +129,7 @@ export default async function AgencyDashboardPage() {
         {/* High-Fidelity Stats Bento Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 animate-slide-up" style={{ animationDelay: "100ms" }}>
           {[
-            { label: "Total requests", value: stats.total, icon: <PackageCheck className="size-6 text-gray-500" />, color: "text-forest-900", urgent: false },
+            { label: "Total requests", value: stats.total, icon: <PackageCheck className="size-6 text-forest-500" />, color: "text-forest-900", urgent: false },
             { label: "Pending action", value: stats.pending, icon: <Clock className="size-6 text-amber-600" />, color: "text-amber-600", urgent: stats.pending > 0 },
             { label: "Accepted (Active)", value: stats.accepted, icon: <CheckCircle2 className="size-6 text-emerald-600" />, color: "text-emerald-700", urgent: false },
             { label: "Completed", value: stats.completed, icon: <CheckCircle2 className="size-6 text-forest-500" />, color: "text-forest-600", urgent: false },

@@ -27,7 +27,7 @@ export default async function AgencyProfilePage() {
   const staffName = user.email?.split("@")[0] ?? "Staff";
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-cream/60">
       <AgencyNav
         agencyName={agency.name}
         staffName={staffName}
@@ -41,8 +41,8 @@ export default async function AgencyProfilePage() {
         </Button>
 
         <div>
-          <h1 className="font-fraunces text-3xl font-semibold text-gray-800">Agency Profile</h1>
-          <p className="text-gray-500 mt-1">How your agency appears to patients on SwitchMyCare.</p>
+          <h1 className="font-fraunces text-3xl font-semibold text-forest-800">Agency Profile</h1>
+          <p className="text-forest-500 mt-1">How your agency appears to patients on SwitchMyCare.</p>
         </div>
 
         <div className="grid lg:grid-cols-3 gap-6 items-start">
@@ -51,8 +51,8 @@ export default async function AgencyProfilePage() {
           <div className="lg:col-span-2 space-y-5">
 
             {/* Editable contact */}
-            <div className="rounded-2xl bg-white border border-gray-200 shadow-card p-6 space-y-5">
-              <h2 className="font-fraunces text-lg font-semibold text-gray-800">Contact & Languages</h2>
+            <div className="rounded-2xl bg-white border border-forest-100 shadow-card p-6 space-y-5">
+              <h2 className="font-fraunces text-lg font-semibold text-forest-800">Contact & Languages</h2>
               <AgencyProfileForm
                 initialData={{
                   phone: agency.phone ?? "",
@@ -65,27 +65,27 @@ export default async function AgencyProfilePage() {
             </div>
 
             {/* Read-only licensure */}
-            <div className="rounded-2xl bg-white border border-gray-200 shadow-card p-6 space-y-5">
+            <div className="rounded-2xl bg-white border border-forest-100 shadow-card p-6 space-y-5">
               <div className="flex items-center justify-between flex-wrap gap-2">
-                <h2 className="font-fraunces text-lg font-semibold text-gray-800">Licensure & Services</h2>
+                <h2 className="font-fraunces text-lg font-semibold text-forest-800">Licensure & Services</h2>
                 <Badge variant="secondary" className="text-xs">Set by SwitchMyCare admin</Badge>
               </div>
 
               <div className="grid sm:grid-cols-2 gap-5 text-sm">
                 <div>
-                  <p className="text-xs text-gray-400 mb-2 uppercase tracking-wider">Care types</p>
+                  <p className="text-xs text-forest-400 mb-2 uppercase tracking-wider">Care types</p>
                   <div className="flex flex-wrap gap-1.5">
                     {agency.care_types.map((t) => <Badge key={t} variant="default">{careTypeLabel(t)}</Badge>)}
                   </div>
                 </div>
                 <div>
-                  <p className="text-xs text-gray-400 mb-2 uppercase tracking-wider">Payers accepted</p>
+                  <p className="text-xs text-forest-400 mb-2 uppercase tracking-wider">Payers accepted</p>
                   <div className="flex flex-wrap gap-1.5">
                     {agency.payers_accepted.map((p) => <Badge key={p} variant="info">{payerLabel(p)}</Badge>)}
                   </div>
                 </div>
                 <div className="sm:col-span-2">
-                  <p className="text-xs text-gray-400 mb-2 uppercase tracking-wider">Services offered</p>
+                  <p className="text-xs text-forest-400 mb-2 uppercase tracking-wider">Services offered</p>
                   <div className="flex flex-wrap gap-1.5">
                     {agency.services_offered.map((s) => (
                       <Badge key={s} variant="secondary" className="text-xs">
@@ -95,18 +95,18 @@ export default async function AgencyProfilePage() {
                   </div>
                 </div>
                 <div>
-                  <p className="text-xs text-gray-400 mb-1 uppercase tracking-wider">Counties served</p>
-                  <p className="text-gray-700">{agency.service_counties.join(", ")}</p>
+                  <p className="text-xs text-forest-400 mb-1 uppercase tracking-wider">Counties served</p>
+                  <p className="text-forest-700">{agency.service_counties.join(", ")}</p>
                 </div>
                 {agency.pa_license_number && (
                   <div>
-                    <p className="text-xs text-gray-400 mb-1 uppercase tracking-wider">PA License</p>
-                    <p className="text-gray-700 font-mono">{agency.pa_license_number}</p>
+                    <p className="text-xs text-forest-400 mb-1 uppercase tracking-wider">PA License</p>
+                    <p className="text-forest-700 font-mono">{agency.pa_license_number}</p>
                   </div>
                 )}
               </div>
 
-              <p className="text-xs text-gray-400 italic">
+              <p className="text-xs text-forest-400 italic">
                 To update licensure or service area, email{" "}
                 <a href="mailto:agencies@chautari.com" className="text-forest-600 hover:underline">
                   agencies@chautari.com
@@ -119,13 +119,13 @@ export default async function AgencyProfilePage() {
           <div className="space-y-5">
 
             {/* Public listing preview */}
-            <div className="rounded-2xl bg-white border border-gray-200 shadow-card overflow-hidden">
+            <div className="rounded-2xl bg-white border border-forest-100 shadow-card overflow-hidden">
               <div className="h-10 bg-gradient-to-r from-forest-800 to-forest-600" />
               <div className="p-5 -mt-2 space-y-3">
                 <div className="flex items-start justify-between gap-2">
                   <div>
-                    <p className="font-fraunces text-sm font-semibold text-gray-800 leading-snug">{agency.name}</p>
-                    {agency.dba_name && <p className="text-xs text-gray-400">dba {agency.dba_name}</p>}
+                    <p className="font-fraunces text-sm font-semibold text-forest-800 leading-snug">{agency.name}</p>
+                    {agency.dba_name && <p className="text-xs text-forest-400">dba {agency.dba_name}</p>}
                   </div>
                   {agency.is_verified_partner && (
                     <Badge variant="verified" className="gap-1 shrink-0">
@@ -133,22 +133,22 @@ export default async function AgencyProfilePage() {
                     </Badge>
                   )}
                 </div>
-                <div className="space-y-1 text-xs text-gray-500">
+                <div className="space-y-1 text-xs text-forest-500">
                   {agency.address_city && (
                     <div className="flex items-center gap-1.5">
-                      <MapPin className="size-3 text-gray-400" />
+                      <MapPin className="size-3 text-forest-400" />
                       {agency.address_city}, {agency.address_state}
                     </div>
                   )}
                   {agency.phone && (
                     <div className="flex items-center gap-1.5">
-                      <Phone className="size-3 text-gray-400" />
+                      <Phone className="size-3 text-forest-400" />
                       {agency.phone}
                     </div>
                   )}
                   {agency.website && (
                     <div className="flex items-center gap-1.5">
-                      <Globe className="size-3 text-gray-400" />
+                      <Globe className="size-3 text-forest-400" />
                       <span className="truncate max-w-[160px]">{agency.website.replace(/^https?:\/\//, "")}</span>
                     </div>
                   )}
@@ -156,22 +156,22 @@ export default async function AgencyProfilePage() {
                 {agency.medicare_quality_score && (
                   <div className="flex items-center gap-1.5 text-xs">
                     <Star className="size-3.5 text-amber-500 fill-amber-500" />
-                    <span className="font-semibold text-gray-700">{agency.medicare_quality_score.toFixed(1)}</span>
-                    <span className="text-gray-400">quality score</span>
+                    <span className="font-semibold text-forest-700">{agency.medicare_quality_score.toFixed(1)}</span>
+                    <span className="text-forest-400">quality score</span>
                   </div>
                 )}
-                <div className="pt-1 border-t border-gray-100 text-xs flex justify-between">
+                <div className="pt-1 border-t border-forest-100 text-xs flex justify-between">
                   <span className={agency.is_accepting_patients ? "text-green-600 font-medium" : "text-red-500 font-medium"}>
                     {agency.is_accepting_patients ? "✓ Accepting" : "✗ Not accepting"}
                   </span>
-                  <span className="text-gray-400">{stats.total} requests</span>
+                  <span className="text-forest-400">{stats.total} requests</span>
                 </div>
               </div>
             </div>
 
             {/* Performance */}
-            <div className="rounded-2xl bg-white border border-gray-200 shadow-card p-5 space-y-3">
-              <h3 className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+            <div className="rounded-2xl bg-white border border-forest-100 shadow-card p-5 space-y-3">
+              <h3 className="text-sm font-semibold text-forest-700 flex items-center gap-2">
                 <Award className="size-4 text-amber-500" /> Performance
               </h3>
               <div className="space-y-2 text-xs">
@@ -182,8 +182,8 @@ export default async function AgencyProfilePage() {
                   { label: "Avg response",     value: agency.average_response_time_hours ? `${agency.average_response_time_hours}h` : "Not tracked" },
                 ].map(({ label, value }) => (
                   <div key={label} className="flex justify-between">
-                    <span className="text-gray-400">{label}</span>
-                    <span className="text-gray-700 font-medium">{value}</span>
+                    <span className="text-forest-400">{label}</span>
+                    <span className="text-forest-700 font-medium">{value}</span>
                   </div>
                 ))}
               </div>
