@@ -1,9 +1,9 @@
 "use client";
 
 import * as React from "react";
-import { useRouter, useSearchParams, usePathname } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { useCallback } from "react";
-import { ChevronLeft, ChevronRight, AlertCircle } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AgencyCard, AgencyCardSkeleton } from "./agency-card";
 import { AgencyFilters, AgencySearchBar } from "./agency-filters";
@@ -29,12 +29,9 @@ export function AgencySearchClient({
 }: AgencySearchClientProps) {
   const router = useRouter();
   const pathname = usePathname();
-  const searchParams = useSearchParams();
-
   const [agencies, setAgencies] = React.useState<Agency[]>(initialAgencies);
   const [total, setTotal] = React.useState(initialTotal);
   const [loading, setLoading] = React.useState(false);
-  const [error, setError] = React.useState<string | null>(null);
   const [page, setPage] = React.useState(1);
   const [filters, setFilters] = React.useState<AgencySearchFilters>(initialFilters);
 
@@ -43,11 +40,8 @@ export function AgencySearchClient({
   const fetchAgencies = useCallback(
     async (newFilters: AgencySearchFilters, newPage: number) => {
       setLoading(true);
-      setError(null);
       const result = await searchAgencies(newFilters, newPage, PAGE_SIZE);
-      if (result.error) {
-        setError(result.error);
-      } else {
+      if (!result.error) {
         setAgencies(result.agencies);
         setTotal(result.total);
       }
@@ -128,14 +122,6 @@ export function AgencySearchClient({
 
         {/* Results grid */}
         <div className="flex-1 min-w-0 space-y-6">
-          {/* Error state */}
-          {error && (
-            <div className="rounded-xl bg-red-50 border border-red-200 p-4 flex items-center gap-3 text-red-700">
-              <AlertCircle className="size-5 shrink-0" />
-              <p className="text-sm">{error}</p>
-            </div>
-          )}
-
           {/* Loading state */}
           {loading && (
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
@@ -146,7 +132,7 @@ export function AgencySearchClient({
           )}
 
           {/* Empty state */}
-          {!loading && agencies.length === 0 && !error && (
+          {!loading && agencies.length === 0 && (
             <div className="text-center py-16 space-y-4">
               <div className="text-6xl">🏡</div>
               <h3 className="font-fraunces text-xl font-semibold text-forest-800">
