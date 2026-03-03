@@ -59,10 +59,10 @@ export default async function AgenciesPage({ searchParams }: AgenciesPageProps) 
         </div>
       </nav>
 
-      <div className="max-w-6xl mx-auto px-4 py-8 space-y-6">
+      <div className="max-w-6xl mx-auto px-4 py-5 md:py-8 space-y-5 md:space-y-6">
         {/* Page header */}
-        <div className="space-y-1">
-          <h1 className="font-fraunces text-3xl font-semibold text-forest-800">
+        <div className="rounded-2xl border border-forest-100 bg-white p-4 md:p-0 md:border-0 md:bg-transparent md:rounded-none space-y-1 md:space-y-1">
+          <h1 className="font-fraunces text-2xl md:text-3xl font-semibold text-forest-800">
             Find a home care agency
           </h1>
           <p className="text-forest-500">

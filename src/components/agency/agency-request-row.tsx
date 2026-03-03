@@ -10,8 +10,8 @@ const STATUS: Record<string, { label: string; badge: string; dot: string; stripe
   under_review: { label: "Reviewing", badge: "bg-blue-100 text-blue-700", dot: "bg-blue-400", stripe: "bg-blue-400", pulse: true },
   accepted: { label: "Accepted", badge: "bg-green-100 text-green-700", dot: "bg-green-500", stripe: "bg-green-500", pulse: false },
   completed: { label: "Completed", badge: "bg-forest-100 text-forest-700", dot: "bg-forest-500", stripe: "bg-forest-500", pulse: false },
-  denied: { label: "Denied", badge: "bg-gray-100 text-gray-500", dot: "bg-gray-300", stripe: "bg-gray-200", pulse: false },
-  cancelled: { label: "Cancelled", badge: "bg-gray-100 text-gray-400", dot: "bg-gray-200", stripe: "bg-gray-100", pulse: false },
+  denied: { label: "Denied", badge: "bg-forest-100 text-forest-500", dot: "bg-forest-300", stripe: "bg-forest-200", pulse: false },
+  cancelled: { label: "Cancelled", badge: "bg-forest-100 text-forest-400", dot: "bg-forest-200", stripe: "bg-forest-100", pulse: false },
 };
 
 const LANG_LABELS: Record<string, string> = {

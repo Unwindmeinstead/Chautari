@@ -65,7 +65,7 @@ export function RequestActions({ requestId, status }: RequestActionsProps) {
 
   if (isTerminal) {
     return (
-      <div className="rounded-xl bg-gray-50 border border-gray-200 p-4 text-center text-sm text-gray-400">
+      <div className="rounded-xl bg-cream/60 border border-forest-100 p-4 text-center text-sm text-forest-400">
         This request is <strong>{status}</strong> — no further actions available.
       </div>
     );
