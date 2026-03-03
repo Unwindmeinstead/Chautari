@@ -449,7 +449,7 @@ export default function HomePage() {
         <section className="bg-[#F5EDDA] grid grid-cols-1 lg:grid-cols-[340px_1fr] gap-16 lg:gap-24 py-20 lg:py-28 px-8 lg:px-20" id="faq">
           <div className="reveal">
             <div className="inline-flex items-center gap-2.5 font-mono text-[11px] font-medium tracking-[0.12em] uppercase text-amber-500 mb-5">Common questions<span className="w-8 h-px bg-amber-500" /></div>
-            <h2 className="font-fraunces text-[clamp(36px,4vw,52px)] font-bold leading-[1.05] tracking-[-1.5px] text-forest-600 mb-4">We're here<br />to help.</h2>
+            <h2 className="font-fraunces text-[clamp(36px,4vw,52px)] font-bold leading-[1.05] tracking-[-1.5px] text-forest-600 mb-4">We&apos;re here<br />to help.</h2>
             <p className="text-[15px] font-light text-[#6B7B6E] leading-[1.75] mt-4">Need assistance? Our team is here for you. Call <a href="tel:+14125551234" className="text-forest-600 font-medium no-underline">(412) 555-1234</a></p>
           </div>
           <div className="reveal d2 flex flex-col gap-3">

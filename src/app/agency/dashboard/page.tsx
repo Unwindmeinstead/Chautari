@@ -87,7 +87,7 @@ export default async function AgencyDashboardPage() {
               Welcome back, <span className="text-amber-600 capitalize">{staffName}</span>.
             </h1>
             <p className="text-forest-600/80 text-lg max-w-2xl leading-relaxed font-medium">
-              Here's what's happening at your agency today. You have {stats.pending} requests requiring attention.
+              Here&apos;s what&apos;s happening at your agency today. You have {stats.pending} requests requiring attention.
             </p>
           </div>
           <div className="flex items-center gap-3 shrink-0 bg-white p-1.5 rounded-2xl shadow-sm border border-forest-900/5">

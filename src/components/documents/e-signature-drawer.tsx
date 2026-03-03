@@ -148,7 +148,7 @@ export function ESignatureDrawer({
                 {typedName && !nameMatches && (
                   <p className="text-xs text-amber-600 flex items-center gap-1">
                     <AlertCircle className="size-3" />
-                    Tip: your name on file is "{patientFullName}"
+                    Tip: your name on file is &ldquo;{patientFullName}&rdquo;
                   </p>
                 )}
               </div>

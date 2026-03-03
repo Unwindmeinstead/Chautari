@@ -213,7 +213,7 @@ export default async function AgencyRequestDetailPage({
               {request.special_instructions && (
                 <div className="rounded-xl bg-cream/60 border border-forest-100 p-4">
                   <p className="text-xs text-forest-400 mb-1.5 font-medium uppercase tracking-wide">Special instructions</p>
-                  <p className="text-sm text-forest-700 italic">"{request.special_instructions}"</p>
+                  <p className="text-sm text-forest-700 italic">&ldquo;{request.special_instructions}&rdquo;</p>
                 </div>
               )}
             </div>

@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Upload, X, FileText, Image, Loader2, CheckCircle2 } from "lucide-react";
+import { Upload, X, FileText, ImageIcon, Loader2, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { uploadDocument } from "@/lib/document-actions";
@@ -124,7 +124,7 @@ export function UploadDocumentForm({
         {file ? (
           <div className="flex items-center gap-3 justify-center">
             {file.type.startsWith("image/") ? (
-              <Image className="size-6 text-blue-500" />
+              <ImageIcon className="size-6 text-blue-500" />
             ) : (
               <FileText className="size-6 text-red-500" />
             )}
@@ -193,7 +193,7 @@ export function UploadDocumentForm({
             {requiresSignature && <CheckCircle2 className="size-3 text-white" />}
           </div>
           <span className="text-sm text-gray-700">
-            This document requires the patient's signature
+            This document requires the patient&apos;s signature
           </span>
         </label>
       )}

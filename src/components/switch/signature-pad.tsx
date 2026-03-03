@@ -30,7 +30,7 @@ export function SignaturePad({ onSignatureChange, legalName, error }: SignatureP
     if (mode === "typed") {
       onSignatureChange({ method: "typed", signatureName: typedName });
     }
-  }, [typedName, mode]);
+  }, [typedName, mode, onSignatureChange]);
 
   function getPos(e: React.MouseEvent | React.TouchEvent, canvas: HTMLCanvasElement) {
     const rect = canvas.getBoundingClientRect();

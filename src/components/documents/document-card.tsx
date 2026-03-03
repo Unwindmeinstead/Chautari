@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import {
-  FileText, Image, Download, Trash2, PenLine,
+  FileText, ImageIcon, Download, Trash2, PenLine,
   CheckCircle2, Clock, AlertCircle, Loader2
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -21,7 +21,7 @@ interface DocumentCardProps {
 }
 
 function fileIcon(mimeType: string | null) {
-  if (mimeType?.startsWith("image/")) return <Image className="size-5 text-blue-500" />;
+  if (mimeType?.startsWith("image/")) return <ImageIcon className="size-5 text-blue-500" />;
   return <FileText className="size-5 text-red-500" />;
 }
 
