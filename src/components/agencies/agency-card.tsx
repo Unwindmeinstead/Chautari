@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { MapPin, Phone, Star, CheckCircle, Clock, Languages, Heart, ArrowUpRight, ShieldCheck } from "lucide-react";
+import { MapPin, Phone, Star, CheckCircle, Clock, Languages, Heart, ArrowUpRight } from "lucide-react";
 import { cn, careTypeLabel, payerLabel } from "@/lib/utils";
 import type { Agency } from "@/types/database";
 
@@ -64,9 +64,11 @@ export function AgencyCard({ agency, highlighted = false, showSelectButton = fal
 
         {/* Meta */}
         <div className="space-y-1.5">
-          <div className="flex items-center gap-2 text-[12px] font-medium text-gray-500">
+          <div className="flex items-start gap-2 text-[12px] font-medium text-gray-500">
             <MapPin className="size-3.5 text-gray-400 shrink-0" />
-            {agency.address_city}, PA {agency.address_zip} · Serves {agency.service_counties.slice(0, 2).join(", ")}{agency.service_counties.length > 2 ? ` +${agency.service_counties.length - 2}` : ""}
+            <span className="leading-relaxed">
+              {agency.address_city}, PA {agency.address_zip} · Serves {agency.service_counties.slice(0, 2).join(", ")}{agency.service_counties.length > 2 ? ` +${agency.service_counties.length - 2}` : ""}
+            </span>
           </div>
           {agency.avg_response_hours && (
             <div className="flex items-center gap-2 text-[12px] font-medium text-gray-500">
@@ -103,24 +105,24 @@ export function AgencyCard({ agency, highlighted = false, showSelectButton = fal
       </div>
 
       {/* Footer */}
-      <div className="border-t border-gray-100 px-5 py-3 pl-6 flex items-center gap-3">
+      <div className="border-t border-gray-100 px-5 py-3 pl-6 flex flex-col sm:flex-row sm:items-center gap-3">
         {agency.phone && (
           <a href={`tel:${agency.phone}`}
-            className="flex items-center gap-1.5 text-[12px] font-semibold text-gray-500 hover:text-gray-900 transition-colors"
+            className="flex items-center gap-1.5 text-[12px] font-semibold text-gray-500 hover:text-gray-900 transition-colors break-all"
             onClick={e => e.stopPropagation()}>
             <Phone className="size-3.5" /> {agency.phone}
           </a>
         )}
-        <div className="flex-1" />
+        <div className="hidden sm:block flex-1" />
         {showSelectButton && onSelect ? (
           <button
             onClick={() => onSelect(agency)}
-            className="flex items-center gap-1.5 h-9 px-4 rounded-full bg-gray-900 text-white text-[12px] font-bold hover:bg-gray-800 transition-colors">
+            className="flex items-center justify-center gap-1.5 h-9 px-4 rounded-full bg-gray-900 text-white text-[12px] font-bold hover:bg-gray-800 transition-colors w-full sm:w-auto">
             <Heart className="size-3.5" /> Select
           </button>
         ) : (
           <Link href={`/agencies/${agency.id}`}
-            className="flex items-center gap-1.5 h-9 px-4 rounded-full border border-gray-200 text-[12px] font-bold text-gray-700 hover:border-gray-900 hover:text-gray-900 transition-all group/btn">
+            className="flex items-center justify-center gap-1.5 h-9 px-4 rounded-full border border-gray-200 text-[12px] font-bold text-gray-700 hover:border-gray-900 hover:text-gray-900 transition-all group/btn w-full sm:w-auto">
             View details <ArrowUpRight className="size-3.5 group-hover/btn:text-gray-900 transition-colors" />
           </Link>
         )}

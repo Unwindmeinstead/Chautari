@@ -35,7 +35,7 @@ export default async function AgenciesPage({ searchParams }: AgenciesPageProps) 
     <div className="min-h-screen bg-white text-gray-900 font-sans">
       {/* Nav */}
       <nav className="sticky top-0 z-30 bg-white border-b border-gray-100 shadow-[0_4px_24px_rgba(0,0,0,0.02)]">
-        <div className="max-w-[1200px] mx-auto px-6 h-[68px] flex items-center justify-between gap-6">
+        <div className="max-w-[1200px] mx-auto px-4 sm:px-6 h-[68px] flex items-center justify-between gap-3 sm:gap-6">
           <Link href="/" className="hover:opacity-80 transition-opacity shrink-0">
             <Logo size="sm" />
           </Link>
@@ -48,24 +48,24 @@ export default async function AgenciesPage({ searchParams }: AgenciesPageProps) 
             <Link href="/agencies" className="text-gray-900 font-bold border-b-2 border-gray-900 pb-0.5">Find Agencies</Link>
           </div>
           {user ? (
-            <Link href="/dashboard" className="h-9 px-5 rounded-full border border-gray-200 text-[13px] font-bold text-gray-700 flex items-center hover:border-gray-900 hover:text-gray-900 transition-all">
-              ← Dashboard
+            <Link href="/dashboard" className="h-9 px-3 sm:px-5 rounded-full border border-gray-200 text-[12px] sm:text-[13px] font-bold text-gray-700 flex items-center hover:border-gray-900 hover:text-gray-900 transition-all whitespace-nowrap">
+              <span className="hidden sm:inline">← </span>Dashboard
             </Link>
           ) : (
-            <Link href="/auth/login" className="h-9 px-5 rounded-full bg-gray-900 text-white text-[13px] font-bold flex items-center hover:bg-gray-800 transition-colors">
+            <Link href="/auth/login" className="h-9 px-4 sm:px-5 rounded-full bg-gray-900 text-white text-[12px] sm:text-[13px] font-bold flex items-center hover:bg-gray-800 transition-colors whitespace-nowrap">
               Sign in
             </Link>
           )}
         </div>
       </nav>
 
-      <div className="max-w-[1200px] mx-auto px-6 py-10 space-y-8">
+      <div className="max-w-[1200px] mx-auto px-4 sm:px-6 py-6 sm:py-10 space-y-6 sm:space-y-8">
         {/* Header */}
         <div className="space-y-2 pb-6 border-b border-gray-100">
-          <h1 className="text-[28px] font-extrabold tracking-tight text-gray-900">
+          <h1 className="text-[24px] sm:text-[28px] font-extrabold tracking-tight text-gray-900">
             Find a Home Care Agency
           </h1>
-          <p className="text-[15px] font-medium text-gray-500 max-w-2xl">
+          <p className="text-[14px] sm:text-[15px] font-medium text-gray-500 max-w-2xl">
             {total > 0 ? `${total.toLocaleString()} agencies` : "Agencies"} verified to operate in Pennsylvania.
             {!user && " Sign in for personalized recommendations based on your insurance."}
           </p>
