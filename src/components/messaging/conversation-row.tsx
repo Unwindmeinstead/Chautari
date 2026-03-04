@@ -2,7 +2,6 @@ import * as React from "react";
 import Link from "next/link";
 import { MessageSquare, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Badge } from "@/components/ui/badge";
 
 interface ConversationRowProps {
   id: string;
@@ -15,16 +14,18 @@ interface ConversationRowProps {
   href: string;
 }
 
-const STATUS_BADGE: Record<string, { label: string; variant: "default" | "warning" | "success" | "secondary" | "destructive" }> = {
-  submitted:     { label: "New", variant: "warning" },
-  under_review:  { label: "Reviewing", variant: "info" as any },
-  accepted:      { label: "Accepted", variant: "success" },
-  completed:     { label: "Completed", variant: "secondary" },
-  denied:        { label: "Denied", variant: "destructive" },
+const STATUS_BADGE: Record<string, { label: string; bg: string; text: string }> = {
+  submitted: { label: "New", bg: "bg-amber-50", text: "text-amber-700" },
+  under_review: { label: "Reviewing", bg: "bg-blue-50", text: "text-blue-700" },
+  accepted: { label: "Accepted", bg: "bg-emerald-50", text: "text-emerald-700" },
+  completed: { label: "Completed", bg: "bg-zinc-100", text: "text-zinc-700" },
+  denied: { label: "Denied", bg: "bg-red-50", text: "text-red-700" },
+  cancelled: { label: "Cancelled", bg: "bg-zinc-50", text: "text-zinc-500" },
 };
 
-function timeAgo(dateStr: string) {
-  const diff = Date.now() - new Date(dateStr).getTime();
+function timeAgo(dateStrToLocalUrlString: string | null) {
+  if (!dateStrToLocalUrlString) return "";
+  const diff = Date.now() - new Date(dateStrToLocalUrlString).getTime();
   const mins = Math.floor(diff / 60000);
   if (mins < 1) return "just now";
   if (mins < 60) return `${mins}m`;
@@ -41,56 +42,56 @@ export function ConversationRow({
   unreadCount,
   href,
 }: ConversationRowProps) {
-  const badge = STATUS_BADGE[requestStatus] ?? { label: requestStatus, variant: "secondary" as const };
+  const badge = STATUS_BADGE[requestStatus] ?? { label: requestStatus, bg: "bg-zinc-100", text: "text-zinc-600" };
   const hasUnread = unreadCount > 0;
 
   return (
     <Link
       href={href}
       className={cn(
-        "flex items-start gap-3.5 px-4 py-3.5 transition-colors hover:bg-gray-50 border-b border-gray-100 last:border-0",
-        hasUnread && "bg-forest-50/50 hover:bg-forest-50"
+        "flex items-start gap-4 px-5 py-4 transition-colors hover:bg-zinc-50/80 group",
+        hasUnread ? "bg-blue-50/30 hover:bg-blue-50/50" : ""
       )}
     >
       {/* Avatar */}
       <div className={cn(
-        "h-10 w-10 rounded-full shrink-0 flex items-center justify-center text-sm font-semibold mt-0.5",
-        hasUnread ? "bg-forest-600 text-white" : "bg-gray-100 text-gray-500"
+        "h-11 w-11 rounded-2xl shrink-0 flex items-center justify-center text-[15px] font-bold mt-0.5 transition-colors",
+        hasUnread ? "bg-blue-100 text-blue-700" : "bg-zinc-100 text-zinc-600 group-hover:bg-zinc-200"
       )}>
-        {patientName?.[0]?.toUpperCase() ?? <MessageSquare className="size-4" />}
+        {patientName?.[0]?.toUpperCase() ?? <MessageSquare className="size-5" />}
       </div>
 
       {/* Content */}
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center justify-between gap-2">
-          <span className={cn("text-sm truncate", hasUnread ? "font-semibold text-gray-900" : "font-medium text-gray-700")}>
+      <div className="flex-1 min-w-0 flex flex-col justify-center pt-0.5">
+        <div className="flex items-center justify-between gap-3">
+          <span className={cn("text-[14px] truncate", hasUnread ? "font-bold text-zinc-900" : "font-semibold text-zinc-800")}>
             {patientName ?? "Unknown Patient"}
           </span>
-          <div className="flex items-center gap-1.5 shrink-0">
+          <div className="flex items-center gap-2 shrink-0">
             {lastMessageAt && (
-              <span className="text-[11px] text-gray-400 flex items-center gap-0.5">
-                <Clock className="size-2.5" />
+              <span className="text-[11px] font-semibold text-zinc-400 flex items-center gap-1 uppercase tracking-widest">
+                <Clock className="size-3 opacity-70" />
                 {timeAgo(lastMessageAt)}
               </span>
             )}
             {hasUnread && (
-              <span className="h-5 min-w-5 rounded-full bg-forest-600 text-white text-[10px] font-bold flex items-center justify-center px-1">
+              <span className="h-5 px-1.5 rounded-md bg-blue-600 text-white text-[10px] font-bold flex items-center justify-center shadow-sm">
                 {unreadCount > 99 ? "99+" : unreadCount}
               </span>
             )}
           </div>
         </div>
 
-        <div className="flex items-center gap-2 mt-0.5">
-          <Badge variant={badge.variant} className="text-[10px] px-1.5 py-0 shrink-0">
+        <div className="flex items-center gap-2.5 mt-1">
+          <span className={cn("text-[10px] font-bold px-1.5 py-0.5 rounded-md shrink-0 uppercase tracking-widest border border-white/50", badge.bg, badge.text)}>
             {badge.label}
-          </Badge>
+          </span>
           {lastMessagePreview ? (
-            <p className={cn("text-xs truncate", hasUnread ? "text-gray-700" : "text-gray-400")}>
+            <p className={cn("text-[13px] truncate font-medium", hasUnread ? "text-zinc-700 font-semibold" : "text-zinc-500")}>
               {lastMessagePreview}
             </p>
           ) : (
-            <p className="text-xs text-gray-400 italic">No messages yet</p>
+            <p className="text-[13px] text-zinc-400 italic font-medium">No messages yet</p>
           )}
         </div>
       </div>

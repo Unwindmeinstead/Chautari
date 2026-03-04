@@ -9,7 +9,7 @@ import { AcceptingPatientsToggle } from "@/components/agency/accepting-patients-
 import { cn, payerLabel } from "@/lib/utils";
 import {
   ClipboardList, Clock, CheckCircle2, PackageCheck,
-  ArrowRight, AlertTriangle, Users, MapPin, Globe, Star
+  ArrowRight, AlertTriangle, Users, MapPin, Globe, Star, ShieldCheck
 } from "lucide-react";
 
 export const metadata = { title: "Agency Dashboard | SwitchMyCare" };
