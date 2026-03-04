@@ -3,7 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { AdminSidebar } from "@/components/admin/admin-sidebar";
 import { AdminMobileNav } from "@/components/admin/admin-mobile-nav";
 
-const BYPASS_AUTH = true;
+const BYPASS_AUTH = false;
 
 export default async function AdminLayout({
   children,

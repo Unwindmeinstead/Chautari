@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 
-const BYPASS_AUTH = true;
+const BYPASS_AUTH = false;
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
