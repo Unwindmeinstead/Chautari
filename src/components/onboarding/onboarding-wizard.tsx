@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Logo } from "@/components/ui/logo";
 import { Stepper } from "@/components/ui/stepper";
-import { saveOnboardingData } from "@/lib/onboarding-actions";
+import { saveOnboardingData, saveOnboardingDraft } from "@/lib/onboarding-actions";
 import type { OnboardingData } from "@/lib/onboarding-schema";
 import { ONBOARDING_STEPS } from "@/lib/onboarding-schema";
 
@@ -20,21 +20,46 @@ import { OnboardingComplete } from "./onboarding-complete";
 
 const TOTAL_STEPS = 5;
 
-interface OnboardingWizardProps {
-  userName?: string | null;
+
+interface StepNavProps {
+  onBack?: () => void;
+  isFirst?: boolean;
+  isLast?: boolean;
+  loading?: boolean;
+  nextLabel?: string;
 }
 
-export function OnboardingWizard({ userName }: OnboardingWizardProps) {
+export function StepNav({ onBack, isFirst = false, isLast = false, loading = false, nextLabel }: StepNavProps) {
+  return (
+    <div className="flex items-center justify-between pt-3">
+      <Button type="button" variant="ghost" onClick={onBack} disabled={isFirst || loading} className="gap-1.5">
+        <ArrowLeft className="size-4" /> Back
+      </Button>
+      <Button type="submit" disabled={loading} className="gap-1.5">
+        {loading ? <Loader2 className="size-4 animate-spin" /> : null}
+        {nextLabel ?? (isLast ? "Finish" : "Continue")}
+        {!loading ? <ArrowRight className="size-4" /> : null}
+      </Button>
+    </div>
+  );
+}
+
+interface OnboardingWizardProps {
+  userName?: string | null;
+  initialData?: Partial<OnboardingData>;
+}
+
+export function OnboardingWizard({ userName, initialData }: OnboardingWizardProps) {
   const router = useRouter();
   const [currentStep, setCurrentStep] = React.useState(0);
   const [saving, setSaving] = React.useState(false);
   const [saveError, setSaveError] = React.useState<string | null>(null);
   const [completed, setCompleted] = React.useState(false);
 
-  // Accumulated form data across steps
   const [formData, setFormData] = React.useState<Partial<OnboardingData>>({
     preferred_lang: "en",
     address_state: "PA",
+    ...initialData,
   });
 
   const progress = ((currentStep) / TOTAL_STEPS) * 100;
@@ -72,13 +97,26 @@ export function OnboardingWizard({ userName }: OnboardingWizardProps) {
     }
   }
 
+  async function handleSaveExit() {
+    setSaving(true);
+    setSaveError(null);
+    const result = await saveOnboardingDraft(formData);
+    setSaving(false);
+
+    if (result?.error) {
+      setSaveError(result.error);
+      return;
+    }
+
+    router.push("/dashboard");
+  }
+
   if (completed) {
     return <OnboardingComplete userName={userName} data={formData} />;
   }
 
   return (
     <div className="min-h-screen bg-cream">
-      {/* Top bar */}
       <div className="sticky top-0 z-40 bg-cream/95 backdrop-blur-sm border-b border-forest-100">
         <div className="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
           <Logo size="sm" />
@@ -87,8 +125,9 @@ export function OnboardingWizard({ userName }: OnboardingWizardProps) {
           </div>
           <button
             type="button"
-            onClick={() => router.push("/dashboard")}
-            className="text-xs text-forest-400 hover:text-forest-600 transition-colors shrink-0"
+            disabled={saving}
+            onClick={handleSaveExit}
+            className="text-xs text-forest-400 hover:text-forest-600 transition-colors shrink-0 disabled:opacity-50"
           >
             Save & exit
           </button>
@@ -96,7 +135,6 @@ export function OnboardingWizard({ userName }: OnboardingWizardProps) {
       </div>
 
       <div className="max-w-2xl mx-auto px-4 py-8 space-y-8">
-        {/* Step indicator */}
         <div className="hidden sm:block">
           <Stepper steps={ONBOARDING_STEPS} currentStep={currentStep} />
         </div>
@@ -104,22 +142,20 @@ export function OnboardingWizard({ userName }: OnboardingWizardProps) {
           Step {currentStep + 1} of {TOTAL_STEPS} — {ONBOARDING_STEPS[currentStep].label}
         </div>
 
-        {/* Save error */}
         {saveError && (
           <div className="rounded-xl bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
             {saveError}
           </div>
         )}
 
-        {/* Step content */}
         <div className="animate-slide-up">
           {currentStep === 0 && (
             <Step1Personal
               defaultValues={formData}
-              userName={userName}
               onComplete={handleStepComplete}
             />
           )}
+
           {currentStep === 1 && (
             <Step2Address
               defaultValues={formData}
@@ -127,6 +163,7 @@ export function OnboardingWizard({ userName }: OnboardingWizardProps) {
               onBack={handleBack}
             />
           )}
+
           {currentStep === 2 && (
             <Step3Insurance
               defaultValues={formData}
@@ -134,6 +171,7 @@ export function OnboardingWizard({ userName }: OnboardingWizardProps) {
               onBack={handleBack}
             />
           )}
+
           {currentStep === 3 && (
             <Step4CareNeeds
               defaultValues={formData}
@@ -141,6 +179,7 @@ export function OnboardingWizard({ userName }: OnboardingWizardProps) {
               onBack={handleBack}
             />
           )}
+
           {currentStep === 4 && (
             <Step5Situation
               defaultValues={formData}
@@ -150,59 +189,34 @@ export function OnboardingWizard({ userName }: OnboardingWizardProps) {
             />
           )}
         </div>
-      </div>
-    </div>
-  );
-}
 
-// Shared nav buttons used by each step
-interface StepNavProps {
-  onBack?: () => void;
-  onNext?: () => void;
-  isFirst?: boolean;
-  isLast?: boolean;
-  loading?: boolean;
-  nextLabel?: string;
-  disabled?: boolean;
-}
+        <div className="sm:hidden flex items-center justify-between pt-2 border-t border-forest-100">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleBack}
+            disabled={currentStep === 0 || saving}
+            className="gap-1"
+          >
+            <ArrowLeft className="size-4" /> Back
+          </Button>
 
-export function StepNav({
-  onBack,
-  onNext,
-  isFirst = false,
-  isLast = false,
-  loading = false,
-  nextLabel,
-  disabled = false,
-}: StepNavProps) {
-  return (
-    <div className="flex items-center justify-between pt-6 border-t border-forest-100 mt-6">
-      <Button
-        type="button"
-        variant="ghost"
-        onClick={onBack}
-        disabled={isFirst}
-        className={isFirst ? "invisible" : ""}
-      >
-        <ArrowLeft className="size-4" />
-        Back
-      </Button>
+          <div className="text-xs text-forest-400">{currentStep + 1}/{TOTAL_STEPS}</div>
 
-      <Button
-        type="submit"
-        size="lg"
-        disabled={disabled || loading}
-        className="min-w-[140px]"
-      >
-        {loading ? (
-          <Loader2 className="size-4 animate-spin" />
-        ) : (
-          <>
-            {nextLabel ?? (isLast ? "Complete setup" : "Continue")}
-            <ArrowRight className="size-4" />
-          </>
+          <Button size="sm" disabled className="opacity-0 pointer-events-none gap-1">
+            Next <ArrowRight className="size-4" />
+          </Button>
+        </div>
+
+        {saving && (
+          <div className="fixed inset-0 bg-black/20 backdrop-blur-sm z-50 flex items-center justify-center">
+            <div className="rounded-2xl bg-white p-6 shadow-2xl flex items-center gap-3">
+              <Loader2 className="size-5 animate-spin text-forest-600" />
+              <span className="text-sm font-medium text-forest-700">Saving your information...</span>
+            </div>
+          </div>
         )}
-      </Button>
+      </div>
     </div>
   );
 }
