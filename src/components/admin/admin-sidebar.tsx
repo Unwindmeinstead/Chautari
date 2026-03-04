@@ -28,7 +28,7 @@ export function AdminSidebar({ adminName }: { adminName: string }) {
       style={{ background: "#09090B", borderRight: "1px solid rgba(255,255,255,0.07)" }}
     >
       {/* Brand */}
-      <div className="px-5 pt-6 pb-5">
+      <Link href="/" className="block px-5 pt-6 pb-5 hover:opacity-80 transition-opacity">
         <div className="flex items-center gap-2.5">
           <div
             className="h-7 w-7 rounded-lg flex items-center justify-center shrink-0"
@@ -41,7 +41,7 @@ export function AdminSidebar({ adminName }: { adminName: string }) {
             <p className="text-[10px] text-white/30 font-medium tracking-wider mt-0.5">Admin Console</p>
           </div>
         </div>
-      </div>
+      </Link>
 
       <div className="mx-4 h-px" style={{ background: "rgba(255,255,255,0.07)" }} />
 

@@ -85,10 +85,10 @@ export async function getAgencyPortalData(statusFilter?: string): Promise<Agency
   const { data: { user } } = await supabase.auth.getUser();
 
   const empty: AgencyPortalData = {
-    agency: { id: "a1", name: "Premium Care Pittsburgh", dba_name: null, address_city: "Pittsburgh", address_state: "PA", phone: "555-0199", email: "hello@premiumcare.com", website: "premiumcare.com", care_types: ["Personal Care"], payers_accepted: ["Medicaid"], services_offered: ["Bathing"], languages_spoken: ["English", "Nepali"], service_counties: ["Allegheny"], is_verified_partner: true, is_accepting_patients: true, average_response_time_hours: 2.5, medicare_quality_score: 4.8, pa_license_number: "PA12345" },
-    member: { id: "m1", role: "owner", title: "Administrator" },
-    requests: [{ id: "r1", patient_id: "p1", status: "submitted", care_type: "Personal Care", switch_reason: "Seeking language support", services_requested: ["Bathing"], requested_start_date: new Date().toISOString(), special_instructions: "Speaks Nepali", submitted_at: new Date().toISOString(), created_at: new Date().toISOString(), updated_at: new Date().toISOString(), patient: { id: "p1", full_name: "Ram Bahadur", phone: "555-1111", preferred_lang: "ne" }, patient_details: { address_city: "Pittsburgh", address_county: "Allegheny", payer_type: "Medicaid", care_type: "Personal Care", services_needed: ["Bathing"] }, e_signatures: [] }],
-    stats: { total: 1, pending: 1, accepted: 0, completed: 0 }
+    agency: null,
+    member: null,
+    requests: [],
+    stats: { total: 0, pending: 0, accepted: 0, completed: 0 },
   };
   if (!user) return empty;
 

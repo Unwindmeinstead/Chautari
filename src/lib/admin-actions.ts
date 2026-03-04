@@ -4,19 +4,8 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 
-// ⚠️  TEMPORARY: mirrors the flag in src/lib/supabase/middleware.ts
-//    Set to false to re-enable admin auth guards before launch.
-const BYPASS_AUTH = true;
-
-// ─── Admin guard ──────────────────────────────────────────────────────────────
-
 async function requireAdmin() {
   const supabase = await createClient();
-
-  // Bypass: skip user/role checks entirely — just return the client.
-  if (BYPASS_AUTH) {
-    return { supabase, user: { id: "bypass" } as any, profile: { role: "switchmycare_admin", full_name: "Admin" } };
-  }
 
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/auth/login");
@@ -69,13 +58,6 @@ export interface PlatformStats {
 }
 
 export async function getPlatformStats(): Promise<PlatformStats> {
-  const supabasePreview = await createClient();
-  const { data: { user } } = await supabasePreview.auth.getUser();
-  const { data: profile } = user ? await supabasePreview.from("profiles").select("role").eq("id", user.id).single() : { data: null };
-  if (!user || profile?.role !== "switchmycare_admin") {
-    return { totalUsers: 154, totalPatients: 142, totalAgencies: 12, pendingAgencyApprovals: 3, totalRequests: 89, activeRequests: 14, completedRequests: 65, requestsThisMonth: 22, avgResponseHours: 4.5 };
-  }
-
   const { supabase } = await requireAdmin();
 
   const now = new Date();
@@ -191,6 +173,8 @@ export async function setUserRole(
     { role: old.role }, { role: newRole });
 
   revalidatePath("/admin/users");
+  revalidatePath("/admin");
+  revalidatePath("/", "layout");
   return {};
 }
 
@@ -252,13 +236,6 @@ export async function getAdminAgencies(options?: {
   limit?: number;
   offset?: number;
 }): Promise<{ agencies: AdminAgency[]; total: number }> {
-  const supabasePreview = await createClient();
-  const { data: { user } } = await supabasePreview.auth.getUser();
-  const { data: profile } = user ? await supabasePreview.from("profiles").select("role").eq("id", user.id).single() : { data: null };
-  if (!user || profile?.role !== "switchmycare_admin") {
-    return { agencies: [{ id: "a1", name: "Mock Agency pending approval", address_city: "Pittsburgh", address_state: "PA", is_active: true, is_approved: false, npi: "1234567890", is_verified_partner: false, care_types: ["Personal Care"], medicare_quality_score: null, created_at: new Date().toISOString() }], total: 1 };
-  }
-
   const { supabase } = await requireAdmin();
   const { search, status, limit = 50, offset = 0 } = options ?? {};
 
@@ -377,13 +354,6 @@ export async function getAdminRequests(options?: {
   limit?: number;
   offset?: number;
 }): Promise<{ requests: AdminRequest[]; total: number }> {
-  const supabasePreview = await createClient();
-  const { data: { user } } = await supabasePreview.auth.getUser();
-  const { data: profile } = user ? await supabasePreview.from("profiles").select("role").eq("id", user.id).single() : { data: null };
-  if (!user || profile?.role !== "switchmycare_admin") {
-    return { requests: [{ id: "r1", patient_id: "p1", patient_name: "Mock Patient", new_agency_id: "a1", agency_name: "Mock Agency", care_type: "Home Health", payer_type: "Medicare", status: "submitted", created_at: new Date().toISOString(), submitted_at: new Date().toISOString() }], total: 1 };
-  }
-
   const { supabase } = await requireAdmin();
   const { status, limit = 50, offset = 0 } = options ?? {};
 

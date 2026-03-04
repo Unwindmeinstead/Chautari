@@ -5,7 +5,7 @@ import { getSupabasePublishableKey, getSupabaseUrl } from "@/lib/supabase/env";
 
 // ⚠️  TEMPORARY: Set to true to bypass all auth checks while debugging.
 //    Flip back to false before deploying with real auth.
-const BYPASS_AUTH = true;
+const BYPASS_AUTH = false;
 
 export async function updateSession(request: NextRequest) {
   // Short-circuit: let every request through with no auth check.
@@ -90,6 +90,35 @@ export async function updateSession(request: NextRequest) {
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = await getUserRedirectPath(supabase, user);
     return NextResponse.redirect(redirectUrl);
+  }
+
+  // If logged in, enforce role-based dashboard access on page refresh
+  // This ensures that if a user's role changes, the next page load redirects them correctly.
+  if (user) {
+    const correctDashboard = await getUserRedirectPath(supabase, user);
+
+    // If patient visits /agency/ or /admin/ — send to their dashboard
+    const isAdminRoute = pathname.startsWith("/admin");
+    const isAgencyRoute = pathname.startsWith("/agency");
+    const isPatientRoute = pathname.startsWith("/dashboard") || pathname.startsWith("/onboarding") || pathname.startsWith("/profile") || pathname.startsWith("/switch") || pathname.startsWith("/notifications");
+
+    const isAdmin = correctDashboard === "/admin";
+    const isAgency = correctDashboard === "/agency/dashboard";
+    const isPatient = !isAdmin && !isAgency;
+
+    // Prevent non-admins from accessing /admin/*
+    if (isAdminRoute && !isAdmin) {
+      const redirectUrl = request.nextUrl.clone();
+      redirectUrl.pathname = correctDashboard;
+      return NextResponse.redirect(redirectUrl);
+    }
+
+    // Prevent non-agency users from accessing /agency/*
+    if (isAgencyRoute && !isAgency) {
+      const redirectUrl = request.nextUrl.clone();
+      redirectUrl.pathname = correctDashboard;
+      return NextResponse.redirect(redirectUrl);
+    }
   }
 
   return supabaseResponse;

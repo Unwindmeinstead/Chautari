@@ -1,6 +1,6 @@
 import { getAdminUsers, setUserRole, suspendUser, deleteUserAccount } from "@/lib/admin-actions";
 import { Users, User, Search, ShieldAlert, ShieldCheck, Ban, CheckCircle2 } from "lucide-react";
-import { DeleteUserButton } from "@/components/admin/user-actions";
+import { DeleteUserButton, RoleSelect } from "@/components/admin/user-actions";
 import Link from "next/link";
 
 export const metadata = { title: "Users | Admin" };
@@ -181,23 +181,13 @@ export default async function AdminUsersPage({
                             <span className="text-[11px] text-white/20 italic">Protected</span>
                           ) : (
                             <div className="flex items-center justify-end gap-2">
-                              {/* Role change */}
-                              <form action={async (fd: FormData) => {
-                                "use server";
-                                const newRole = fd.get("role") as string;
-                                await setUserRole(u.id, newRole);
-                              }} className="inline-flex items-center gap-1.5">
-                                <select name="role" defaultValue={u.role}
-                                  className="text-[11px] px-2 py-1.5 rounded-xl font-medium appearance-none"
-                                  style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.7)", outline: "none" }}>
-                                  {ROLE_OPTIONS.map(o => <option key={o.v} value={o.v}>{o.l}</option>)}
-                                </select>
-                                <button type="submit"
-                                  className="text-[11px] font-semibold text-white/50 hover:text-white transition-colors px-2.5 py-1.5 rounded-xl"
-                                  style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }}>
-                                  Save
-                                </button>
-                              </form>
+                              {/* Role change — client component with instant update */}
+                              <RoleSelect
+                                userId={u.id}
+                                currentRole={u.role}
+                                roleOptions={ROLE_OPTIONS}
+                                setRoleAction={setUserRole}
+                              />
 
                               {/* Suspend / Unsuspend */}
                               <form action={async () => {

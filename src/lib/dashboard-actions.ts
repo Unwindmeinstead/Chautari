@@ -57,22 +57,7 @@ export async function getDashboardData(): Promise<DashboardData> {
 
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) {
-    // MOCK DATA FOR UI PREVIEW (since there is no logged-in user)
-    return {
-      profile: {
-        id: "mock-id", full_name: "Mock Patient", email: "mock@example.com", phone: "(555) 123-4567", preferred_lang: "en", role: "patient"
-      },
-      patientDetails: {
-        address_line1: "123 Liberty Ave", address_city: "Pittsburgh", address_state: "PA", address_zip: "15222", address_county: "Allegheny", payer_type: "Medicaid", care_type: "Personal Care", services_needed: ["Bathing", "Meal Prep"]
-      },
-      switchRequests: [{
-        id: "req-1", status: "under_review", care_type: "Personal Care", switch_reason: "Better pay", requested_start_date: new Date().toISOString(), submitted_at: new Date().toISOString(), created_at: new Date().toISOString(), updated_at: new Date().toISOString(),
-        new_agency: { id: "a1", name: "Premium Care Agency (Mock)", address_city: "Pittsburgh", phone: "555-1234" }
-      }],
-      notifications: [{ id: "n1", type: "system", title: "Welcome to your SwitchMyCare dashboard", body: "This is a mock dashboard preview. Your actual profile creation is pending database triggers.", read_at: null, created_at: new Date().toISOString(), reference_id: null, reference_type: null }],
-      unreadCount: 1,
-      onboardingComplete: true,
-    };
+    throw new Error("unauthorized");
   }
 
   const [profileRes, detailsRes, requestsRes, notificationsRes] = await Promise.all([
@@ -114,21 +99,15 @@ export async function getDashboardData(): Promise<DashboardData> {
   ]);
 
   if (!profileRes.data) {
-    // MOCK DATA FOR UI PREVIEW (user authenticated but profile missing due to disabled DB trigger)
     return {
       profile: {
-        id: user.id, full_name: user?.user_metadata?.full_name || "Mock Patient", email: user.email ?? "mock@example.com", phone: "(555) 123-4567", preferred_lang: "en", role: "patient"
+        id: user.id, full_name: user?.user_metadata?.full_name || "", email: user.email ?? "", phone: "", preferred_lang: "en", role: "patient"
       },
-      patientDetails: {
-        address_line1: "123 Liberty Ave", address_city: "Pittsburgh", address_state: "PA", address_zip: "15222", address_county: "Allegheny", payer_type: "Medicaid", care_type: "Personal Care", services_needed: ["Bathing", "Meal Prep"]
-      },
-      switchRequests: [{
-        id: "req-1", status: "under_review", care_type: "Personal Care", switch_reason: "Better pay", requested_start_date: new Date().toISOString(), submitted_at: new Date().toISOString(), created_at: new Date().toISOString(), updated_at: new Date().toISOString(),
-        new_agency: { id: "a1", name: "Premium Care Agency (Mock)", address_city: "Pittsburgh", phone: "555-1234" }
-      }],
-      notifications: [{ id: "n1", type: "system", title: "Missing Profile Warning", body: "Your actual profile creation is pending database triggers. This is a mock dashboard so you can test the UI.", read_at: null, created_at: new Date().toISOString(), reference_id: null, reference_type: null }],
-      unreadCount: 1,
-      onboardingComplete: true,
+      patientDetails: null,
+      switchRequests: [],
+      notifications: [],
+      unreadCount: 0,
+      onboardingComplete: false,
     };
   }
 

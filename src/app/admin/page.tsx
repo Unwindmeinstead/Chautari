@@ -66,8 +66,8 @@ export default async function AdminDashboardPage() {
   const dateStr = now.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
   const timeStr = now.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
 
-  const reqSparkline = [12, 19, 14, 22, 18, 25, stats.requestsThisMonth];
-  const userSparkline = [120, 128, 133, 138, 142, 149, stats.totalUsers];
+  const reqSparkline = [stats.requestsThisMonth];
+  const userSparkline = [stats.totalUsers];
 
   return (
     <div className="min-h-screen" style={{ background: "#09090B" }}>
@@ -261,30 +261,26 @@ export default async function AdminDashboardPage() {
 
         {/* Bottom row: Health + Breakdown + Actions */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-          {/* Platform health */}
+          {/* Platform summary */}
           <div className="rounded-2xl p-5" style={CARD}>
             <div className="flex items-center gap-2 mb-5">
               <Activity className="size-4 text-white/40" />
-              <p className="text-[13px] font-semibold text-white">Platform Health</p>
+              <p className="text-[13px] font-semibold text-white">Platform Summary</p>
             </div>
             <div className="space-y-3.5">
               {[
-                { label: "API Gateway", latency: "24ms" },
-                { label: "Database", latency: "8ms" },
-                { label: "Auth Service", latency: "42ms" },
-                { label: "File Storage", latency: "180ms" },
-                { label: "Email Service", latency: "310ms" },
-              ].map(({ label, latency }) => (
+                { label: "Total Patients", value: stats.totalPatients.toLocaleString() },
+                { label: "Agency Staff", value: Math.max(0, stats.totalUsers - stats.totalPatients).toLocaleString() },
+                { label: "Active Requests", value: stats.activeRequests.toLocaleString() },
+                { label: "Completed Requests", value: stats.completedRequests.toLocaleString() },
+                { label: "Pending Agencies", value: stats.pendingAgencyApprovals.toLocaleString() },
+              ].map(({ label, value }) => (
                 <div key={label} className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <span className="h-1.5 w-1.5 rounded-full bg-white/30 shrink-0" />
                     <span className="text-[12px] text-white/50">{label}</span>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-[11px] text-white/20 font-mono">{latency}</span>
-                    <span className="text-[10px] font-bold text-white/50 px-1.5 py-0.5 rounded-md"
-                      style={{ background: "rgba(255,255,255,0.05)" }}>OK</span>
-                  </div>
+                  <span className="text-[11px] font-bold text-white/50 font-mono">{value}</span>
                 </div>
               ))}
             </div>
