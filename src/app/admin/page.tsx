@@ -327,12 +327,10 @@ export default async function AdminDashboardPage() {
                   <Link
                     key={a.id}
                     href={`/admin/agencies/${a.id}`}
-                    className="flex items-center gap-4 px-6 py-4 transition-all duration-150 group"
+                    className="flex items-center gap-4 px-6 py-4 transition-all duration-150 group hover:bg-white/[0.03]"
                     style={{
                       borderBottom: i < pendingAgencies.agencies.length - 1 ? "1px solid rgba(255,255,255,0.04)" : "none",
                     }}
-                    onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.03)"; }}
-                    onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = ""; }}
                   >
                     <div className="h-9 w-9 rounded-xl flex items-center justify-center shrink-0"
                       style={{ background: "rgba(245,158,11,0.1)", border: "1px solid rgba(245,158,11,0.15)" }}>
@@ -492,10 +490,8 @@ export default async function AdminDashboardPage() {
                 { href: "/admin/audit", label: "Audit Log", icon: Shield, color: "#A78BFA", desc: "Full activity trail" },
               ].map(({ href, label, icon: Icon, color, desc }) => (
                 <Link key={href} href={href}
-                  className="flex items-center gap-3 p-3 rounded-xl transition-all duration-150 group"
+                  className="flex items-center gap-3 p-3 rounded-xl transition-all duration-150 group hover:bg-white/[0.04] hover:border-white/[0.1]"
                   style={{ border: "1px solid rgba(255,255,255,0.05)" }}
-                  onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.04)"; (e.currentTarget as HTMLElement).style.borderColor = "rgba(255,255,255,0.1)"; }}
-                  onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = ""; (e.currentTarget as HTMLElement).style.borderColor = "rgba(255,255,255,0.05)"; }}
                 >
                   <div className="h-8 w-8 rounded-xl flex items-center justify-center shrink-0"
                     style={{ background: `${color}12`, border: `1px solid ${color}25` }}>
