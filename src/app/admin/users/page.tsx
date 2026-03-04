@@ -1,5 +1,6 @@
 import { getAdminUsers, setUserRole, suspendUser, deleteUserAccount } from "@/lib/admin-actions";
-import { Users, User, Search, ShieldAlert, ShieldCheck, Trash2, Ban, CheckCircle2 } from "lucide-react";
+import { Users, User, Search, ShieldAlert, ShieldCheck, Ban, CheckCircle2 } from "lucide-react";
+import { DeleteUserButton } from "@/components/admin/user-actions";
 import Link from "next/link";
 
 export const metadata = { title: "Users | Admin" };
@@ -214,18 +215,11 @@ export default async function AdminUsersPage({
                               </form>
 
                               {/* Delete */}
-                              <form action={async () => {
-                                "use server";
-                                await deleteUserAccount(u.id);
-                              }}>
-                                <button type="submit"
-                                  title="Delete account permanently"
-                                  onClick={(e) => { if (!confirm(`Permanently delete ${u.full_name ?? u.id}? This cannot be undone.`)) e.preventDefault(); }}
-                                  className="h-7 w-7 rounded-lg flex items-center justify-center transition-colors"
-                                  style={{ background: "rgba(252,165,165,0.05)", border: "1px solid rgba(252,165,165,0.1)" }}>
-                                  <Trash2 className="size-3.5 text-red-400/50 hover:text-red-400 transition-colors" />
-                                </button>
-                              </form>
+                              <DeleteUserButton
+                                userId={u.id}
+                                userName={u.full_name}
+                                deleteAction={deleteUserAccount}
+                              />
                             </div>
                           )}
                         </td>
