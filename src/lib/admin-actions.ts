@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { normalizeUserRole } from "@/lib/auth-redirect";
 
 const BYPASS_AUTH = false;
 
@@ -18,7 +19,7 @@ async function requireAdmin() {
     .eq("id", user?.id ?? "")
     .single();
 
-  if (!BYPASS_AUTH && profile?.role !== "chautari_admin") redirect("/dashboard");
+  if (!BYPASS_AUTH && normalizeUserRole(profile?.role as any) !== "chautari_admin") redirect("/dashboard");
 
   const safeUser = user ?? { id: "bypass-admin-user", email: "admin@local.test" } as any;
   const safeProfile = profile ?? { role: "chautari_admin", full_name: "Bypass Admin" } as any;

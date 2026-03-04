@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { AdminSidebar } from "@/components/admin/admin-sidebar";
 import { AdminMobileNav } from "@/components/admin/admin-mobile-nav";
+import { normalizeUserRole } from "@/lib/auth-redirect";
 
 const BYPASS_AUTH = false;
 
@@ -21,7 +22,7 @@ export default async function AdminLayout({
     .single();
 
   const profile = data as { role: string; full_name: string | null } | null;
-  if (!BYPASS_AUTH && profile?.role !== "chautari_admin") redirect("/dashboard");
+  if (!BYPASS_AUTH && normalizeUserRole(profile?.role as any) !== "chautari_admin") redirect("/dashboard");
 
   const adminName = profile?.full_name ?? user?.email?.split("@")[0] ?? "Admin";
 

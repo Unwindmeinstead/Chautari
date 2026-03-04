@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
+import { normalizeUserRole } from "@/lib/auth-redirect";
 
 export async function submitAgencyClaim(formData: FormData): Promise<{ success?: boolean; error?: string }> {
   const supabase = await createClient();
@@ -33,7 +34,7 @@ async function requireAdmin() {
   if (!user) return { error: "Not authenticated" } as const;
 
   const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).single();
-  if (profile?.role !== "chautari_admin") return { error: "Admin access required" } as const;
+  if (normalizeUserRole(profile?.role as any) !== "chautari_admin") return { error: "Admin access required" } as const;
 
   return { supabase, user } as const;
 }

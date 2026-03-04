@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { getUserRedirectPath } from "@/lib/auth-redirect";
+import { getUserRedirectPath, normalizeUserRole } from "@/lib/auth-redirect";
 
 export async function signInWithEmail(formData: FormData) {
   const supabase = await createClient();
@@ -23,10 +23,18 @@ export async function signInWithEmail(formData: FormData) {
   const { data: { user } } = await supabase.auth.getUser();
   const redirectPath = user ? await getUserRedirectPath(supabase, user) : "/dashboard";
 
-  // Hard admin check: if user attempted /admin login but isn't chautari_admin, sign out and block.
-  if (redirectedFrom.startsWith("/admin") && redirectPath !== "/admin") {
-    await supabase.auth.signOut();
-    return { error: "Admin access denied. Your account is not configured as chautari_admin." };
+  // Hard admin check: if user attempted /admin login but isn't admin, sign out and block.
+  if (redirectedFrom.startsWith("/admin") && user) {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .maybeSingle();
+
+    if (normalizeUserRole(profile?.role as any) !== "chautari_admin") {
+      await supabase.auth.signOut();
+      return { error: "Admin access denied. Your account is not configured as an admin." };
+    }
   }
 
   revalidatePath("/", "layout");

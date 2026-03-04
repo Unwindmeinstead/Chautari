@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
-import { getUserRedirectPath } from "@/lib/auth-redirect";
+import { getUserRedirectPath, normalizeUserRole } from "@/lib/auth-redirect";
 
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
@@ -24,11 +24,9 @@ export async function GET(request: Request) {
     return NextResponse.redirect(`${origin}/auth/login?message=auth-error`);
   }
 
-  // Ensure profile exists and role is aligned.
+  // Ensure profile exists and role is aligned (including legacy aliases like "admin").
   const roleFromMeta = (user.user_metadata?.role as string | undefined) ?? "patient";
-  const normalizedRole = ["patient", "agency_staff", "agency_admin", "chautari_admin"].includes(roleFromMeta)
-    ? roleFromMeta
-    : "patient";
+  const normalizedRole = normalizeUserRole(roleFromMeta as any) ?? "patient";
 
   await supabase.from("profiles").upsert({
     id: user.id,
