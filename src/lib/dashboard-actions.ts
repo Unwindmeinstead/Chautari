@@ -2,8 +2,9 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 
-const BYPASS_AUTH = true;
+const BYPASS_AUTH = false;
 
 export interface DashboardData {
   profile: {
@@ -59,7 +60,7 @@ export async function getDashboardData(): Promise<DashboardData> {
 
   const { data: { user } } = await supabase.auth.getUser();
   if (!user && !BYPASS_AUTH) {
-    throw new Error("unauthorized");
+    redirect("/auth/login?redirectedFrom=/dashboard");
   }
 
   if (!user && BYPASS_AUTH) {
