@@ -5,6 +5,7 @@ import { getAgencyPortalData } from "@/lib/agency-portal-actions";
 import { AgencyNav } from "@/components/agency/agency-nav";
 import { AgencyRequestRow } from "@/components/agency/agency-request-row";
 import { cn } from "@/lib/utils";
+import { ArrowLeftRight } from "lucide-react";
 
 export const metadata = { title: "Requests | Agency Portal" };
 export const dynamic = "force-dynamic";
@@ -21,20 +22,22 @@ const FILTERS = [
 export default async function AgencyRequestsPage({
   searchParams,
 }: {
-  searchParams: { filter?: string };
+  searchParams: Promise<{ filter?: string }>;
 }) {
+  const sp = await searchParams;
+  const filter = sp.filter ?? "all";
+
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/auth/login");
 
-  const filter = searchParams.filter ?? "all";
   const data = await getAgencyPortalData(filter);
   if (!data.agency || !data.member) redirect("/agency/dashboard");
 
   const staffName = user.email?.split("@")[0] ?? "Staff";
 
   return (
-    <div className="min-h-screen bg-cream">
+    <div className="min-h-screen bg-[#FAFAFB] text-zinc-900 font-sans pb-20">
       <AgencyNav
         agencyName={data.agency.name}
         staffName={staffName}
@@ -42,40 +45,49 @@ export default async function AgencyRequestsPage({
         pendingCount={data.stats.pending}
       />
 
-      <main className="max-w-4xl mx-auto px-4 py-8 space-y-6">
-        <div className="space-y-1">
-          <h1 className="font-fraunces text-3xl font-semibold text-forest-800">Switch Requests</h1>
-          <p className="text-forest-500 mt-1">
-            {data.stats.total} total · {data.stats.pending} pending action
+      <main className="max-w-[1000px] mx-auto px-5 py-10 space-y-6">
+        {/* Header */}
+        <div className="space-y-1 my-4">
+          <h1 className="text-[28px] font-bold tracking-tight">Switch Requests</h1>
+          <p className="text-[14px] font-medium text-zinc-500">
+            {data.stats.total} total cases · <span className="text-zinc-800 font-semibold">{data.stats.pending} pending action</span>
           </p>
         </div>
 
-        <div className="flex items-center gap-2 flex-wrap">
-          {FILTERS.map((f) => (
-            <Link
-              key={f.value}
-              href={f.value === "all" ? "/agency/requests" : `/agency/requests?filter=${f.value}`}
-              className={cn(
-                "px-4 py-2 rounded-full text-sm font-medium transition-colors border",
-                filter === f.value
-                  ? "bg-forest-700 text-white border-forest-700"
-                  : "bg-white border-forest-100 text-forest-600 hover:border-forest-300 hover:text-forest-700"
-              )}
-            >
-              {f.label}
-            </Link>
-          ))}
+        {/* Filters */}
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-2 scrollbar-hide border-b border-zinc-200/60">
+          {FILTERS.map((f) => {
+            const active = filter === f.value;
+            return (
+              <Link
+                key={f.value}
+                href={f.value === "all" ? "/agency/requests" : `/agency/requests?filter=${f.value}`}
+                className={cn(
+                  "px-4 py-2 text-[13px] font-bold rounded-t-xl transition-all border-b-2 -mb-[3px] whitespace-nowrap",
+                  active
+                    ? "text-zinc-900 border-zinc-900 bg-zinc-100/50"
+                    : "text-zinc-500 border-transparent hover:text-zinc-800 hover:bg-zinc-50"
+                )}
+              >
+                {f.label}
+              </Link>
+            );
+          })}
         </div>
 
+        {/* List */}
         {data.requests.length === 0 ? (
-          <div className="rounded-3xl bg-white border border-forest-100 shadow-card p-12 text-center">
-            <p className="font-fraunces text-lg font-semibold text-forest-700">No requests</p>
-            <p className="text-sm text-forest-400 mt-1">
-              {filter !== "all" ? `No "${filter.replace("_", " ")}" requests.` : "No requests yet."}
+          <div className="rounded-2xl border border-dashed border-zinc-300 bg-white p-14 text-center mt-8 shadow-sm">
+            <div className="h-12 w-12 bg-zinc-50 border border-zinc-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <ArrowLeftRight className="size-5 text-zinc-400" />
+            </div>
+            <p className="text-[16px] font-bold text-zinc-800">No requests found</p>
+            <p className="text-[13px] font-medium text-zinc-500 mt-1 max-w-sm mx-auto">
+              {filter !== "all" ? `You don't have any requests in the "${filter.replace("_", " ")}" status.` : "No patients have requested a switch to your agency yet."}
             </p>
           </div>
         ) : (
-          <div className="space-y-3">
+          <div className="space-y-3 mt-6">
             {data.requests.map((r) => <AgencyRequestRow key={r.id} request={r} />)}
           </div>
         )}
