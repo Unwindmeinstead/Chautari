@@ -4,10 +4,20 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 
+// ⚠️  TEMPORARY: mirrors the flag in src/lib/supabase/middleware.ts
+//    Set to false to re-enable admin auth guards before launch.
+const BYPASS_AUTH = true;
+
 // ─── Admin guard ──────────────────────────────────────────────────────────────
 
 async function requireAdmin() {
   const supabase = await createClient();
+
+  // Bypass: skip user/role checks entirely — just return the client.
+  if (BYPASS_AUTH) {
+    return { supabase, user: { id: "bypass" } as any, profile: { role: "switchmycare_admin", full_name: "Admin" } };
+  }
+
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/auth/login");
 
