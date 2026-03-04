@@ -12,6 +12,7 @@ export async function signInWithEmail(formData: FormData) {
     email: formData.get("email") as string,
     password: formData.get("password") as string,
   };
+  const redirectedFrom = (formData.get("redirectedFrom") as string | null) ?? "";
 
   const { error } = await supabase.auth.signInWithPassword(data);
 
@@ -20,7 +21,13 @@ export async function signInWithEmail(formData: FormData) {
   }
 
   const { data: { user } } = await supabase.auth.getUser();
-  const redirectPath = user ? await getUserRedirectPath(supabase, user) : "/profile";
+  const redirectPath = user ? await getUserRedirectPath(supabase, user) : "/dashboard";
+
+  // Hard admin check: if user attempted /admin login but isn't chautari_admin, sign out and block.
+  if (redirectedFrom.startsWith("/admin") && redirectPath !== "/admin") {
+    await supabase.auth.signOut();
+    return { error: "Admin access denied. Your account is not configured as chautari_admin." };
+  }
 
   revalidatePath("/", "layout");
   redirect(redirectPath);
@@ -52,7 +59,6 @@ export async function signUpWithEmail(formData: FormData) {
   }
 
   if (authData.user && !authData.session) {
-    // Email confirmation required
     redirect("/auth/verify?email=" + encodeURIComponent(email));
   }
 
@@ -64,11 +70,13 @@ export async function signInWithMagicLink(formData: FormData) {
   const supabase = await createClient();
 
   const email = formData.get("email") as string;
+  const redirectedFrom = (formData.get("redirectedFrom") as string | null) ?? "/dashboard";
+  const next = redirectedFrom.startsWith("/") ? redirectedFrom : "/dashboard";
 
   const { error } = await supabase.auth.signInWithOtp({
     email,
     options: {
-      emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/api/auth/callback?next=/dashboard`,
+      emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/api/auth/callback?next=${encodeURIComponent(next)}`,
     },
   });
 
@@ -79,13 +87,14 @@ export async function signInWithMagicLink(formData: FormData) {
   redirect("/auth/verify?email=" + encodeURIComponent(email) + "&method=magic");
 }
 
-export async function signInWithGoogle() {
+export async function signInWithGoogle(nextPath?: string) {
   const supabase = await createClient();
+  const safeNext = nextPath && nextPath.startsWith("/") ? nextPath : "/dashboard";
 
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: "google",
     options: {
-      redirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/api/auth/callback?next=/dashboard`,
+      redirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/api/auth/callback?next=${encodeURIComponent(safeNext)}`,
       queryParams: {
         access_type: "offline",
         prompt: "consent",

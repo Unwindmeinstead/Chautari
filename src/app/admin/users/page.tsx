@@ -8,20 +8,20 @@ export const dynamic = "force-dynamic";
 
 const CARD = { background: "#111113", border: "1px solid rgba(255,255,255,0.08)" } as const;
 
-const ROLE_TABS = ["all", "patient", "agency_staff", "agency_admin", "switchmycare_admin"] as const;
+const ROLE_TABS = ["all", "patient", "agency_staff", "agency_admin", "chautari_admin"] as const;
 
 const ROLE_STYLE: Record<string, { label: string; color: string; bg: string; border: string }> = {
   patient: { label: "Patient", color: "rgba(255,255,255,0.6)", bg: "rgba(255,255,255,0.06)", border: "rgba(255,255,255,0.1)" },
   agency_staff: { label: "Agency Staff", color: "rgba(147,197,253,0.9)", bg: "rgba(147,197,253,0.08)", border: "rgba(147,197,253,0.2)" },
   agency_admin: { label: "Agency Admin", color: "#FBBF24", bg: "rgba(251,191,36,0.08)", border: "rgba(251,191,36,0.2)" },
-  switchmycare_admin: { label: "SwitchMyCare Admin", color: "#FCA5A5", bg: "rgba(252,165,165,0.08)", border: "rgba(252,165,165,0.2)" },
+  chautari_admin: { label: "Chautari Admin", color: "#FCA5A5", bg: "rgba(252,165,165,0.08)", border: "rgba(252,165,165,0.2)" },
 };
 
 const ROLE_OPTIONS = [
   { v: "patient", l: "Patient" },
   { v: "agency_staff", l: "Agency Staff" },
   { v: "agency_admin", l: "Agency Admin" },
-  { v: "switchmycare_admin", l: "SwitchMyCare Admin" },
+  { v: "chautari_admin", l: "Chautari Admin" },
 ];
 
 export default async function AdminUsersPage({
@@ -117,7 +117,7 @@ export default async function AdminUsersPage({
                 <tbody>
                   {users.map((u, i) => {
                     const rs = ROLE_STYLE[u.role] ?? ROLE_STYLE.patient;
-                    const isSuperAdmin = u.role === "switchmycare_admin";
+                    const isSuperAdmin = u.role === "chautari_admin";
                     return (
                       <tr key={u.id}
                         className="hover:bg-white/[0.02] transition-colors group"

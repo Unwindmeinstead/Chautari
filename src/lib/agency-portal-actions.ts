@@ -3,6 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 
+const BYPASS_AUTH = false;
+
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 export interface AgencyRow {
@@ -90,9 +92,39 @@ export async function getAgencyPortalData(statusFilter?: string): Promise<Agency
     requests: [],
     stats: { total: 0, pending: 0, accepted: 0, completed: 0 },
   };
-  if (!user) return empty;
+  if (!user && !BYPASS_AUTH) return empty;
 
-  const membership = await getMembership(supabase, user.id);
+  if (!user && BYPASS_AUTH) {
+    return {
+      agency: {
+        id: "bypass-agency",
+        name: "Demo Home Care",
+        dba_name: null,
+        address_city: "Pittsburgh",
+        address_state: "PA",
+        phone: null,
+        email: null,
+        website: null,
+        care_types: [],
+        payers_accepted: [],
+        services_offered: [],
+        languages_spoken: [],
+        service_counties: [],
+        is_verified_partner: false,
+        is_accepting_patients: true,
+        average_response_time_hours: null,
+        medicare_quality_score: null,
+        pa_license_number: null,
+      },
+      member: { id: "bypass-agency-user", role: "admin", title: "Agency Admin" },
+      requests: [],
+      stats: { total: 0, pending: 0, accepted: 0, completed: 0 },
+    };
+  }
+
+  const effectiveUser = user!;
+
+  const membership = await getMembership(supabase, effectiveUser.id);
   if (!membership) return empty;
 
   const agencyId = membership.agency_id;
@@ -137,7 +169,7 @@ export async function getAgencyPortalData(statusFilter?: string): Promise<Agency
 
   return {
     agency: agencyRes.data ?? null,
-    member: { id: user.id, role: membership.role, title: membership.title },
+    member: { id: effectiveUser.id, role: membership.role, title: membership.title },
     requests: filtered,
     stats: {
       total: allRequests.length,
@@ -155,7 +187,9 @@ export async function getSwitchRequestForAgency(requestId: string): Promise<Swit
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return null;
 
-  const membership = await getMembership(supabase, user.id);
+  const effectiveUser = user!;
+
+  const membership = await getMembership(supabase, effectiveUser.id);
   if (!membership) return null;
 
   const { data: req } = await supabase
@@ -195,7 +229,9 @@ export async function acceptSwitchRequest(
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { error: "Not authenticated" };
 
-  const membership = await getMembership(supabase, user.id);
+  const effectiveUser = user!;
+
+  const membership = await getMembership(supabase, effectiveUser.id);
   if (!membership) return { error: "No agency membership" };
 
   const { data: req } = await supabase
@@ -241,7 +277,9 @@ export async function denySwitchRequest(
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { error: "Not authenticated" };
 
-  const membership = await getMembership(supabase, user.id);
+  const effectiveUser = user!;
+
+  const membership = await getMembership(supabase, effectiveUser.id);
   if (!membership) return { error: "No agency membership" };
 
   const { data: req } = await supabase
@@ -282,7 +320,9 @@ export async function markUnderReview(requestId: string): Promise<{ success?: bo
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { error: "Not authenticated" };
 
-  const membership = await getMembership(supabase, user.id);
+  const effectiveUser = user!;
+
+  const membership = await getMembership(supabase, effectiveUser.id);
   if (!membership) return { error: "No agency membership" };
 
   const { error } = await supabase
@@ -306,7 +346,9 @@ export async function markRequestCompleted(requestId: string): Promise<{ success
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { error: "Not authenticated" };
 
-  const membership = await getMembership(supabase, user.id);
+  const effectiveUser = user!;
+
+  const membership = await getMembership(supabase, effectiveUser.id);
   if (!membership) return { error: "No agency membership" };
 
   const { data: req } = await supabase
@@ -353,7 +395,9 @@ export async function updateAgencyProfile(data: {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { error: "Not authenticated" };
 
-  const membership = await getMembership(supabase, user.id);
+  const effectiveUser = user!;
+
+  const membership = await getMembership(supabase, effectiveUser.id);
   if (!membership || !["admin", "owner"].includes(membership.role)) {
     return { error: "Only agency admins can update the profile." };
   }

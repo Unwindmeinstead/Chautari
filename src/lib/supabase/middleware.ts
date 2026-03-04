@@ -28,6 +28,7 @@ export async function updateSession(request: NextRequest) {
     "/privacy",
     "/terms",
     "/hipaa",
+    "/agency/claim",
   ];
   const isPublicRoute = publicRoutePrefixes.some((route) =>
     route === "/" ? pathname === "/" : pathname === route || pathname.startsWith(`${route}/`)

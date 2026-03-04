@@ -3,6 +3,8 @@
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 
+const BYPASS_AUTH = false;
+
 export interface DashboardData {
   profile: {
     id: string;
@@ -56,15 +58,35 @@ export async function getDashboardData(): Promise<DashboardData> {
   const supabase = await createClient();
 
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) {
+  if (!user && !BYPASS_AUTH) {
     throw new Error("unauthorized");
   }
+
+  if (!user && BYPASS_AUTH) {
+    return {
+      profile: {
+        id: "bypass-patient-user",
+        full_name: "Demo Patient",
+        email: "patient@local.test",
+        phone: null,
+        preferred_lang: "en",
+        role: "patient",
+      },
+      patientDetails: null,
+      switchRequests: [],
+      notifications: [],
+      unreadCount: 0,
+      onboardingComplete: true,
+    };
+  }
+
+  const effectiveUser = user!;
 
   const [profileRes, detailsRes, requestsRes, notificationsRes] = await Promise.all([
     supabase
       .from("profiles")
       .select("id, full_name, phone, preferred_lang, role")
-      .eq("id", user.id)
+      .eq("id", effectiveUser.id)
       .single(),
 
     supabase
@@ -72,7 +94,7 @@ export async function getDashboardData(): Promise<DashboardData> {
       .select(
         "address_line1, address_city, address_state, address_zip, address_county, payer_type, care_type, services_needed"
       )
-      .eq("patient_id", user.id)
+      .eq("patient_id", effectiveUser.id)
       .single(),
 
     supabase
@@ -84,7 +106,7 @@ export async function getDashboardData(): Promise<DashboardData> {
           id, name, address_city, phone
         )
       `)
-      .eq("patient_id", user.id)
+      .eq("patient_id", effectiveUser.id)
       .order("created_at", { ascending: false })
       .limit(20),
 
@@ -93,7 +115,7 @@ export async function getDashboardData(): Promise<DashboardData> {
       .select(
         "id, type, title, body, read_at, created_at, reference_id, reference_type"
       )
-      .eq("user_id", user.id)
+      .eq("user_id", effectiveUser.id)
       .order("created_at", { ascending: false })
       .limit(30),
   ]);
@@ -101,7 +123,7 @@ export async function getDashboardData(): Promise<DashboardData> {
   if (!profileRes.data) {
     return {
       profile: {
-        id: user.id, full_name: user?.user_metadata?.full_name || "", email: user.email ?? "", phone: "", preferred_lang: "en", role: "patient"
+        id: effectiveUser.id, full_name: effectiveUser.user_metadata?.full_name || "", email: effectiveUser.email ?? "", phone: "", preferred_lang: "en", role: "patient"
       },
       patientDetails: null,
       switchRequests: [],
@@ -116,7 +138,7 @@ export async function getDashboardData(): Promise<DashboardData> {
   const onboardingComplete = !!(detailsRes.data?.payer_type);
 
   return {
-    profile: { ...profileRes.data, email: user.email ?? null },
+    profile: { ...profileRes.data, email: effectiveUser.email ?? null },
     patientDetails: detailsRes.data ?? null,
     switchRequests: (requestsRes.data ?? []) as unknown as DashboardData["switchRequests"],
     notifications,

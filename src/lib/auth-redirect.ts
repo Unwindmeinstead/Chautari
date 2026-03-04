@@ -3,8 +3,8 @@ import type { User } from "@supabase/supabase-js";
 
 export function getRouteForRole(role: UserRole | null | undefined): string {
   if (role === "agency_staff" || role === "agency_admin") return "/agency/dashboard";
-  if (role === "switchmycare_admin") return "/admin";
-  return "/profile";
+  if (role === "chautari_admin") return "/admin";
+  return "/dashboard";
 }
 
 export async function getUserRedirectPath(supabase: any, user: User): Promise<string> {

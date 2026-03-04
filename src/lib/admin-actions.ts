@@ -4,21 +4,26 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 
+const BYPASS_AUTH = false;
+
 async function requireAdmin() {
   const supabase = await createClient();
 
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect("/auth/login");
+  if (!user && !BYPASS_AUTH) redirect("/auth/login");
 
   const { data: profile } = await supabase
     .from("profiles")
     .select("role, full_name")
-    .eq("id", user.id)
+    .eq("id", user?.id ?? "")
     .single();
 
-  if (profile?.role !== "switchmycare_admin") redirect("/dashboard");
+  if (!BYPASS_AUTH && profile?.role !== "chautari_admin") redirect("/dashboard");
 
-  return { supabase, user, profile };
+  const safeUser = user ?? { id: "bypass-admin-user", email: "admin@local.test" } as any;
+  const safeProfile = profile ?? { role: "chautari_admin", full_name: "Bypass Admin" } as any;
+
+  return { supabase, user: safeUser, profile: safeProfile };
 }
 
 // ─── Audit log helper ─────────────────────────────────────────────────────────
@@ -34,7 +39,7 @@ async function writeAudit(
 ) {
   await supabase.from("audit_logs").insert({
     actor_id: actorId,
-    actor_role: "switchmycare_admin",
+    actor_role: "chautari_admin",
     action,
     resource,
     resource_id: resourceId,

@@ -1,4 +1,4 @@
-export type UserRole = "patient" | "agency_staff" | "agency_admin" | "switchmycare_admin";
+export type UserRole = "patient" | "agency_staff" | "agency_admin" | "chautari_admin";
 export type LanguageCode = "en" | "ne" | "hi";
 export type PayerType = "medicaid" | "medicare" | "private" | "self_pay" | "waiver";
 export type CareType = "home_health" | "home_care" | "both";
