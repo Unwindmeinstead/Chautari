@@ -1,117 +1,57 @@
-import * as React from "react";
-import { redirect } from "next/navigation";
+import type { ReactNode } from "react";
 import Link from "next/link";
+import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
-import { getAgencyPortalData } from "@/lib/agency-portal-actions";
+import { getAgencyPortalData, acceptSwitchRequest, denySwitchRequest } from "@/lib/agency-portal-actions";
 import { AgencyNav } from "@/components/agency/agency-nav";
-import { AgencyRequestRow } from "@/components/agency/agency-request-row";
 import { AcceptingPatientsToggle } from "@/components/agency/accepting-patients-toggle";
 import {
-  PackageCheck, AlertTriangle, ArrowRight, Activity, Clock, Users, CheckCircle2,
-  Settings, TrendingUp, BarChart2, Zap, Shield, Star, Bell, ChevronRight,
-  ArrowUpRight, CircleDot, Globe, Calendar
+  Activity,
+  AlertTriangle,
+  ArrowRight,
+  Bell,
+  CheckCircle2,
+  Clock3,
+  ClipboardCheck,
+  MessageSquare,
+  Settings,
+  Sparkles,
+  Users,
 } from "lucide-react";
 
 export const metadata = { title: "Agency Dashboard | SwitchMyCare" };
 export const dynamic = "force-dynamic";
 
-// ── Design tokens (deep blue theme) ──────────────────────────────────────────
-const BLUE_BG = "linear-gradient(135deg, #0a1628 0%, #0d1f3c 50%, #0a1628 100%)";
-const CARD_DARK = { background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", backdropFilter: "blur(10px)" } as const;
-const CARD_GLASS = { background: "rgba(59,130,246,0.08)", border: "1px solid rgba(59,130,246,0.2)" } as const;
-const ACCENT = "#3B82F6"; // bright blue
-const ACCENT_L = "#60A5FA"; // lighter blue
-const ACCENT_D = "#1D4ED8"; // darker blue
+const CARD = "rounded-2xl border border-zinc-200 bg-white";
 
-// ── Stat card ─────────────────────────────────────────────────────────────────
-function StatCard({
-  label, value, icon, sub, accent = false, trend
-}: {
-  label: string; value: number | string; icon: React.ReactNode;
-  sub?: string; accent?: boolean; trend?: { dir: "up" | "neutral"; label: string };
-}) {
-  return (
-    <div className="rounded-2xl p-5 relative overflow-hidden group hover:-translate-y-0.5 transition-transform"
-      style={accent ? {
-        background: `linear-gradient(135deg, ${ACCENT_D}, ${ACCENT})`,
-        border: `1px solid ${ACCENT}50`,
-      } : CARD_DARK}>
-      {/* Subtle glow */}
-      {accent && <div className="absolute inset-0 rounded-2xl opacity-20" style={{ background: "radial-gradient(circle at 30% 30%, rgba(255,255,255,0.3), transparent 60%)" }} />}
-      <div className="flex items-start justify-between mb-4 relative z-10">
-        <div className="h-9 w-9 rounded-xl flex items-center justify-center shrink-0"
-          style={{ background: accent ? "rgba(255,255,255,0.15)" : `rgba(59,130,246,0.15)`, border: `1px solid ${accent ? "rgba(255,255,255,0.2)" : "rgba(59,130,246,0.25)"}` }}>
-          {React.cloneElement(icon as React.ReactElement, {
-            className: `size-4 ${accent ? "text-white" : "text-blue-400"}`
-          })}
-        </div>
-        {trend && (
-          <span className="flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full"
-            style={{
-              background: accent ? "rgba(255,255,255,0.15)" : "rgba(74,222,128,0.12)",
-              color: accent ? "rgba(255,255,255,0.9)" : "#4ADE80",
-              border: accent ? "1px solid rgba(255,255,255,0.2)" : "1px solid rgba(74,222,128,0.25)"
-            }}>
-            <TrendingUp className="size-2.5" />
-            {trend.label}
-          </span>
-        )}
-      </div>
-      <p className="text-[2rem] font-bold leading-none relative z-10"
-        style={{ color: accent ? "#fff" : "rgba(255,255,255,0.95)" }}>
-        {value}
-      </p>
-      <p className="text-[11px] font-semibold mt-1.5 relative z-10"
-        style={{ color: accent ? "rgba(255,255,255,0.8)" : "rgba(255,255,255,0.4)" }}>
-        {label}
-      </p>
-      {sub && <p className="text-[10px] mt-0.5 relative z-10"
-        style={{ color: accent ? "rgba(255,255,255,0.6)" : "rgba(255,255,255,0.2)" }}>
-        {sub}
-      </p>}
-    </div>
-  );
+function hoursSince(ts?: string | null) {
+  if (!ts) return 0;
+  return Math.max(0, Math.floor((Date.now() - new Date(ts).getTime()) / 3_600_000));
 }
 
-// ── Status pill ───────────────────────────────────────────────────────────────
-function StatusPill({ status }: { status: string }) {
-  const map: Record<string, { label: string; color: string; bg: string; border: string }> = {
-    submitted: { label: "New", color: ACCENT_L, bg: "rgba(59,130,246,0.1)", border: "rgba(59,130,246,0.25)" },
-    under_review: { label: "Reviewing", color: "#FBBF24", bg: "rgba(251,191,36,0.1)", border: "rgba(251,191,36,0.25)" },
-    accepted: { label: "Accepted", color: "#4ADE80", bg: "rgba(74,222,128,0.1)", border: "rgba(74,222,128,0.25)" },
-    completed: { label: "Done", color: "#C4B5FD", bg: "rgba(196,181,253,0.1)", border: "rgba(196,181,253,0.25)" },
-    denied: { label: "Denied", color: "#FCA5A5", bg: "rgba(252,165,165,0.1)", border: "rgba(252,165,165,0.25)" },
+function MetricCard({ label, value, sub, tone = "zinc", icon }: { label: string; value: number | string; sub: string; tone?: "zinc" | "amber" | "emerald" | "sky" | "rose"; icon: ReactNode }) {
+  const toneClasses: Record<string, string> = {
+    zinc: "bg-zinc-100 text-zinc-700 border-zinc-200",
+    amber: "bg-amber-100 text-amber-700 border-amber-200",
+    emerald: "bg-emerald-100 text-emerald-700 border-emerald-200",
+    sky: "bg-sky-100 text-sky-700 border-sky-200",
+    rose: "bg-rose-100 text-rose-700 border-rose-200",
   };
-  const s = map[status] ?? { label: status, color: "rgba(255,255,255,0.4)", bg: "rgba(255,255,255,0.06)", border: "rgba(255,255,255,0.1)" };
-  return (
-    <span className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[11px] font-bold"
-      style={{ color: s.color, background: s.bg, border: `1px solid ${s.border}` }}>
-      <span className="h-1.5 w-1.5 rounded-full shrink-0" style={{ background: s.color }} />
-      {s.label}
-    </span>
-  );
-}
 
-// ── Bar chart (CSS bars) ──────────────────────────────────────────────────────
-function MiniBar({ values, color }: { values: number[]; color: string }) {
-  const max = Math.max(...values, 1);
   return (
-    <div className="flex items-end gap-1 h-12">
-      {values.map((v, i) => (
-        <div key={i} className="flex-1 rounded-sm transition-all"
-          style={{
-            height: `${Math.round((v / max) * 100)}%`,
-            minHeight: 3,
-            background: i === values.length - 1
-              ? color
-              : `${color}40`,
-          }} />
-      ))}
+    <div className={`${CARD} p-4 md:p-5`}>
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <p className="text-xs uppercase tracking-[0.14em] text-zinc-500 font-semibold">{label}</p>
+          <p className="mt-2 text-3xl font-semibold text-zinc-900 leading-none">{value}</p>
+          <p className="mt-2 text-xs text-zinc-500">{sub}</p>
+        </div>
+        <div className={`h-10 w-10 rounded-xl border inline-flex items-center justify-center ${toneClasses[tone]}`}>{icon}</div>
+      </div>
     </div>
   );
 }
 
-// ── Page ─────────────────────────────────────────────────────────────────────
 export default async function AgencyDashboardPage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -120,359 +60,195 @@ export default async function AgencyDashboardPage() {
 
   if (!agency || !member) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-8"
-        style={{ background: "linear-gradient(135deg, #0a1628 0%, #0d1f3c 100%)" }}>
-        <div className="max-w-md w-full text-center space-y-6">
-          <div className="h-16 w-16 rounded-2xl mx-auto flex items-center justify-center"
-            style={{ background: "rgba(252,165,165,0.1)", border: "1px solid rgba(252,165,165,0.2)" }}>
-            <AlertTriangle className="size-8 text-red-400" />
-          </div>
-          <div className="space-y-3">
-            <h1 className="text-2xl font-bold text-white tracking-tight">No Agency Found</h1>
-            <p className="text-[14px] text-blue-200/60 leading-relaxed">
-              Your account isn&apos;t linked to a home care agency yet. Please contact your administrator.
-            </p>
-          </div>
-          <Link href="/api/auth/signout"
-            className="inline-flex h-10 items-center justify-center rounded-xl px-6 text-[14px] font-semibold text-white transition-colors"
-            style={{ background: `linear-gradient(135deg, ${ACCENT_D}, ${ACCENT})`, border: `1px solid ${ACCENT}50` }}>
-            Sign out safely
-          </Link>
+      <div className="min-h-screen bg-zinc-50 p-6 md:p-8">
+        <div className="max-w-lg mx-auto mt-10 rounded-2xl border border-zinc-200 bg-white p-6 text-center">
+          <h1 className="text-xl font-semibold text-zinc-900">No Agency Linked</h1>
+          <p className="text-sm text-zinc-500 mt-2">Your user is not associated with an agency yet.</p>
+          <Link href="/api/auth/signout" className="inline-flex mt-5 h-10 px-4 rounded-xl bg-zinc-900 text-white text-sm font-medium items-center">Sign out</Link>
         </div>
       </div>
     );
   }
 
   const staffName = user?.email?.split("@")[0] ?? "Staff";
-  const staffFirstName = staffName.split(" ")[0];
   const isAdmin = ["admin", "owner"].includes(member.role);
-  const newRequests = requests.filter((r) => r.status === "submitted");
-  const reviewRequests = requests.filter((r) => r.status === "under_review");
-  const recentRequests = requests.slice(0, 6);
-  const completionRate = stats.total > 0 ? Math.round((stats.completed / stats.total) * 100) : 0;
-  const now = new Date();
-  const hour = now.getHours();
-  const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
-  const dateStr = now.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
 
-  // Fake per-week distribution for bar chart (based on real total)
-  const barValues = [
-    Math.max(0, Math.floor(stats.total * 0.1)),
-    Math.max(0, Math.floor(stats.total * 0.14)),
-    Math.max(0, Math.floor(stats.total * 0.12)),
-    Math.max(0, Math.floor(stats.total * 0.18)),
-    Math.max(0, Math.floor(stats.total * 0.16)),
-    Math.max(0, Math.floor(stats.total * 0.15)),
-    stats.total,
-  ];
+  const submitted = requests.filter((r) => r.status === "submitted");
+  const pending = requests.filter((r) => ["submitted", "under_review"].includes(r.status));
+  const active = requests.filter((r) => r.status === "accepted");
+
+  const monthStart = new Date();
+  monthStart.setDate(1);
+  monthStart.setHours(0, 0, 0, 0);
+  const completedThisMonth = requests.filter((r) => r.status === "completed" && new Date(r.updated_at) >= monthStart).length;
+
+  const last30 = Date.now() - 30 * 24 * 3600000;
+  const responded = requests.filter((r) => ["under_review", "accepted", "denied", "completed"].includes(r.status) && new Date(r.updated_at).getTime() >= last30);
+  const avgResponseHours = responded.length
+    ? Math.round((responded.reduce((acc, r) => acc + hoursSince(r.submitted_at ?? r.created_at) - hoursSince(r.updated_at), 0) / responded.length) * 10) / 10
+    : null;
+
+  const last90 = Date.now() - 90 * 24 * 3600000;
+  const decisionPool = requests.filter((r) => ["accepted", "denied"].includes(r.status) && new Date(r.updated_at).getTime() >= last90);
+  const acceptanceRate = decisionPool.length ? Math.round((decisionPool.filter((r) => r.status === "accepted").length / decisionPool.length) * 100) : null;
+
+  const unreadNotifications = user
+    ? (await supabase.from("notifications").select("id", { count: "exact", head: true }).eq("user_id", user.id).is("read_at", null)).count ?? 0
+    : 0;
+
+  const sortedUrgent = pending
+    .slice()
+    .sort((a, b) => {
+      const ah = hoursSince(a.submitted_at ?? a.created_at);
+      const bh = hoursSince(b.submitted_at ?? b.created_at);
+      if (ah !== bh) return bh - ah;
+      const ad = a.requested_start_date ? new Date(a.requested_start_date).getTime() : Number.MAX_SAFE_INTEGER;
+      const bd = b.requested_start_date ? new Date(b.requested_start_date).getTime() : Number.MAX_SAFE_INTEGER;
+      return ad - bd;
+    })
+    .slice(0, 8);
+
+  async function quickAccept(formData: FormData) {
+    "use server";
+    const id = String(formData.get("request_id") || "");
+    if (!id) return;
+    await acceptSwitchRequest(id, "Accepted via dashboard quick action.");
+    revalidatePath("/agency/dashboard");
+  }
+
+  async function quickDecline(formData: FormData) {
+    "use server";
+    const id = String(formData.get("request_id") || "");
+    if (!id) return;
+    await denySwitchRequest(id, "Currently unable to accept this request.");
+    revalidatePath("/agency/dashboard");
+  }
 
   return (
-    <div className="min-h-screen pb-20" style={{ background: BLUE_BG }}>
-      {/* Ambient glow blobs */}
-      <div className="fixed top-0 right-0 w-[600px] h-[600px] rounded-full pointer-events-none"
-        style={{ background: "radial-gradient(circle, rgba(59,130,246,0.08), transparent 70%)" }} />
-      <div className="fixed bottom-0 left-0 w-[400px] h-[400px] rounded-full pointer-events-none"
-        style={{ background: "radial-gradient(circle, rgba(99,102,241,0.06), transparent 70%)" }} />
-
+    <div className="min-h-screen bg-zinc-50 pb-28 md:pb-8">
       <AgencyNav
         agencyName={agency.name}
         staffName={staffName}
         staffRole={member.role}
         pendingCount={stats.pending}
+        unreadNotifications={unreadNotifications}
       />
 
-      <main className="max-w-[1200px] mx-auto px-6 mt-8 space-y-6 relative z-10">
-
-        {/* ── Header ─────────────────────────────────────────────────────── */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-5 pb-6"
-          style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
-          <div className="space-y-1">
-            <p className="text-[11px] font-bold uppercase tracking-widest text-blue-400/70">{greeting}, {dateStr}</p>
-            <h1 className="text-[28px] font-bold text-white tracking-tight leading-tight">
-              Welcome back, <span className="text-blue-400">{staffFirstName}</span> 👋
-            </h1>
-            <p className="text-[14px] text-blue-200/50 font-medium">
-              {newRequests.length > 0
-                ? <><span className="text-blue-400 font-bold">{newRequests.length} new</span> {reviewRequests.length > 0 ? `· ${reviewRequests.length} under review` : "requests need your attention"}</>
-                : "Your dashboard is all caught up today."}
-            </p>
-          </div>
-          <div className="flex items-center gap-3 shrink-0">
-            <AcceptingPatientsToggle initialValue={agency.is_accepting_patients} isAdmin={isAdmin} />
-            {isAdmin && (
-              <Link href="/agency/profile"
-                className="flex items-center justify-center h-10 w-10 rounded-xl transition-colors"
-                style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }}>
-                <Settings className="size-4 text-white/50" />
-              </Link>
-            )}
-          </div>
-        </div>
-
-        {/* ── New requests alert banner ───────────────────────────────────── */}
-        {newRequests.length > 0 && (
-          <div className="rounded-2xl p-5 flex flex-col sm:flex-row items-center justify-between gap-5"
-            style={{
-              background: "linear-gradient(135deg, rgba(59,130,246,0.15), rgba(99,102,241,0.15))",
-              border: "1px solid rgba(59,130,246,0.3)"
-            }}>
-            <div className="flex items-center gap-4">
-              <div className="h-12 w-12 rounded-xl flex items-center justify-center shrink-0"
-                style={{ background: `rgba(59,130,246,0.2)`, border: `1px solid ${ACCENT}40` }}>
-                <Zap className="size-5 text-blue-300" />
-              </div>
-              <div>
-                <h2 className="text-[16px] font-bold text-white">
-                  {newRequests.length} new switch request{newRequests.length > 1 ? "s" : ""} awaiting review
-                </h2>
-                <p className="text-[13px] text-blue-200/60 mt-0.5">
-                  Respond promptly to maintain your agency&apos;s quality score.
-                </p>
-              </div>
+      <main className="max-w-[1240px] mx-auto px-4 md:px-6 py-5 md:py-7 space-y-5 md:space-y-6">
+        <section className={`${CARD} p-4 md:p-6`}>
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+            <div>
+              <p className="inline-flex items-center gap-1.5 text-xs font-semibold text-violet-700 bg-violet-100 border border-violet-200 rounded-full px-2.5 py-1"><Sparkles className="size-3.5" /> SwitchMyCare Agency Portal</p>
+              <h1 className="text-2xl md:text-3xl font-semibold text-zinc-900 mt-3">{agency.name}</h1>
+              <p className="text-sm text-zinc-500 mt-1.5">{staffName} · {member.role} · {pending.length} items currently need action.</p>
             </div>
-            <Link href="/agency/requests?filter=submitted"
-              className="shrink-0 h-10 px-6 rounded-xl text-[13px] font-bold flex items-center gap-2 transition-all hover:-translate-y-0.5"
-              style={{ background: `linear-gradient(135deg, ${ACCENT_D}, ${ACCENT})`, color: "#fff", boxShadow: `0 8px 24px ${ACCENT}40` }}>
-              Review Now <ArrowRight className="size-4" />
-            </Link>
+
+            <div className="flex items-center gap-2 md:gap-3 flex-wrap">
+              <AcceptingPatientsToggle initialValue={agency.is_accepting_patients} isAdmin={isAdmin} />
+              <Link href="/agency/notifications" className="h-10 px-3 rounded-xl border border-zinc-200 bg-white text-sm text-zinc-700 inline-flex items-center gap-2">
+                <Bell className="size-4" /> Alerts {unreadNotifications > 0 ? <span className="text-xs rounded-full px-1.5 py-0.5 bg-rose-100 text-rose-700 border border-rose-200">{unreadNotifications}</span> : null}
+              </Link>
+              <Link href="/agency/requests?filter=submitted" className="h-10 px-4 rounded-xl bg-zinc-900 text-white text-sm font-medium inline-flex items-center gap-2">Review Queue <ArrowRight className="size-4" /></Link>
+              {isAdmin && <Link href="/agency/profile" className="h-10 w-10 rounded-xl border border-zinc-200 bg-white inline-flex items-center justify-center text-zinc-700"><Settings className="size-4" /></Link>}
+            </div>
           </div>
-        )}
+        </section>
 
-        {/* ── KPI grid ───────────────────────────────────────────────────── */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <StatCard label="Total Received" value={stats.total} icon={<PackageCheck />} sub="All time requests" />
-          <StatCard label="Action Required" value={stats.pending} icon={<Clock />} sub="Awaiting response" accent={stats.pending > 0} />
-          <StatCard label="Active Clients" value={stats.accepted} icon={<Users />} sub="In progress"
-            trend={stats.accepted > 0 ? { dir: "up", label: `${stats.accepted} active` } : undefined} />
-          <StatCard label="Completed" value={stats.completed} icon={<CheckCircle2 />} sub={`${completionRate}% rate`}
-            trend={completionRate > 0 ? { dir: "up", label: `${completionRate}%` } : undefined} />
-        </div>
+        <section className="grid grid-cols-2 lg:grid-cols-6 gap-3 md:gap-4">
+          <MetricCard label="New requests" value={submitted.length} sub="Unread queue" tone={submitted.length > 0 ? "rose" : "zinc"} icon={<ClipboardCheck className="size-4" />} />
+          <MetricCard label="Pending response" value={pending.length} sub={pending.length > 3 ? "Urgent queue" : "Healthy backlog"} tone={pending.length > 3 ? "amber" : "zinc"} icon={<Clock3 className="size-4" />} />
+          <MetricCard label="Active patients" value={active.length} sub="Accepted / in-progress" tone="sky" icon={<Activity className="size-4" />} />
+          <MetricCard label="Completed month" value={completedThisMonth} sub="Throughput this month" tone="emerald" icon={<CheckCircle2 className="size-4" />} />
+          <MetricCard label="Avg response" value={avgResponseHours !== null ? `${avgResponseHours}h` : "—"} sub="Rolling 30 days" tone="zinc" icon={<Clock3 className="size-4" />} />
+          <MetricCard label="Acceptance rate" value={acceptanceRate !== null ? `${acceptanceRate}%` : "—"} sub="Last 90 days" tone="zinc" icon={<Users className="size-4" />} />
+        </section>
 
-        {/* ── Charts + Stats row ─────────────────────────────────────────── */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-          {/* Request volume */}
-          <div className="rounded-2xl p-5" style={CARD_DARK}>
+        <section className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <div className={`${CARD} p-4 md:p-5 lg:col-span-2`}>
             <div className="flex items-center justify-between mb-4">
               <div>
-                <p className="text-[10px] font-bold uppercase tracking-widest text-blue-300/50 mb-1">Request Volume</p>
-                <p className="text-3xl font-bold text-white">{stats.total}</p>
+                <h2 className="text-base font-semibold text-zinc-900">Request pipeline preview</h2>
+                <p className="text-xs text-zinc-500 mt-0.5">Urgency sorted: oldest first, then nearest requested start date.</p>
               </div>
-              <div className="h-8 w-8 rounded-xl flex items-center justify-center"
-                style={{ background: "rgba(59,130,246,0.12)", border: "1px solid rgba(59,130,246,0.2)" }}>
-                <BarChart2 className="size-4 text-blue-400" />
-              </div>
-            </div>
-            <MiniBar values={barValues} color={ACCENT} />
-            <p className="text-[10px] text-blue-200/30 mt-2">Total requests received</p>
-          </div>
-
-          {/* Completion funnel */}
-          <div className="rounded-2xl p-5" style={CARD_DARK}>
-            <p className="text-[10px] font-bold uppercase tracking-widest text-blue-300/50 mb-4">Request Pipeline</p>
-            <div className="space-y-3">
-              {[
-                { label: "Total", value: stats.total, color: "rgba(255,255,255,0.3)" },
-                { label: "Active", value: stats.pending + stats.accepted, color: ACCENT_L },
-                { label: "Complete", value: stats.completed, color: "#4ADE80" },
-              ].map(({ label, value, color }) => {
-                const pct = stats.total > 0 ? Math.round((value / stats.total) * 100) : 0;
-                return (
-                  <div key={label}>
-                    <div className="flex justify-between mb-1">
-                      <span className="text-[11px] text-blue-200/40">{label}</span>
-                      <span className="text-[11px] font-bold text-white/60">{value}</span>
-                    </div>
-                    <div className="h-1.5 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.06)" }}>
-                      <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, background: color }} />
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Agency status */}
-          <div className="rounded-2xl p-5" style={CARD_DARK}>
-            <p className="text-[10px] font-bold uppercase tracking-widest text-blue-300/50 mb-4">Agency Status</p>
-            <div className="space-y-3">
-              {[
-                {
-                  label: "Accepting Patients",
-                  status: agency.is_accepting_patients,
-                  onColor: "#4ADE80", offColor: "#F87171"
-                },
-                {
-                  label: "Partner Status",
-                  status: agency.is_verified_partner ?? false,
-                  onColor: "#FBBF24", offColor: "rgba(255,255,255,0.2)"
-                },
-              ].map(({ label, status, onColor, offColor }) => (
-                <div key={label} className="flex items-center justify-between">
-                  <span className="text-[12px] text-blue-200/50">{label}</span>
-                  <span className="flex items-center gap-1.5 text-[11px] font-bold"
-                    style={{ color: status ? onColor : offColor }}>
-                    <span className="h-1.5 w-1.5 rounded-full shrink-0" style={{ background: status ? onColor : offColor }} />
-                    {status ? "Active" : "Inactive"}
-                  </span>
-                </div>
-              ))}
-              <div className="pt-3 mt-1" style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}>
-                <div className="flex items-center justify-between">
-                  <span className="text-[12px] text-blue-200/50">Completion Rate</span>
-                  <span className="text-[14px] font-bold text-white">{completionRate}%</span>
-                </div>
-                <div className="h-1.5 rounded-full overflow-hidden mt-1.5" style={{ background: "rgba(255,255,255,0.06)" }}>
-                  <div className="h-full rounded-full" style={{ width: `${completionRate}%`, background: "linear-gradient(90deg, #3B82F6, #4ADE80)" }} />
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* ── Quick actions row ──────────────────────────────────────────── */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          {[
-            { href: "/agency/requests?filter=submitted", label: "New Requests", icon: Bell, badge: stats.pending > 0 ? stats.pending : null, color: ACCENT },
-            { href: "/agency/requests?filter=accepted", label: "Active Cases", icon: Activity, badge: stats.accepted > 0 ? stats.accepted : null, color: "#4ADE80" },
-            { href: "/agency/messages", label: "Messages", icon: Users, badge: null, color: "#FBBF24" },
-            { href: "/agency/team", label: "Team", icon: Shield, badge: null, color: "#C4B5FD" },
-          ].map(({ href, label, icon: Icon, badge, color }) => (
-            <Link key={href} href={href}
-              className="flex items-center gap-3 p-4 rounded-2xl transition-all hover:-translate-y-0.5 group"
-              style={CARD_DARK}>
-              <div className="h-8 w-8 rounded-xl flex items-center justify-center shrink-0"
-                style={{ background: `${color}15`, border: `1px solid ${color}30` }}>
-                <Icon className="size-4" style={{ color }} />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-[12px] font-semibold text-white">{label}</p>
-              </div>
-              <div className="flex items-center gap-1">
-                {badge !== null && (
-                  <span className="h-5 px-1.5 rounded-full text-[10px] font-bold flex items-center justify-center"
-                    style={{ background: `${color}20`, color, border: `1px solid ${color}30` }}>
-                    {badge}
-                  </span>
-                )}
-                <ChevronRight className="size-3.5 text-white/15 group-hover:text-white/50 transition-colors" />
-              </div>
-            </Link>
-          ))}
-        </div>
-
-        {/* ── Recent activity + sidebar ──────────────────────────────────── */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-
-          {/* Recent requests (2/3 width) */}
-          <div className="lg:col-span-2 rounded-2xl overflow-hidden" style={CARD_DARK}>
-            <div className="flex items-center justify-between px-6 py-4"
-              style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
-              <div>
-                <p className="text-[14px] font-bold text-white">Recent Activity</p>
-                <p className="text-[11px] mt-0.5" style={{ color: "rgba(255,255,255,0.3)" }}>
-                  {recentRequests.length} of {stats.total} requests
-                </p>
-              </div>
-              <Link href="/agency/requests"
-                className="flex items-center gap-1.5 text-[12px] font-bold transition-colors"
-                style={{ color: ACCENT_L }}>
-                View all <ArrowRight className="size-3.5" />
-              </Link>
+              <Link href="/agency/requests" className="text-xs font-medium text-zinc-600 hover:text-zinc-900">View all requests</Link>
             </div>
 
-            {recentRequests.length === 0 ? (
-              <div className="py-16 flex flex-col items-center gap-3">
-                <div className="h-14 w-14 rounded-2xl flex items-center justify-center"
-                  style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}>
-                  <PackageCheck className="size-6 text-white/20" />
-                </div>
-                <p className="text-[14px] font-semibold text-white/40">No requests yet</p>
-                <p className="text-[12px] text-white/20 text-center max-w-xs">
-                  New switch requests from patients in your area will appear here.
-                </p>
+            {sortedUrgent.length === 0 ? (
+              <div className="rounded-xl border border-dashed border-zinc-300 bg-zinc-50 p-10 text-center">
+                <p className="text-sm font-medium text-zinc-700">No pending requests 🎉</p>
+                <p className="text-xs text-zinc-500 mt-1">You&apos;re caught up. Keep your profile complete to receive more matches.</p>
+                <Link href="/agency/profile" className="inline-flex mt-4 text-xs font-medium text-zinc-700 underline">Review agency profile</Link>
               </div>
             ) : (
-              <div>
-                {recentRequests.map((r, i) => (
-                  <AgencyRequestRow key={r.id} request={r} />
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Sidebar (1/3 width) */}
-          <div className="space-y-4">
-            {/* Agency info card */}
-            <div className="rounded-2xl p-5" style={CARD_DARK}>
-              <p className="text-[10px] font-bold uppercase tracking-widest mb-4" style={{ color: "rgba(255,255,255,0.25)" }}>Agency Info</p>
               <div className="space-y-3">
-                <div>
-                  <p className="text-[16px] font-bold text-white leading-tight">{agency.name}</p>
-                  {agency.address_city && (
-                    <p className="text-[12px] mt-0.5" style={{ color: "rgba(255,255,255,0.35)" }}>
-                      {agency.address_city}, {agency.address_state}
-                    </p>
-                  )}
-                </div>
-                <div style={{ borderTop: "1px solid rgba(255,255,255,0.06)", paddingTop: "12px" }}>
-                  {[
-                    { label: "Your role", value: member.role.replace(/_/g, " ") },
-                    { label: "Medicare score", value: agency.medicare_quality_score ? `★ ${agency.medicare_quality_score}` : "—" },
-                    { label: "Care types", value: (agency.care_types ?? []).join(", ") || "—" },
-                  ].map(({ label, value }) => (
-                    <div key={label} className="flex justify-between items-center py-1.5">
-                      <span className="text-[11px] capitalize" style={{ color: "rgba(255,255,255,0.3)" }}>{label}</span>
-                      <span className="text-[11px] font-semibold capitalize text-white/70">{value}</span>
+                {sortedUrgent.map((r) => {
+                  const hrs = hoursSince(r.submitted_at ?? r.created_at);
+                  const urgency = hrs >= 48 ? "critical" : hrs >= 24 ? "warning" : "normal";
+                  return (
+                    <div key={r.id} className="rounded-xl border border-zinc-200 bg-zinc-50/70 p-3 md:p-4">
+                      <div className="flex flex-col md:flex-row md:items-center gap-3 justify-between">
+                        <div>
+                          <p className="text-sm font-semibold text-zinc-900">{(r.patient?.full_name ?? "Patient").split(" ")[0]} · {r.care_type}</p>
+                          <p className="text-xs text-zinc-500 mt-1">{r.patient_details?.payer_type ?? "Unknown payer"} · {r.patient_details?.address_county ?? "Unknown county"} · {hrs}h waiting</p>
+                          {r.requested_start_date ? <p className="text-xs text-zinc-500">Requested start: {new Date(r.requested_start_date).toLocaleDateString()}</p> : null}
+                        </div>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className={`text-xs px-2 py-1 rounded-full border ${urgency === "critical" ? "bg-rose-100 text-rose-700 border-rose-200" : urgency === "warning" ? "bg-amber-100 text-amber-700 border-amber-200" : "bg-zinc-100 text-zinc-600 border-zinc-200"}`}>{urgency === "critical" ? "48h+" : urgency === "warning" ? "24h+" : "Fresh"}</span>
+                          <form action={quickAccept}><input type="hidden" name="request_id" value={r.id} /><button className="h-8 px-2.5 rounded-lg text-xs font-medium bg-emerald-600 text-white">Accept</button></form>
+                          <form action={quickDecline}><input type="hidden" name="request_id" value={r.id} /><button className="h-8 px-2.5 rounded-lg text-xs font-medium border border-zinc-300 text-zinc-700 bg-white">Decline</button></form>
+                          <Link href={`/agency/requests/${r.id}`} className="h-8 px-2.5 rounded-lg text-xs font-medium border border-zinc-300 text-zinc-700 bg-white inline-flex items-center">Details</Link>
+                        </div>
+                      </div>
                     </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {/* Stats summary */}
-            <div className="rounded-2xl p-5" style={CARD_GLASS}>
-              <p className="text-[10px] font-bold uppercase tracking-widest mb-3" style={{ color: "rgba(59,130,246,0.6)" }}>
-                Your Performance
-              </p>
-              <div className="space-y-2">
-                {[
-                  { label: "Pending Review", value: stats.pending, color: ACCENT_L },
-                  { label: "Accepted", value: stats.accepted, color: "#4ADE80" },
-                  { label: "Completed", value: stats.completed, color: "#C4B5FD" },
-                  { label: "Total", value: stats.total, color: "rgba(255,255,255,0.5)" },
-                ].map(({ label, value, color }) => (
-                  <div key={label} className="flex items-center justify-between">
-                    <span className="text-[12px] text-blue-200/50">{label}</span>
-                    <span className="text-[14px] font-bold" style={{ color }}>{value}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Quick links */}
-            {isAdmin && (
-              <div className="rounded-2xl p-4" style={CARD_DARK}>
-                <p className="text-[10px] font-bold uppercase tracking-widest mb-3" style={{ color: "rgba(255,255,255,0.25)" }}>Admin Actions</p>
-                {[
-                  { href: "/agency/profile", label: "Edit Agency Profile", icon: Settings },
-                  { href: "/agency/team", label: "Manage Team", icon: Users },
-                ].map(({ href, label, icon: Icon }) => (
-                  <Link key={href} href={href}
-                    className="flex items-center gap-3 py-2.5 group transition-colors"
-                    style={{ borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
-                    <div className="h-7 w-7 rounded-lg flex items-center justify-center"
-                      style={{ background: "rgba(255,255,255,0.04)" }}>
-                      <Icon className="size-3.5 text-white/30 group-hover:text-white/60 transition-colors" />
-                    </div>
-                    <span className="text-[12px] font-medium text-white/40 group-hover:text-white/70 transition-colors">{label}</span>
-                    <ArrowUpRight className="size-3.5 ml-auto text-white/15 group-hover:text-white/40 transition-colors" />
-                  </Link>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>
-        </div>
 
+          <div className="space-y-4">
+            <div className={`${CARD} p-4 md:p-5`}>
+              <h3 className="text-sm font-semibold text-zinc-900">Agency profile health</h3>
+              {(() => {
+                const checks = [
+                  { label: "Description", ok: !!agency.dba_name },
+                  { label: "Phone", ok: !!agency.phone },
+                  { label: "Website", ok: !!agency.website },
+                  { label: "Service counties", ok: (agency.service_counties ?? []).length > 0 },
+                  { label: "Services offered", ok: (agency.services_offered ?? []).length > 0 },
+                  { label: "Languages", ok: (agency.languages_spoken ?? []).length > 0 },
+                ];
+                const score = Math.round((checks.filter((c) => c.ok).length / checks.length) * 100);
+                return (
+                  <>
+                    <p className="text-2xl font-semibold text-zinc-900 mt-2">{score}%</p>
+                    <div className="h-2 rounded-full bg-zinc-100 mt-2 overflow-hidden"><div className="h-full bg-zinc-900" style={{ width: `${score}%` }} /></div>
+                    <div className="mt-3 space-y-2">
+                      {checks.filter((c) => !c.ok).slice(0, 3).map((c) => (
+                        <p key={c.label} className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-2 py-1.5 inline-flex items-center gap-1.5"><AlertTriangle className="size-3.5" /> Missing: {c.label}</p>
+                      ))}
+                    </div>
+                    <div className="mt-4 flex items-center justify-between">
+                      <span className="text-xs text-zinc-500">Verification: {agency.is_verified_partner ? "Verified partner" : "Not verified"}</span>
+                      <Link href="/agency/profile" className="text-xs font-medium text-zinc-700">Improve profile</Link>
+                    </div>
+                  </>
+                );
+              })()}
+            </div>
+
+            <div className={`${CARD} p-4 md:p-5`}>
+              <h3 className="text-sm font-semibold text-zinc-900">Feature hub</h3>
+              <div className="grid grid-cols-1 gap-2 mt-3">
+                <Link href="/agency/messages" className="h-10 px-3 rounded-lg border border-zinc-200 hover:bg-zinc-50 text-sm text-zinc-700 inline-flex items-center justify-between">Messaging <MessageSquare className="size-4 text-zinc-400" /></Link>
+                <Link href="/agency/documents" className="h-10 px-3 rounded-lg border border-zinc-200 hover:bg-zinc-50 text-sm text-zinc-700 inline-flex items-center justify-between">Documents <ArrowRight className="size-4 text-zinc-400" /></Link>
+                <Link href="/agency/team" className="h-10 px-3 rounded-lg border border-zinc-200 hover:bg-zinc-50 text-sm text-zinc-700 inline-flex items-center justify-between">Team management <Users className="size-4 text-zinc-400" /></Link>
+                <Link href="/agency/settings" className="h-10 px-3 rounded-lg border border-zinc-200 hover:bg-zinc-50 text-sm text-zinc-700 inline-flex items-center justify-between">Settings <Settings className="size-4 text-zinc-400" /></Link>
+                <Link href="/agency/reports" className="h-10 px-3 rounded-lg border border-zinc-200 hover:bg-zinc-50 text-sm text-zinc-700 inline-flex items-center justify-between">Reports (Phase 2) <ArrowRight className="size-4 text-zinc-400" /></Link>
+              </div>
+            </div>
+          </div>
+        </section>
       </main>
     </div>
   );
