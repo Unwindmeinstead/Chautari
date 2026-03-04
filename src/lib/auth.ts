@@ -5,6 +5,13 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getUserRedirectPath } from "@/lib/auth-redirect";
 
+function safeNextPath(raw: FormDataEntryValue | null): string | null {
+  if (typeof raw !== "string") return null;
+  if (!raw.startsWith("/")) return null;
+  if (raw.startsWith("/auth/")) return null;
+  return raw;
+}
+
 export async function signInWithEmail(formData: FormData) {
   const supabase = await createClient();
 
@@ -20,7 +27,8 @@ export async function signInWithEmail(formData: FormData) {
   }
 
   const { data: { user } } = await supabase.auth.getUser();
-  const redirectPath = user ? await getUserRedirectPath(supabase, user) : "/profile";
+  const requestedPath = safeNextPath(formData.get("redirectedFrom"));
+  const redirectPath = requestedPath ?? (user ? await getUserRedirectPath(supabase, user) : "/dashboard");
 
   revalidatePath("/", "layout");
   redirect(redirectPath);
@@ -65,10 +73,12 @@ export async function signInWithMagicLink(formData: FormData) {
 
   const email = formData.get("email") as string;
 
+  const requestedPath = safeNextPath(formData.get("redirectedFrom")) ?? "/dashboard";
+
   const { error } = await supabase.auth.signInWithOtp({
     email,
     options: {
-      emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/api/auth/callback?next=/dashboard`,
+      emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/api/auth/callback?next=${encodeURIComponent(requestedPath)}`,
     },
   });
 
@@ -79,13 +89,15 @@ export async function signInWithMagicLink(formData: FormData) {
   redirect("/auth/verify?email=" + encodeURIComponent(email) + "&method=magic");
 }
 
-export async function signInWithGoogle() {
+export async function signInWithGoogle(redirectedFrom?: string) {
   const supabase = await createClient();
+
+  const requestedPath = safeNextPath(redirectedFrom ?? null) ?? "/dashboard";
 
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: "google",
     options: {
-      redirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/api/auth/callback?next=/dashboard`,
+      redirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/api/auth/callback?next=${encodeURIComponent(requestedPath)}`,
       queryParams: {
         access_type: "offline",
         prompt: "consent",

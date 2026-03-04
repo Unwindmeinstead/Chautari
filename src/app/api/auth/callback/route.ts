@@ -12,7 +12,7 @@ export async function GET(request: Request) {
     const { error } = await supabase.auth.exchangeCodeForSession(code);
     if (!error) {
       const { data: { user } } = await supabase.auth.getUser();
-      const roleDefault = user ? await getUserRedirectPath(supabase, user) : "/profile";
+      const roleDefault = user ? await getUserRedirectPath(supabase, user) : "/dashboard";
       const destination = next && next.startsWith("/") ? next : roleDefault;
       return NextResponse.redirect(`${origin}${destination}`);
     }

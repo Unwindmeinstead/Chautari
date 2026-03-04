@@ -42,7 +42,7 @@ export default function LoginPage() {
   async function handleGoogle() {
     setLoading(true);
     try {
-      await signInWithGoogle();
+      await signInWithGoogle(redirectedFrom ?? undefined);
     } catch (err) {
       throw err;
     } finally {
@@ -134,6 +134,7 @@ export default function LoginPage() {
 
       {/* Form */}
       <form action={clientAction} className="space-y-5">
+        <input type="hidden" name="redirectedFrom" value={redirectedFrom ?? ""} />
         <div className="space-y-1.5">
           <label className="text-[13px] font-medium text-forest-600 ml-1">Email address</label>
           <div className="relative">
