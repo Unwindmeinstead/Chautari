@@ -1,5 +1,6 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
+import { TrendingUp, TrendingDown, Minus } from "lucide-react";
 
 interface StatCardProps {
   label: string;
@@ -8,46 +9,81 @@ interface StatCardProps {
   icon: React.ReactNode;
   highlight?: boolean;
   alert?: boolean;
+  trend?: "up" | "down" | "neutral";
+  trendValue?: string;
+  accent?: string; // hex color
 }
 
-export function StatCard({ label, value, sub, icon, highlight, alert }: StatCardProps) {
+export function StatCard({
+  label, value, sub, icon, highlight, alert, trend, trendValue, accent
+}: StatCardProps) {
+  const accentColor = alert
+    ? "#F59E0B"
+    : highlight
+      ? "#10B981"
+      : accent ?? "#6B7280";
+
+  const TrendIcon = trend === "up" ? TrendingUp : trend === "down" ? TrendingDown : Minus;
+  const trendColor = trend === "up" ? "#10B981" : trend === "down" ? "#EF4444" : "#6B7280";
+
   return (
-    <div className={cn(
-      "group relative overflow-hidden rounded-[28px] border bg-white p-6 shadow-[0_2px_12px_rgba(26,61,43,0.02)] transition-all duration-500 hover:-translate-y-1 hover:shadow-[0_8px_24px_rgba(26,61,43,0.06)]",
-      alert ? "border-amber-200/60 bg-gradient-to-br from-amber-50/50 to-white" : highlight ? "border-forest-200/60 bg-gradient-to-br from-forest-50/50 to-white" : "border-forest-900/5"
-    )}>
+    <div
+      className="relative overflow-hidden rounded-2xl p-5 transition-all duration-200 hover:-translate-y-0.5 group"
+      style={{
+        background: "#111714",
+        border: "1px solid rgba(255,255,255,0.07)",
+        boxShadow: "0 2px 12px rgba(0,0,0,0.3)",
+      }}
+    >
+      {/* Accent glow at top */}
+      <div className="absolute inset-x-0 top-0 h-px"
+        style={{ background: `linear-gradient(90deg, transparent, ${accentColor}60, transparent)` }} />
+
+      {/* Top row */}
       <div className="flex items-start justify-between mb-4">
-        <div className={cn(
-          "p-3 rounded-2xl shadow-sm transition-colors duration-500",
-          alert ? "bg-amber-100/80 text-amber-700 group-hover:bg-amber-200" : highlight ? "bg-forest-100/80 text-forest-700 group-hover:bg-forest-200" : "bg-forest-50 text-forest-500 group-hover:bg-forest-100"
-        )}>
-          {icon}
+        <div className="h-9 w-9 rounded-xl flex items-center justify-center shrink-0"
+          style={{ background: `${accentColor}18`, border: `1px solid ${accentColor}25` }}>
+          {React.cloneElement(icon as React.ReactElement, {
+            className: "size-4",
+            style: { color: accentColor }
+          })}
         </div>
+
         {alert && (
-          <div className="relative flex h-2.5 w-2.5">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-amber-500"></span>
+          <div className="flex items-center gap-1.5 rounded-full px-2 py-0.5"
+            style={{ background: "rgba(245,158,11,0.12)", border: "1px solid rgba(245,158,11,0.2)" }}>
+            <span className="h-1.5 w-1.5 rounded-full bg-amber-400 animate-pulse inline-block" />
+            <span className="text-[10px] font-bold text-amber-400 tracking-wider">ALERT</span>
+          </div>
+        )}
+
+        {trend && trendValue && (
+          <div className="flex items-center gap-1 rounded-full px-2 py-0.5"
+            style={{ background: `${trendColor}12`, border: `1px solid ${trendColor}25` }}>
+            <TrendIcon className="size-3" style={{ color: trendColor }} />
+            <span className="text-[10px] font-bold" style={{ color: trendColor }}>{trendValue}</span>
           </div>
         )}
       </div>
-      <div className="relative z-10">
-        <h3 className={cn(
-          "font-fraunces text-[2.5rem] leading-none font-semibold tracking-tight transition-transform duration-500 group-hover:scale-105 origin-left",
-          alert ? "text-amber-700" : highlight ? "text-forest-800" : "text-forest-900"
-        )}>
+
+      {/* Value */}
+      <div>
+        <p className="text-[2.4rem] leading-none font-bold text-white tracking-tight font-fraunces">
           {value}
-        </h3>
-        <p className="text-[14px] font-semibold text-forest-500 mt-2">{label}</p>
-        {sub && <p className="text-[12px] font-medium text-forest-400 mt-1">{sub}</p>}
+        </p>
+        <p className="text-[12px] font-semibold mt-2" style={{ color: "rgba(255,255,255,0.4)" }}>
+          {label}
+        </p>
+        {sub && (
+          <p className="text-[11px] mt-1 font-medium" style={{ color: "rgba(255,255,255,0.25)" }}>
+            {sub}
+          </p>
+        )}
       </div>
 
-      {/* Decorative subtle icon in background */}
-      <div className={cn(
-        "absolute -right-6 -bottom-6 opacity-[0.03] transition-all duration-700 pointer-events-none transform group-hover:scale-[1.2] group-hover:-rotate-12",
-        alert ? "text-amber-900" : highlight ? "text-forest-900" : "text-forest-900"
-      )}>
-        {React.cloneElement(icon as React.ReactElement, { className: "size-32" })}
-      </div>
+      {/* Corner glow */}
+      <div className="absolute -bottom-6 -right-6 w-24 h-24 rounded-full pointer-events-none transition-opacity duration-300 opacity-0 group-hover:opacity-100"
+        style={{ background: `radial-gradient(circle, ${accentColor}18 0%, transparent 70%)` }} />
     </div>
   );
 }

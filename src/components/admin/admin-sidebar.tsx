@@ -5,13 +5,12 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard, Building2, Users, ArrowLeftRight,
-  Shield, LogOut, ChevronRight, Banknote
+  Shield, LogOut, ChevronRight, Zap, Bell, Settings
 } from "lucide-react";
-import { Logo } from "@/components/ui/logo";
 import { cn } from "@/lib/utils";
 
-const NAV = [
-  { href: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
+const NAV_PRIMARY = [
+  { href: "/admin", label: "Overview", icon: LayoutDashboard, exact: true },
   { href: "/admin/agencies", label: "Agencies", icon: Building2 },
   { href: "/admin/users", label: "Users", icon: Users },
   { href: "/admin/requests", label: "Switch Requests", icon: ArrowLeftRight },
@@ -27,63 +26,102 @@ export function AdminSidebar({ adminName }: { adminName: string }) {
   }
 
   return (
-    <aside className="w-[280px] shrink-0 bg-[#0A1A11] min-h-screen flex flex-col sticky top-0 h-screen border-r border-white/5 relative overflow-hidden text-forest-50">
-      {/* Ambient Glow */}
-      <div className="absolute top-0 -left-12 w-48 h-48 bg-forest-500/10 rounded-full blur-[60px] pointer-events-none" />
+    <aside className="w-[240px] shrink-0 flex flex-col sticky top-0 h-screen overflow-hidden"
+      style={{ background: "#090E0C", borderRight: "1px solid rgba(255,255,255,0.06)" }}>
 
-      {/* Logo */}
-      <div className="px-6 py-8 relative z-10">
-        <Logo size="sm" invertColors />
-        <div className="mt-4 inline-flex items-center gap-2 rounded-full bg-amber-500/10 border border-amber-500/20 px-3 py-1.5 shadow-sm">
-          <Banknote className="size-3.5 text-amber-400" />
-          <span className="text-xs font-bold uppercase tracking-widest text-amber-400">Admin Console</span>
+      {/* Top glow orb */}
+      <div className="absolute top-0 left-0 w-full h-48 pointer-events-none"
+        style={{ background: "radial-gradient(ellipse at 30% 0%, rgba(16,185,129,0.12) 0%, transparent 65%)" }} />
+
+      {/* Logo / Brand */}
+      <div className="relative z-10 px-5 pt-6 pb-5">
+        <div className="flex items-center gap-2.5">
+          <div className="h-8 w-8 rounded-xl flex items-center justify-center"
+            style={{ background: "linear-gradient(135deg, #10B981 0%, #059669 100%)" }}>
+            <Zap className="size-4 text-white" />
+          </div>
+          <div>
+            <p className="text-[13px] font-bold text-white tracking-tight">SwitchMyCare</p>
+            <p className="text-[10px] font-semibold text-white/30 tracking-widest uppercase">Admin</p>
+          </div>
         </div>
       </div>
 
-      {/* Nav */}
-      <nav className="flex-1 px-4 py-2 space-y-1.5 overflow-y-auto relative z-10">
-        {NAV.map(({ href, label, icon: Icon, exact }) => {
+      {/* Divider */}
+      <div className="mx-5 h-px" style={{ background: "rgba(255,255,255,0.06)" }} />
+
+      {/* Nav label */}
+      <p className="relative z-10 px-5 pt-5 pb-2 text-[10px] font-bold tracking-widest uppercase text-white/20">
+        Navigation
+      </p>
+
+      {/* Primary Nav */}
+      <nav className="relative z-10 flex-1 px-3 space-y-0.5 overflow-y-auto">
+        {NAV_PRIMARY.map(({ href, label, icon: Icon, exact }) => {
           const active = isActive(href, exact);
           return (
             <Link
               key={href}
               href={href}
               className={cn(
-                "flex items-center gap-3.5 px-4 py-3 rounded-2xl text-sm font-semibold transition-all duration-300 group relative overflow-hidden outline-none",
+                "flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] font-medium transition-all duration-150 group relative",
                 active
-                  ? "text-white bg-white/10 shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)] border border-white/5"
-                  : "text-forest-400 hover:text-white hover:bg-white/5 border border-transparent"
+                  ? "text-white"
+                  : "text-white/35 hover:text-white/70 hover:bg-white/4"
               )}
+              style={active ? {
+                background: "rgba(16,185,129,0.1)",
+                border: "1px solid rgba(16,185,129,0.15)",
+              } : {}}
             >
+              {/* Active indicator dot */}
               {active && (
-                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-amber-400 rounded-r-lg shadow-[0_0_10px_rgba(251,191,36,0.5)]" />
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 h-1.5 w-1.5 rounded-full bg-emerald-400"
+                  style={{ boxShadow: "0 0 6px rgba(16,185,129,0.8)" }} />
               )}
-              <Icon className={cn("size-5 shrink-0 transition-transform duration-300 group-hover:scale-110", active ? "text-amber-400" : "")} />
+              <Icon className={cn(
+                "size-4 shrink-0 transition-all duration-150",
+                active ? "text-emerald-400" : "text-white/25 group-hover:text-white/50"
+              )} />
               <span className="flex-1 tracking-wide">{label}</span>
-              {active && <ChevronRight className="size-4 opacity-50 text-amber-400" />}
             </Link>
           );
         })}
       </nav>
 
-      {/* Footer */}
-      <div className="p-4 relative z-10">
-        <div className="rounded-2xl bg-white/5 border border-white/10 p-4 space-y-3 backdrop-blur-md">
-          <div className="flex items-center gap-3">
-            <div className="h-9 w-9 rounded-full bg-forest-800 flex items-center justify-center border border-white/10 shrink-0">
-              <span className="text-sm font-bold text-white">{adminName[0]?.toUpperCase() ?? "A"}</span>
-            </div>
-            <div className="min-w-0">
-              <p className="text-sm font-bold text-white truncate">{adminName}</p>
-              <p className="text-[10px] font-bold tracking-widest text-forest-400 uppercase mt-0.5">Super Admin</p>
-            </div>
+      {/* Bottom utilities */}
+      <div className="relative z-10 px-3 pb-4 space-y-0.5">
+        <div className="mx-2 mb-3 h-px" style={{ background: "rgba(255,255,255,0.06)" }} />
+        <Link href="/admin"
+          className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] font-medium text-white/25 hover:text-white/60 hover:bg-white/4 transition-all duration-150 group">
+          <Bell className="size-4 text-white/20 group-hover:text-white/50" />
+          <span>Notifications</span>
+        </Link>
+        <Link href="/admin"
+          className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] font-medium text-white/25 hover:text-white/60 hover:bg-white/4 transition-all duration-150 group">
+          <Settings className="size-4 text-white/20 group-hover:text-white/50" />
+          <span>Settings</span>
+        </Link>
+      </div>
+
+      {/* Divider */}
+      <div className="mx-5 h-px" style={{ background: "rgba(255,255,255,0.06)" }} />
+
+      {/* User block */}
+      <div className="relative z-10 p-4">
+        <div className="flex items-center gap-3 p-3 rounded-xl group cursor-default"
+          style={{ background: "rgba(255,255,255,0.04)" }}>
+          <div className="h-8 w-8 rounded-full flex items-center justify-center shrink-0 text-xs font-bold text-white"
+            style={{ background: "linear-gradient(135deg, #10B981 0%, #059669 100%)" }}>
+            {adminName[0]?.toUpperCase() ?? "A"}
           </div>
-          <Link
-            href="/api/auth/signout"
-            className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl text-sm font-semibold text-red-400 hover:text-white hover:bg-red-500/80 transition-all duration-300 border border-transparent hover:border-red-500"
-          >
-            <LogOut className="size-4" />
-            Sign out
+          <div className="flex-1 min-w-0">
+            <p className="text-[13px] font-semibold text-white truncate">{adminName}</p>
+            <p className="text-[10px] text-white/30 font-medium">Super Admin</p>
+          </div>
+          <Link href="/api/auth/signout" title="Sign out"
+            className="h-7 w-7 rounded-lg flex items-center justify-center text-white/20 hover:text-red-400 hover:bg-red-500/10 transition-all duration-150">
+            <LogOut className="size-3.5" />
           </Link>
         </div>
       </div>
