@@ -1,10 +1,8 @@
 "use client";
 
 import * as React from "react";
-import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { useCallback } from "react";
-import { ChevronLeft, ChevronRight, AlertCircle } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { ChevronLeft, ChevronRight, AlertCircle, Building2, ArrowRight } from "lucide-react";
 import { AgencyCard, AgencyCardSkeleton } from "./agency-card";
 import { AgencyFilters, AgencySearchBar } from "./agency-filters";
 import { searchAgencies, type AgencySearchFilters } from "@/lib/agency-actions";
@@ -27,10 +25,6 @@ export function AgencySearchClient({
   patientCounty,
   patientPayerType,
 }: AgencySearchClientProps) {
-  const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
-
   const [agencies, setAgencies] = React.useState<Agency[]>(initialAgencies);
   const [total, setTotal] = React.useState(initialTotal);
   const [loading, setLoading] = React.useState(false);
@@ -40,23 +34,15 @@ export function AgencySearchClient({
 
   const totalPages = Math.ceil(total / PAGE_SIZE);
 
-  const fetchAgencies = useCallback(
-    async (newFilters: AgencySearchFilters, newPage: number) => {
-      setLoading(true);
-      setError(null);
-      const result = await searchAgencies(newFilters, newPage, PAGE_SIZE);
-      if (result.error) {
-        setError(result.error);
-      } else {
-        setAgencies(result.agencies);
-        setTotal(result.total);
-      }
-      setLoading(false);
-    },
-    []
-  );
+  const fetchAgencies = useCallback(async (newFilters: AgencySearchFilters, newPage: number) => {
+    setLoading(true);
+    setError(null);
+    const result = await searchAgencies(newFilters, newPage, PAGE_SIZE);
+    if (result.error) setError(result.error);
+    else { setAgencies(result.agencies); setTotal(result.total); }
+    setLoading(false);
+  }, []);
 
-  // Debounce search query
   const queryRef = React.useRef<ReturnType<typeof setTimeout>>();
   function handleFiltersChange(newFilters: AgencySearchFilters) {
     setFilters(newFilters);
@@ -74,50 +60,36 @@ export function AgencySearchClient({
   }
 
   const hasPatientFilters = patientCounty || patientPayerType;
+  const showPersonalisedBanner = hasPatientFilters && !filters.county && !filters.payer_type;
 
   return (
     <div className="space-y-6">
-      {/* Patient-based filter suggestion */}
-      {hasPatientFilters && !filters.county && !filters.payer_type && (
-        <div className="rounded-xl bg-forest-50 border border-forest-200 p-4 flex items-center gap-4 flex-wrap">
-          <div className="flex-1 min-w-0">
-            <p className="text-sm text-forest-700 font-medium">
-              Show agencies matching your profile?
-            </p>
-            <p className="text-xs text-forest-500 mt-0.5">
-              {patientCounty && `${patientCounty} County`}
-              {patientCounty && patientPayerType && " · "}
-              {patientPayerType && patientPayerType.replace("_", " ")}
+      {/* Personalised banner */}
+      {showPersonalisedBanner && (
+        <div className="rounded-2xl bg-gray-50 border border-gray-200 p-5 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div>
+            <p className="text-[14px] font-bold text-gray-900">Show agencies matching your profile?</p>
+            <p className="text-[12px] font-medium text-gray-500 mt-0.5">
+              {patientCounty && `${patientCounty} County`}{patientCounty && patientPayerType && " · "}{patientPayerType?.replace("_", " ")}
             </p>
           </div>
-          <Button
-            size="sm"
-            onClick={() =>
-              handleFiltersChange({
-                ...filters,
-                county: patientCounty ?? undefined,
-                payer_type: (patientPayerType as AgencySearchFilters["payer_type"]) ?? undefined,
-              })
-            }
-          >
-            Apply my filters
-          </Button>
-          <button
-            className="text-xs text-forest-400 hover:text-forest-600"
-            onClick={() => router.push(pathname)}
-          >
-            Dismiss
-          </button>
+          <div className="flex items-center gap-3 shrink-0">
+            <button
+              onClick={() => handleFiltersChange({ ...filters, county: patientCounty ?? undefined, payer_type: (patientPayerType as any) ?? undefined })}
+              className="h-9 px-5 rounded-full bg-gray-900 text-white text-[12px] font-bold hover:bg-gray-800 transition-colors">
+              Apply my filters
+            </button>
+          </div>
         </div>
       )}
 
-      {/* Search bar (full width above) */}
+      {/* Search bar */}
       <AgencySearchBar
         value={filters.query ?? ""}
-        onChange={(q) => handleFiltersChange({ ...filters, query: q })}
+        onChange={q => handleFiltersChange({ ...filters, query: q })}
       />
 
-      <div className="flex gap-6 items-start">
+      <div className="flex gap-7 items-start">
         {/* Sidebar filters */}
         <AgencyFilters
           filters={filters}
@@ -126,101 +98,87 @@ export function AgencySearchClient({
           loading={loading}
         />
 
-        {/* Results grid */}
+        {/* Results */}
         <div className="flex-1 min-w-0 space-y-6">
-          {/* Error state */}
+          {/* Results count (desktop) */}
+          <div className="hidden lg:flex items-center justify-between">
+            <p className="text-[13px] font-semibold text-gray-500">
+              {loading ? "Searching…" : `${total.toLocaleString()} agencies found`}
+            </p>
+          </div>
+
           {error && (
-            <div className="rounded-xl bg-red-50 border border-red-200 p-4 flex items-center gap-3 text-red-700">
+            <div className="rounded-2xl bg-red-50 border border-red-100 p-4 flex items-center gap-3 text-red-700">
               <AlertCircle className="size-5 shrink-0" />
-              <p className="text-sm">{error}</p>
+              <p className="text-[13px] font-semibold">{error}</p>
             </div>
           )}
 
-          {/* Loading state */}
           {loading && (
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
-              {Array.from({ length: 6 }).map((_, i) => (
-                <AgencyCardSkeleton key={i} />
-              ))}
+              {Array.from({ length: 6 }).map((_, i) => <AgencyCardSkeleton key={i} />)}
             </div>
           )}
 
-          {/* Empty state */}
           {!loading && agencies.length === 0 && !error && (
-            <div className="text-center py-16 space-y-4">
-              <div className="text-6xl">🏡</div>
-              <h3 className="font-fraunces text-xl font-semibold text-forest-800">
-                No agencies found
-              </h3>
-              <p className="text-forest-500 max-w-sm mx-auto">
-                Try adjusting your filters — for example, clearing the county filter to see statewide agencies.
+            <div className="rounded-2xl border border-dashed border-gray-200 bg-gray-50/50 py-16 text-center px-6">
+              <div className="h-14 w-14 rounded-full bg-white border border-gray-200 flex items-center justify-center mx-auto mb-5">
+                <Building2 className="size-6 text-gray-400" />
+              </div>
+              <h3 className="text-[17px] font-bold text-gray-900 mb-2">No agencies found</h3>
+              <p className="text-[13px] font-medium text-gray-500 max-w-sm mx-auto mb-6">
+                Try adjusting your filters — for example, clear the county filter to see statewide agencies.
               </p>
-              <Button
-                variant="outline"
-                onClick={() =>
-                  handleFiltersChange({ query: filters.query })
-                }
+              <button
+                onClick={() => handleFiltersChange({ query: filters.query })}
+                className="h-10 px-6 rounded-full border border-gray-300 text-[13px] font-bold text-gray-700 hover:border-gray-900 hover:text-gray-900 transition-all inline-flex items-center gap-2"
               >
                 Clear all filters
-              </Button>
+              </button>
             </div>
           )}
 
-          {/* Results */}
           {!loading && agencies.length > 0 && (
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
-              {agencies.map((agency) => (
-                <AgencyCard key={agency.id} agency={agency} />
-              ))}
+              {agencies.map(agency => <AgencyCard key={agency.id} agency={agency} />)}
             </div>
           )}
 
           {/* Pagination */}
           {!loading && totalPages > 1 && (
             <div className="flex items-center justify-between pt-4">
-              <Button
-                variant="outline"
+              <button
                 onClick={() => handlePageChange(page - 1)}
                 disabled={page === 1}
-                className="gap-1"
+                className="flex items-center gap-1.5 h-10 px-5 rounded-full border border-gray-200 text-[13px] font-bold text-gray-700 hover:border-gray-900 hover:text-gray-900 transition-all disabled:opacity-40 disabled:pointer-events-none"
               >
-                <ChevronLeft className="size-4" />
-                Previous
-              </Button>
+                <ChevronLeft className="size-4" /> Previous
+              </button>
 
               <div className="flex items-center gap-1">
                 {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                  let pageNum = i + 1;
+                  let p = i + 1;
                   if (totalPages > 5) {
-                    if (page <= 3) pageNum = i + 1;
-                    else if (page >= totalPages - 2) pageNum = totalPages - 4 + i;
-                    else pageNum = page - 2 + i;
+                    if (page <= 3) p = i + 1;
+                    else if (page >= totalPages - 2) p = totalPages - 4 + i;
+                    else p = page - 2 + i;
                   }
                   return (
-                    <button
-                      key={pageNum}
-                      onClick={() => handlePageChange(pageNum)}
-                      className={`h-8 w-8 rounded-lg text-sm font-medium transition-colors ${
-                        pageNum === page
-                          ? "bg-forest-600 text-white"
-                          : "text-forest-500 hover:bg-forest-50"
-                      }`}
-                    >
-                      {pageNum}
+                    <button key={p} onClick={() => handlePageChange(p)}
+                      className={`h-9 w-9 rounded-full text-[13px] font-bold transition-colors ${p === page ? "bg-gray-900 text-white" : "text-gray-500 hover:bg-gray-100"}`}>
+                      {p}
                     </button>
                   );
                 })}
               </div>
 
-              <Button
-                variant="outline"
+              <button
                 onClick={() => handlePageChange(page + 1)}
                 disabled={page === totalPages}
-                className="gap-1"
+                className="flex items-center gap-1.5 h-10 px-5 rounded-full border border-gray-200 text-[13px] font-bold text-gray-700 hover:border-gray-900 hover:text-gray-900 transition-all disabled:opacity-40 disabled:pointer-events-none"
               >
-                Next
-                <ChevronRight className="size-4" />
-              </Button>
+                Next <ChevronRight className="size-4" />
+              </button>
             </div>
           )}
         </div>

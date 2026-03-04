@@ -10,6 +10,9 @@ export interface AgencySearchFilters {
   services?: string[];
   language?: string;
   verified_only?: boolean;
+  accepting_patients?: boolean;
+  min_quality_score?: number;
+  sort_by?: "quality" | "response_time" | "name" | "verified";
   query?: string;
 }
 
@@ -79,17 +82,44 @@ export async function searchAgencies(
     query = query.eq("is_verified_partner", true);
   }
 
+  // Accepting patients filter
+  if (filters.accepting_patients) {
+    query = query.eq("is_accepting_patients", true);
+  }
+
+  // Min quality score filter
+  if (filters.min_quality_score && filters.min_quality_score > 0) {
+    query = query.gte("medicare_quality_score", filters.min_quality_score);
+  }
+
   // Text search on name
   if (filters.query && filters.query.trim()) {
     query = query.ilike("name", `%${filters.query.trim()}%`);
   }
 
-  // Order: verified partners first, then by quality score
-  query = query
-    .order("is_verified_partner", { ascending: false })
-    .order("medicare_quality_score", { ascending: false, nullsFirst: false })
-    .order("name", { ascending: true })
-    .range((page - 1) * pageSize, page * pageSize - 1);
+  // Sorting
+  const sortBy = filters.sort_by ?? "verified";
+  if (sortBy === "quality") {
+    query = query
+      .order("medicare_quality_score", { ascending: false, nullsFirst: false })
+      .order("is_verified_partner", { ascending: false })
+      .order("name", { ascending: true });
+  } else if (sortBy === "response_time") {
+    query = query
+      .order("average_response_time_hours", { ascending: true, nullsFirst: false })
+      .order("is_verified_partner", { ascending: false })
+      .order("name", { ascending: true });
+  } else if (sortBy === "name") {
+    query = query.order("name", { ascending: true });
+  } else {
+    // default: verified first
+    query = query
+      .order("is_verified_partner", { ascending: false })
+      .order("medicare_quality_score", { ascending: false, nullsFirst: false })
+      .order("name", { ascending: true });
+  }
+
+  query = query.range((page - 1) * pageSize, page * pageSize - 1);
 
   const { data, count, error } = await query;
 
