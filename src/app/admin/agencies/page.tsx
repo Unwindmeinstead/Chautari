@@ -1,11 +1,11 @@
 import Link from "next/link";
-import { Building2, CheckCircle2, XCircle, Clock, Star } from "lucide-react";
+import { Building2, CheckCircle2, XCircle, Clock, Star, ChevronRight } from "lucide-react";
 import { getAdminAgencies, approveAgency, deactivateAgency } from "@/lib/admin-actions";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 
 export const metadata = { title: "Agencies | Admin" };
 export const dynamic = "force-dynamic";
+
+const CARD = { background: "#111113", border: "1px solid rgba(255,255,255,0.08)" } as const;
 
 const TABS = [
   { value: undefined, label: "All" },
@@ -26,128 +26,137 @@ export default async function AdminAgenciesPage({
   const { agencies, total } = await getAdminAgencies({ status, search, limit: 100 });
 
   return (
-    <div className="px-8 py-8 space-y-6 max-w-6xl">
-      <div className="flex items-start justify-between gap-4 flex-wrap">
+    <div className="min-h-screen" style={{ background: "#09090B" }}>
+
+      {/* Header */}
+      <div className="sticky top-0 z-30 flex items-center justify-between px-8 py-4"
+        style={{ background: "rgba(9,9,11,0.9)", borderBottom: "1px solid rgba(255,255,255,0.07)", backdropFilter: "blur(12px)" }}>
         <div>
-          <h1 className="font-fraunces text-3xl font-semibold text-forest-800">Agencies</h1>
-          <p className="text-forest-500 mt-0.5">{total} total agencies on the platform</p>
+          <p className="text-[13px] font-semibold text-white">Agencies</p>
+          <p className="text-[11px] text-white/30 mt-0.5">{total} total on the platform</p>
         </div>
       </div>
 
-      {/* Tabs */}
-      <div className="flex gap-1 border-b border-forest-100 pb-0">
-        {TABS.map(({ value, label }) => {
-          const active = status === value;
-          return (
-            <Link
-              key={label}
-              href={value ? `/admin/agencies?status=${value}` : "/admin/agencies"}
-              className={`px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors ${
-                active
-                  ? "border-forest-600 text-forest-700"
-                  : "border-transparent text-forest-500 hover:text-forest-800"
-              }`}
-            >
-              {label}
-            </Link>
-          );
-        })}
-      </div>
+      <div className="px-8 py-6 max-w-[1400px] mx-auto space-y-5">
 
-      {/* Table */}
-      <div className="rounded-2xl bg-white border border-forest-100 overflow-hidden">
-        {agencies.length === 0 ? (
-          <div className="py-16 text-center text-forest-400">
-            <Building2 className="size-8 mx-auto mb-2 opacity-40" />
-            <p className="text-sm">No agencies found</p>
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-forest-100 bg-cream/60">
-                  <th className="text-left px-5 py-3 text-xs font-semibold text-forest-500 uppercase tracking-wider">Agency</th>
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-forest-500 uppercase tracking-wider">NPI</th>
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-forest-500 uppercase tracking-wider">Status</th>
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-forest-500 uppercase tracking-wider">Members</th>
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-forest-500 uppercase tracking-wider">Requests</th>
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-forest-500 uppercase tracking-wider">Joined</th>
-                  <th className="px-4 py-3" />
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-forest-100">
-                {agencies.map((a) => (
-                  <tr key={a.id} className="hover:bg-cream/60 transition-colors">
-                    <td className="px-5 py-3.5">
-                      <div className="flex items-center gap-2.5">
-                        <div className="h-8 w-8 rounded-lg bg-forest-100 flex items-center justify-center shrink-0">
-                          <Building2 className="size-4 text-forest-600" />
-                        </div>
-                        <div>
-                          <Link href={`/admin/agencies/${a.id}`} className="font-medium text-forest-800 hover:text-forest-700 flex items-center gap-1.5">
-                            {a.name}
-                            {a.is_verified_partner && <Star className="size-3 text-amber-500 fill-amber-500" />}
-                          </Link>
-                          <p className="text-xs text-forest-400">{a.address_city}, {a.address_state}</p>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-4 py-3.5">
-                      <span className="font-mono text-xs text-forest-500">{a.npi}</span>
-                    </td>
-                    <td className="px-4 py-3.5">
-                      {!a.is_active ? (
-                        <Badge variant="secondary" className="gap-1">
-                          <XCircle className="size-3" /> Inactive
-                        </Badge>
-                      ) : !a.is_approved ? (
-                        <Badge variant="warning" className="gap-1">
-                          <Clock className="size-3" /> Pending
-                        </Badge>
-                      ) : (
-                        <Badge variant="success" className="gap-1">
-                          <CheckCircle2 className="size-3" /> Approved
-                        </Badge>
-                      )}
-                    </td>
-                    <td className="px-4 py-3.5 text-forest-600">{a.member_count ?? 0}</td>
-                    <td className="px-4 py-3.5 text-forest-600">{a.request_count ?? 0}</td>
-                    <td className="px-4 py-3.5 text-xs text-forest-400">
-                      {new Date(a.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
-                    </td>
-                    <td className="px-4 py-3.5">
-                      <div className="flex items-center gap-2 justify-end">
-                        <Button variant="outline" size="sm" asChild className="text-xs h-7">
-                          <Link href={`/admin/agencies/${a.id}`}>View</Link>
-                        </Button>
-                        {a.is_active && !a.is_approved && (
-                          <form action={async () => {
-                            "use server";
-                            await approveAgency(a.id);
-                          }}>
-                            <Button type="submit" size="sm" className="text-xs h-7 gap-1">
-                              <CheckCircle2 className="size-3" /> Approve
-                            </Button>
-                          </form>
-                        )}
-                        {a.is_active && a.is_approved && (
-                          <form action={async () => {
-                            "use server";
-                            await deactivateAgency(a.id);
-                          }}>
-                            <Button type="submit" variant="ghost" size="sm" className="text-xs h-7 text-red-500 hover:text-red-600 hover:bg-red-50">
-                              Deactivate
-                            </Button>
-                          </form>
-                        )}
-                      </div>
-                    </td>
+        {/* Tabs */}
+        <div className="flex gap-1" style={{ borderBottom: "1px solid rgba(255,255,255,0.07)" }}>
+          {TABS.map(({ value, label }) => {
+            const active = status === value;
+            return (
+              <Link
+                key={label}
+                href={value ? `/admin/agencies?status=${value}` : "/admin/agencies"}
+                className="px-4 py-2.5 text-[13px] font-medium transition-colors border-b-2 -mb-px"
+                style={{
+                  borderBottomColor: active ? "rgba(255,255,255,0.7)" : "transparent",
+                  color: active ? "white" : "rgba(255,255,255,0.3)",
+                }}
+              >
+                {label}
+              </Link>
+            );
+          })}
+        </div>
+
+        {/* Table */}
+        <div className="rounded-2xl overflow-hidden" style={CARD}>
+          {agencies.length === 0 ? (
+            <div className="py-16 flex flex-col items-center gap-3">
+              <Building2 className="size-7 text-white/15" />
+              <p className="text-sm text-white/30">No agencies found</p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr style={{ borderBottom: "1px solid rgba(255,255,255,0.07)" }}>
+                    {["Agency", "NPI", "Status", "Members", "Requests", "Joined", ""].map((h) => (
+                      <th key={h} className="text-left px-5 py-3 text-[10px] font-bold text-white/25 uppercase tracking-widest">
+                        {h}
+                      </th>
+                    ))}
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+                </thead>
+                <tbody>
+                  {agencies.map((a, i) => (
+                    <tr key={a.id} className="hover:bg-white/[0.02] transition-colors"
+                      style={{ borderBottom: i < agencies.length - 1 ? "1px solid rgba(255,255,255,0.05)" : "none" }}>
+                      <td className="px-5 py-3.5">
+                        <div className="flex items-center gap-3">
+                          <div className="h-8 w-8 rounded-xl flex items-center justify-center shrink-0"
+                            style={{ background: "rgba(255,255,255,0.06)" }}>
+                            <Building2 className="size-4 text-white/40" />
+                          </div>
+                          <div>
+                            <Link href={`/admin/agencies/${a.id}`}
+                              className="text-[13px] font-semibold text-white hover:text-white/80 transition-colors flex items-center gap-1.5">
+                              {a.name}
+                              {a.is_verified_partner && <Star className="size-3 text-amber-400 fill-amber-400" />}
+                            </Link>
+                            <p className="text-[11px] text-white/30">{a.address_city}, {a.address_state}</p>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-5 py-3.5">
+                        <span className="font-mono text-[11px] text-white/30">{a.npi}</span>
+                      </td>
+                      <td className="px-5 py-3.5">
+                        {!a.is_active ? (
+                          <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold rounded-full px-2.5 py-0.5"
+                            style={{ background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.35)", border: "1px solid rgba(255,255,255,0.1)" }}>
+                            <XCircle className="size-3" /> Inactive
+                          </span>
+                        ) : !a.is_approved ? (
+                          <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold rounded-full px-2.5 py-0.5"
+                            style={{ background: "rgba(251,191,36,0.1)", color: "#FBBF24", border: "1px solid rgba(251,191,36,0.2)" }}>
+                            <Clock className="size-3" /> Pending
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold rounded-full px-2.5 py-0.5"
+                            style={{ background: "rgba(134,239,172,0.08)", color: "#86EFAC", border: "1px solid rgba(134,239,172,0.2)" }}>
+                            <CheckCircle2 className="size-3" /> Approved
+                          </span>
+                        )}
+                      </td>
+                      <td className="px-5 py-3.5 text-[13px] text-white/50">{a.member_count ?? 0}</td>
+                      <td className="px-5 py-3.5 text-[13px] text-white/50">{a.request_count ?? 0}</td>
+                      <td className="px-5 py-3.5 text-[11px] text-white/25">
+                        {new Date(a.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                      </td>
+                      <td className="px-5 py-3.5">
+                        <div className="flex items-center gap-2 justify-end">
+                          <Link href={`/admin/agencies/${a.id}`}
+                            className="px-3 py-1.5 rounded-xl text-[11px] font-semibold text-white/50 hover:text-white hover:bg-white/8 transition-all"
+                            style={{ border: "1px solid rgba(255,255,255,0.1)" }}>
+                            View
+                          </Link>
+                          {a.is_active && !a.is_approved && (
+                            <form action={async () => { "use server"; await approveAgency(a.id); }}>
+                              <button type="submit"
+                                className="px-3 py-1.5 rounded-xl text-[11px] font-bold text-white transition-all"
+                                style={{ background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.15)" }}>
+                                Approve
+                              </button>
+                            </form>
+                          )}
+                          {a.is_active && a.is_approved && (
+                            <form action={async () => { "use server"; await deactivateAgency(a.id); }}>
+                              <button type="submit"
+                                className="px-3 py-1.5 rounded-xl text-[11px] font-semibold text-red-400 hover:text-red-300 transition-colors">
+                                Deactivate
+                              </button>
+                            </form>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
