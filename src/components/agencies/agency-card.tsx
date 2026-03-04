@@ -39,7 +39,7 @@ export function AgencyCard({ agency, highlighted = false, showSelectButton = fal
                   <CheckCircle className="size-3" /> Verified
                 </span>
               )}
-              {agency.is_accepting_patients && (
+              {(agency as any).is_accepting_patients && (
                 <span className="inline-flex items-center gap-1 text-[10px] font-bold text-blue-700 bg-blue-50 border border-blue-100 px-2 py-0.5 rounded-full">
                   <span className="h-1.5 w-1.5 rounded-full bg-blue-500 animate-pulse" /> Accepting
                 </span>
@@ -68,10 +68,10 @@ export function AgencyCard({ agency, highlighted = false, showSelectButton = fal
             <MapPin className="size-3.5 text-gray-400 shrink-0" />
             {agency.address_city}, PA {agency.address_zip} · Serves {agency.service_counties.slice(0, 2).join(", ")}{agency.service_counties.length > 2 ? ` +${agency.service_counties.length - 2}` : ""}
           </div>
-          {agency.average_response_time_hours && (
+          {agency.avg_response_hours && (
             <div className="flex items-center gap-2 text-[12px] font-medium text-gray-500">
               <Clock className="size-3.5 text-gray-400 shrink-0" />
-              Responds in ~{agency.average_response_time_hours}h
+              Responds in ~{agency.avg_response_hours}h
             </div>
           )}
           {agency.languages_spoken.length > 1 && (

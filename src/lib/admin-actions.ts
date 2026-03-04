@@ -119,10 +119,12 @@ export async function getPlatformStats(): Promise<PlatformStats> {
 export interface AdminUser {
   id: string;
   full_name: string | null;
+  email: string | null;
   role: string;
   phone: string | null;
   preferred_lang: string;
   created_at: string;
+  is_suspended?: boolean;
 }
 
 export async function getAdminUsers(options?: {
@@ -132,8 +134,9 @@ export async function getAdminUsers(options?: {
   offset?: number;
 }): Promise<{ users: AdminUser[]; total: number }> {
   const { supabase } = await requireAdmin();
-  const { role, search, limit = 50, offset = 0 } = options ?? {};
+  const { role, search, limit = 200, offset = 0 } = options ?? {};
 
+  // Fetch profiles first
   let q = supabase
     .from("profiles")
     .select("id, full_name, role, phone, preferred_lang, created_at", { count: "exact" })
@@ -143,8 +146,31 @@ export async function getAdminUsers(options?: {
   if (role) q = q.eq("role", role);
   if (search) q = q.ilike("full_name", `%${search}%`);
 
-  const { data, count } = await q;
-  return { users: (data ?? []) as AdminUser[], total: count ?? 0 };
+  const { data: profiles, count } = await q;
+
+  // Try to enrich with emails from auth.users via admin API
+  // (works when service_role key is available)
+  let emailMap: Record<string, { email: string; banned: boolean }> = {};
+  try {
+    const ids = (profiles ?? []).map((p: any) => p.id);
+    if (ids.length > 0) {
+      // Supabase admin.listUsers returns all users — paginate up to 1000
+      const { data: authData } = await (supabase as any).auth.admin.listUsers({ perPage: 1000 });
+      for (const u of authData?.users ?? []) {
+        emailMap[u.id] = { email: u.email ?? "", banned: u.banned ?? false };
+      }
+    }
+  } catch {
+    // service_role not available — emails will be null
+  }
+
+  const users: AdminUser[] = (profiles ?? []).map((p: any) => ({
+    ...p,
+    email: emailMap[p.id]?.email ?? null,
+    is_suspended: emailMap[p.id]?.banned ?? false,
+  }));
+
+  return { users, total: count ?? 0 };
 }
 
 // ─── Update user role ─────────────────────────────────────────────────────────
@@ -166,6 +192,40 @@ export async function setUserRole(
 
   revalidatePath("/admin/users");
   return {};
+}
+
+export async function suspendUser(
+  userId: string,
+  suspend: boolean
+): Promise<{ error?: string }> {
+  const { supabase, user } = await requireAdmin();
+  try {
+    const { error } = await (supabase as any).auth.admin.updateUserById(userId, { ban_duration: suspend ? "87600h" : "none" });
+    if (error) return { error: error.message };
+    await writeAudit(supabase, user.id, suspend ? "suspend_user" : "unsuspend_user", "profiles", userId);
+    revalidatePath("/admin/users");
+    return {};
+  } catch (e: any) {
+    return { error: e?.message ?? "Failed to update user" };
+  }
+}
+
+export async function deleteUserAccount(
+  userId: string
+): Promise<{ error?: string }> {
+  const { supabase, user } = await requireAdmin();
+  try {
+    // Delete profile row first
+    await supabase.from("profiles").delete().eq("id", userId);
+    // Then remove auth user
+    const { error } = await (supabase as any).auth.admin.deleteUser(userId);
+    if (error) return { error: error.message };
+    await writeAudit(supabase, user.id, "delete_user", "profiles", userId);
+    revalidatePath("/admin/users");
+    return {};
+  } catch (e: any) {
+    return { error: e?.message ?? "Failed to delete user" };
+  }
 }
 
 // ─── List agencies ────────────────────────────────────────────────────────────
