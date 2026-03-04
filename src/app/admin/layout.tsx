@@ -26,11 +26,11 @@ export default async function AdminLayout({
   const adminName = profile?.full_name ?? user?.email?.split("@")[0] ?? "Admin";
 
   return (
-    <div className="min-h-screen flex bg-[#07070A]">
+    <div className="min-h-dvh flex bg-[#07070A] overscroll-none">
       <AdminSidebar adminName={adminName} />
-      <div className="flex-1 min-w-0">
+      <div className="flex-1 min-w-0 bg-[#09090B]">
         <AdminMobileNav />
-        <main className="min-h-screen overflow-auto pb-24 lg:pb-0">
+        <main className="min-h-dvh overflow-y-auto overscroll-y-none bg-[#09090B] pb-24 lg:pb-0">
           {children}
         </main>
       </div>

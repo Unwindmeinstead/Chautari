@@ -1,7 +1,8 @@
 "use client";
 
 import * as React from "react";
-import { Loader2, Check } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -29,9 +30,9 @@ interface ProfileEditFormProps {
 export function ProfileEditForm({ initialData }: ProfileEditFormProps) {
   const [formData, setFormData] = React.useState(initialData);
   const [saving, setSaving] = React.useState(false);
-  const [saved, setSaved] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
 
+  const router = useRouter();
   const isDirty = JSON.stringify(formData) !== JSON.stringify(initialData);
 
   async function handleSave(e: React.FormEvent) {
@@ -44,8 +45,8 @@ export function ProfileEditForm({ initialData }: ProfileEditFormProps) {
     if (result.error) {
       setError(result.error);
     } else {
-      setSaved(true);
-      setTimeout(() => setSaved(false), 3000);
+      router.push("/dashboard");
+      router.refresh();
     }
   }
 
@@ -96,8 +97,6 @@ export function ProfileEditForm({ initialData }: ProfileEditFormProps) {
         >
           {saving ? (
             <><Loader2 className="size-4 animate-spin" /> Saving…</>
-          ) : saved ? (
-            <><Check className="size-4 text-green-400" /> Saved!</>
           ) : (
             "Save changes"
           )}
