@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useCallback } from "react";
-import { ChevronLeft, ChevronRight, AlertCircle, Building2, ArrowRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, AlertCircle, Building2 } from "lucide-react";
 import { AgencyCard, AgencyCardSkeleton } from "./agency-card";
 import { AgencyFilters, AgencySearchBar } from "./agency-filters";
 import { searchAgencies, type AgencySearchFilters } from "@/lib/agency-actions";
@@ -66,17 +66,17 @@ export function AgencySearchClient({
     <div className="space-y-6">
       {/* Personalised banner */}
       {showPersonalisedBanner && (
-        <div className="rounded-2xl bg-gray-50 border border-gray-200 p-5 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div className="rounded-2xl bg-gray-50 border border-gray-200 p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
             <p className="text-[14px] font-bold text-gray-900">Show agencies matching your profile?</p>
             <p className="text-[12px] font-medium text-gray-500 mt-0.5">
               {patientCounty && `${patientCounty} County`}{patientCounty && patientPayerType && " · "}{patientPayerType?.replace("_", " ")}
             </p>
           </div>
-          <div className="flex items-center gap-3 shrink-0">
+          <div className="flex items-center gap-3 shrink-0 w-full sm:w-auto">
             <button
               onClick={() => handleFiltersChange({ ...filters, county: patientCounty ?? undefined, payer_type: (patientPayerType as any) ?? undefined })}
-              className="h-9 px-5 rounded-full bg-gray-900 text-white text-[12px] font-bold hover:bg-gray-800 transition-colors">
+              className="h-10 w-full sm:w-auto px-5 rounded-full bg-gray-900 text-white text-[12px] font-bold hover:bg-gray-800 transition-colors">
               Apply my filters
             </button>
           </div>
@@ -89,7 +89,7 @@ export function AgencySearchClient({
         onChange={q => handleFiltersChange({ ...filters, query: q })}
       />
 
-      <div className="flex gap-7 items-start">
+      <div className="flex flex-col lg:flex-row gap-5 lg:gap-7 items-start">
         {/* Sidebar filters */}
         <AgencyFilters
           filters={filters}
@@ -115,7 +115,7 @@ export function AgencySearchClient({
           )}
 
           {loading && (
-            <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-3 sm:gap-4">
               {Array.from({ length: 6 }).map((_, i) => <AgencyCardSkeleton key={i} />)}
             </div>
           )}
@@ -139,23 +139,23 @@ export function AgencySearchClient({
           )}
 
           {!loading && agencies.length > 0 && (
-            <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-3 sm:gap-4">
               {agencies.map(agency => <AgencyCard key={agency.id} agency={agency} />)}
             </div>
           )}
 
           {/* Pagination */}
           {!loading && totalPages > 1 && (
-            <div className="flex items-center justify-between pt-4">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-4">
               <button
                 onClick={() => handlePageChange(page - 1)}
                 disabled={page === 1}
-                className="flex items-center gap-1.5 h-10 px-5 rounded-full border border-gray-200 text-[13px] font-bold text-gray-700 hover:border-gray-900 hover:text-gray-900 transition-all disabled:opacity-40 disabled:pointer-events-none"
+                className="flex items-center justify-center gap-1.5 h-10 px-5 rounded-full border border-gray-200 text-[13px] font-bold text-gray-700 hover:border-gray-900 hover:text-gray-900 transition-all disabled:opacity-40 disabled:pointer-events-none w-full sm:w-auto"
               >
                 <ChevronLeft className="size-4" /> Previous
               </button>
 
-              <div className="flex items-center gap-1">
+              <div className="flex items-center justify-center gap-1 order-first sm:order-none">
                 {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
                   let p = i + 1;
                   if (totalPages > 5) {
@@ -175,7 +175,7 @@ export function AgencySearchClient({
               <button
                 onClick={() => handlePageChange(page + 1)}
                 disabled={page === totalPages}
-                className="flex items-center gap-1.5 h-10 px-5 rounded-full border border-gray-200 text-[13px] font-bold text-gray-700 hover:border-gray-900 hover:text-gray-900 transition-all disabled:opacity-40 disabled:pointer-events-none"
+                className="flex items-center justify-center gap-1.5 h-10 px-5 rounded-full border border-gray-200 text-[13px] font-bold text-gray-700 hover:border-gray-900 hover:text-gray-900 transition-all disabled:opacity-40 disabled:pointer-events-none w-full sm:w-auto"
               >
                 Next <ChevronRight className="size-4" />
               </button>

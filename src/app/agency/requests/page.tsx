@@ -2,12 +2,12 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { getAgencyPortalData } from "@/lib/agency-portal-actions";
-
-const BYPASS_AUTH = true;
 import { AgencyNav } from "@/components/agency/agency-nav";
 import { AgencyRequestRow } from "@/components/agency/agency-request-row";
 import { cn } from "@/lib/utils";
 import { ArrowLeftRight } from "lucide-react";
+
+const BYPASS_AUTH = false;
 
 export const metadata = { title: "Requests | Agency Portal" };
 export const dynamic = "force-dynamic";
