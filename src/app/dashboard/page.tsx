@@ -1,14 +1,64 @@
 import Link from "next/link";
 import { getDashboardData } from "@/lib/dashboard-actions";
+import { DashboardNav, RequestCard } from "@/components/dashboard/dashboard-nav";
 import {
-  DashboardNav, RequestCard, NotificationsPanel
-} from "@/components/dashboard/dashboard-nav";
-import {
-  ClipboardList, ArrowRight, ArrowUpRight, Search, User, Bell, MapPin, Shield, Heart
+  ArrowRight,
+  Bell,
+  Calendar,
+  ClipboardList,
+  MessageSquare,
+  Upload,
 } from "lucide-react";
 
 export const metadata = { title: "Dashboard | SwitchMyCare" };
 export const dynamic = "force-dynamic";
+
+function statusCopy(status: string) {
+  switch (status) {
+    case "submitted":
+      return {
+        title: "Your request has been sent to agencies.",
+        detail: "We sent your request to agencies that match your care needs.",
+        next: "Next: Agencies will review your request. Most people hear back within 2 business days.",
+        step: 1,
+      };
+    case "under_review":
+      return {
+        title: "An agency is reviewing your request.",
+        detail: "A coordinator is checking your care needs and insurance details.",
+        next: "Next: You should receive an acceptance or update soon.",
+        step: 2,
+      };
+    case "accepted":
+      return {
+        title: "Great news — an agency accepted your request.",
+        detail: "You can now message the agency directly to coordinate intake.",
+        next: "Next: Message the agency to confirm timeline and first visit details.",
+        step: 3,
+      };
+    case "completed":
+      return {
+        title: "Your switch is complete.",
+        detail: "Your request has been successfully completed.",
+        next: "Next: Keep your profile updated for future care changes.",
+        step: 4,
+      };
+    case "denied":
+      return {
+        title: "This request was not accepted.",
+        detail: "Don’t worry — you can submit a new request to other agencies.",
+        next: "Next: Start a new request and choose different agencies.",
+        step: 1,
+      };
+    default:
+      return {
+        title: "Your request is in progress.",
+        detail: "We are processing your request.",
+        next: "Next: We’ll notify you as soon as there is an update.",
+        step: 2,
+      };
+  }
+}
 
 export default async function DashboardPage() {
   const data = await getDashboardData();
@@ -17,161 +67,115 @@ export default async function DashboardPage() {
   const hour = new Date().getHours();
   const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
 
-  const activeRequests = data.switchRequests.filter((r) =>
-    ["submitted", "under_review", "accepted"].includes(r.status)
-  );
-  const pastRequests = data.switchRequests.filter((r) =>
-    ["completed", "denied", "cancelled"].includes(r.status)
-  );
+  const activeRequests = data.switchRequests.filter((r) => ["submitted", "under_review", "accepted"].includes(r.status));
+  const pastRequests = data.switchRequests.filter((r) => ["completed", "denied", "cancelled"].includes(r.status));
+  const currentRequest = activeRequests[0] ?? data.switchRequests[0] ?? null;
   const hasActiveRequest = activeRequests.length > 0;
-  const details = data.patientDetails;
+
+  const copy = currentRequest ? statusCopy(currentRequest.status) : null;
+  const timelineLabels = ["Submitted", "Agency review", "Accepted", "Start of care"];
 
   return (
-    <div className="min-h-screen bg-white text-gray-900 font-sans selection:bg-gray-100 pb-20">
+    <div className="min-h-screen bg-white text-gray-900 font-sans pb-20">
       <DashboardNav userName={data.profile?.full_name ?? null} unreadCount={data.unreadCount} />
 
-      <main className="max-w-[1100px] mx-auto px-6 mt-10 space-y-10">
+      <main className="max-w-[1100px] mx-auto px-4 md:px-6 mt-6 md:mt-10 space-y-6 md:space-y-8">
+        <section className="rounded-2xl border border-gray-200 bg-white p-4 md:p-6">
+          <p className="text-[12px] font-bold uppercase tracking-widest text-gray-400">{greeting}</p>
+          <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight text-gray-900 mt-2">Hi {firstName} 👋</h1>
+          <p className="text-sm text-gray-500 mt-1">
+            {hasActiveRequest ? "Here is your latest switch progress." : "You can start a new switch request any time."}
+          </p>
 
-        {/* ── Header + compact profile strip ── */}
-        <div className="pb-8 border-b border-gray-100 space-y-6">
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-5">
-            <div className="space-y-1.5">
-              <p className="text-[12px] font-bold uppercase tracking-widest text-gray-400">{greeting}</p>
-              <h1 className="text-[26px] font-extrabold tracking-tight text-gray-900 leading-tight capitalize">
-                {firstName} 👋
-              </h1>
-              <p className="text-[14px] font-medium text-gray-500">
-                {data.onboardingComplete
-                  ? `${activeRequests.length > 0 ? `${activeRequests.length} active request${activeRequests.length > 1 ? "s" : ""}` : "No active requests"} · ${data.switchRequests.length} total`
-                  : "Complete your profile to unlock agency search."}
-              </p>
+          {copy && currentRequest ? (
+            <div className="mt-5 rounded-2xl border border-gray-200 bg-gray-50 p-4 md:p-5 space-y-4">
+              <div>
+                <p className="text-[11px] font-bold uppercase tracking-widest text-gray-400">Current request status</p>
+                <h2 className="text-lg md:text-xl font-bold text-gray-900 mt-1">{copy.title}</h2>
+                <p className="text-sm text-gray-600 mt-1">{copy.detail}</p>
+                <p className="text-sm text-gray-700 mt-2 font-medium">{copy.next}</p>
+              </div>
+
+              <div>
+                <div className="h-2 rounded-full bg-gray-200 overflow-hidden">
+                  <div className="h-full bg-gray-900" style={{ width: `${Math.max(25, Math.min(100, copy.step * 25))}%` }} />
+                </div>
+                <div className="grid grid-cols-4 mt-2 gap-2">
+                  {timelineLabels.map((label, i) => (
+                    <p key={label} className={`text-[11px] ${i + 1 <= copy.step ? "text-gray-800 font-semibold" : "text-gray-400"}`}>{label}</p>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex flex-wrap gap-2">
+                <Link href={`/switch/${currentRequest.id}`} className="h-9 px-4 rounded-xl bg-gray-900 text-white text-xs font-bold inline-flex items-center gap-1.5">
+                  View my request <ArrowRight className="size-3.5" />
+                </Link>
+                {currentRequest.status === "accepted" && (
+                  <Link href={`/switch/${currentRequest.id}/messages`} className="h-9 px-4 rounded-xl border border-gray-300 text-xs font-bold text-gray-700 inline-flex items-center gap-1.5 hover:bg-white">
+                    Message agency <MessageSquare className="size-3.5" />
+                  </Link>
+                )}
+                <Link href={`/switch/${currentRequest.id}`} className="h-9 px-4 rounded-xl border border-gray-300 text-xs font-bold text-gray-700 inline-flex items-center gap-1.5 hover:bg-white">
+                  Upload document <Upload className="size-3.5" />
+                </Link>
+              </div>
             </div>
-            {data.onboardingComplete && (
-              <Link href="/agencies"
-                className="shrink-0 h-10 px-6 rounded-full bg-gray-900 text-white text-[13px] font-bold flex items-center w-fit hover:bg-gray-800 transition-colors shadow-sm shadow-gray-900/10">
-                Find Agencies <ArrowRight className="size-4 ml-2" />
-              </Link>
-            )}
-          </div>
-
-          {/* Compact profile metadata row */}
-          {data.onboardingComplete && (
-            <div className="flex items-center gap-2 flex-wrap">
-              {details?.address_city && (
-                <span className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-gray-600 bg-gray-50 border border-gray-100 px-3 py-1.5 rounded-full">
-                  <MapPin className="size-3.5 text-gray-400" />
-                  {details.address_city}, {details.address_county} Co.
-                </span>
-              )}
-              {details?.payer_type && (
-                <span className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-gray-600 bg-gray-50 border border-gray-100 px-3 py-1.5 rounded-full">
-                  <Shield className="size-3.5 text-gray-400" />
-                  {details.payer_type === "medicaid" ? "Medicaid" : details.payer_type === "medicare" ? "Medicare" : "Private Pay"}
-                </span>
-              )}
-              {details?.care_type && (
-                <span className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-gray-600 bg-gray-50 border border-gray-100 px-3 py-1.5 rounded-full">
-                  <Heart className="size-3.5 text-gray-400" />
-                  {details.care_type === "home_health" ? "Home Health" : "Home Care"}
-                </span>
-              )}
-              <Link href="/profile"
-                className="inline-flex items-center gap-1.5 text-[12px] font-bold text-blue-600 hover:text-blue-800 ml-1 transition-colors">
-                <User className="size-3.5" /> Edit Profile
+          ) : (
+            <div className="mt-5 rounded-2xl border border-dashed border-gray-300 bg-gray-50 p-6 text-center">
+              <p className="text-sm font-semibold text-gray-900">No active request yet</p>
+              <p className="text-xs text-gray-500 mt-1">When you start a switch request, your status and next steps appear here.</p>
+              <Link href="/switch/new" className="mt-4 inline-flex h-10 px-5 rounded-full bg-gray-900 text-white text-sm font-bold items-center gap-1.5">
+                Start new request <ArrowRight className="size-4" />
               </Link>
             </div>
           )}
-        </div>
+        </section>
 
-        {/* ── Onboarding CTA ── */}
-        {!data.onboardingComplete && (
-          <div className="rounded-2xl bg-gray-50 border border-gray-200 p-6 flex flex-col md:flex-row items-center justify-between gap-6">
-            <div className="flex items-center gap-5">
-              <div className="h-12 w-12 rounded-xl bg-white border border-gray-200 shadow-sm flex items-center justify-center shrink-0">
-                <ClipboardList className="size-5 text-gray-900" />
-              </div>
-              <div>
-                <h2 className="text-[16px] font-bold text-gray-900">Complete your profile to get started</h2>
-                <p className="text-[13px] font-medium text-gray-500 mt-0.5">
-                  About 5 minutes. Unlocks agency search and switch requests.
-                </p>
-              </div>
-            </div>
-            <Link href="/onboarding"
-              className="shrink-0 h-10 px-6 rounded-full bg-gray-900 text-white text-[13px] font-bold flex items-center hover:bg-gray-800 transition-colors">
-              Get started <ArrowRight className="size-4 ml-2" />
-            </Link>
+        <section className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+          <div className="rounded-xl border border-gray-200 p-4">
+            <p className="text-xs text-gray-500">Unread notifications</p>
+            <p className="text-2xl font-bold mt-1">{data.unreadCount}</p>
           </div>
-        )}
-
-        {/* ── Stats row ── */}
-        {data.switchRequests.length > 0 && (
-          <div className="grid grid-cols-3 gap-5">
-            {[
-              { label: "Total Requests", value: data.switchRequests.length },
-              { label: "Active", value: activeRequests.length, highlight: activeRequests.length > 0 },
-              { label: "Completed", value: data.switchRequests.filter(r => r.status === "completed").length },
-            ].map(s => (
-              <div key={s.label} className="flex flex-col border-l-2 pl-5" style={{ borderColor: s.highlight ? "#2563eb" : "#e5e7eb" }}>
-                <p className={`text-3xl font-extrabold tracking-tight leading-none mb-1 ${s.highlight ? "text-blue-600" : "text-gray-900"}`}>{s.value}</p>
-                <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">{s.label}</p>
-              </div>
-            ))}
+          <div className="rounded-xl border border-gray-200 p-4">
+            <p className="text-xs text-gray-500">Active requests</p>
+            <p className="text-2xl font-bold mt-1">{activeRequests.length}</p>
           </div>
-        )}
-
-        {/* ── Quick Actions (horizontal pill row) ── */}
-        {data.onboardingComplete && (
-          <div className="flex items-center gap-2 flex-wrap">
-            <Link href="/agencies"
-              className="group inline-flex items-center gap-2 h-10 px-5 rounded-full border border-gray-200 text-[13px] font-bold text-gray-700 bg-white hover:border-gray-900 hover:text-gray-900 transition-all">
-              <Search className="size-3.5 text-gray-400 group-hover:text-gray-900" />
-              Browse Agencies
-            </Link>
-            {hasActiveRequest ? (
-              <Link href={`/switch/${activeRequests[0].id}`}
-                className="group inline-flex items-center gap-2 h-10 px-5 rounded-full border border-gray-200 text-[13px] font-bold text-gray-700 bg-white hover:border-gray-900 hover:text-gray-900 transition-all">
-                <ClipboardList className="size-3.5 text-gray-400 group-hover:text-gray-900" />
-                View My Request
-              </Link>
-            ) : null}
-            <Link href="/notifications"
-              className="group inline-flex items-center gap-2 h-10 px-5 rounded-full border border-gray-200 text-[13px] font-bold text-gray-700 bg-white hover:border-gray-900 hover:text-gray-900 transition-all">
-              <Bell className="size-3.5 text-gray-400 group-hover:text-gray-900" />
-              Notifications
-              {data.unreadCount > 0 && (
-                <span className="h-5 px-1.5 rounded-full bg-blue-100 text-blue-700 text-[10px] font-bold flex items-center justify-center">{data.unreadCount}</span>
-              )}
-            </Link>
+          <div className="rounded-xl border border-gray-200 p-4">
+            <p className="text-xs text-gray-500">Total requests</p>
+            <p className="text-2xl font-bold mt-1">{data.switchRequests.length}</p>
           </div>
-        )}
+          <div className="rounded-xl border border-gray-200 p-4">
+            <p className="text-xs text-gray-500">Completed requests</p>
+            <p className="text-2xl font-bold mt-1">{data.switchRequests.filter((r) => r.status === "completed").length}</p>
+          </div>
+        </section>
 
-        {/* ── Active Requests ── */}
-        <section className="space-y-5 pt-2 border-t border-gray-100">
-          <div className="flex items-end justify-between">
-            <h2 className="text-[18px] font-bold text-gray-900">Active Requests</h2>
-            {activeRequests.length > 0 && (
-              <span className="text-[12px] font-semibold text-gray-500">{activeRequests.length} in progress</span>
-            )}
+        <section className="flex flex-wrap gap-2">
+          <Link href="/switch/new" className="h-10 px-5 rounded-full bg-gray-900 text-white text-sm font-bold inline-flex items-center gap-1.5">
+            Start new request <ClipboardList className="size-4" />
+          </Link>
+          <Link href="/agencies" className="h-10 px-5 rounded-full border border-gray-300 text-sm font-bold text-gray-700 inline-flex items-center gap-1.5">
+            Find agencies <ArrowRight className="size-4" />
+          </Link>
+          <Link href="/notifications" className="h-10 px-5 rounded-full border border-gray-300 text-sm font-bold text-gray-700 inline-flex items-center gap-1.5">
+            Notifications <Bell className="size-4" />
+          </Link>
+          <Link href="/profile" className="h-10 px-5 rounded-full border border-gray-300 text-sm font-bold text-gray-700 inline-flex items-center gap-1.5">
+            Update profile <Calendar className="size-4" />
+          </Link>
+        </section>
+
+        <section className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-bold">Active requests</h2>
+            {activeRequests.length > 0 && <span className="text-xs text-gray-500">{activeRequests.length} in progress</span>}
           </div>
 
           {activeRequests.length === 0 ? (
-            <div className="rounded-2xl border border-dashed border-gray-200 bg-gray-50/50 p-10 text-center">
-              <div className="h-12 w-12 rounded-full bg-white border border-gray-200 flex items-center justify-center mx-auto mb-4">
-                <ClipboardList className="size-5 text-gray-400" />
-              </div>
-              <p className="text-[15px] font-bold text-gray-900">No active requests</p>
-              <p className="text-[13px] font-medium text-gray-500 mt-1 max-w-xs mx-auto">
-                {data.onboardingComplete
-                  ? "Browse agencies and start a switch request when you're ready."
-                  : "Complete your profile first to unlock agency search."}
-              </p>
-              {data.onboardingComplete && (
-                <Link href="/agencies"
-                  className="mt-5 inline-flex items-center gap-2 h-10 px-6 rounded-full bg-gray-900 text-white text-[13px] font-bold hover:bg-gray-800 transition-colors">
-                  Find agencies <ArrowUpRight className="size-4" />
-                </Link>
-              )}
+            <div className="rounded-2xl border border-dashed border-gray-300 bg-gray-50 p-8 text-center">
+              <p className="text-sm font-semibold text-gray-900">You have no active requests</p>
+              <p className="text-xs text-gray-500 mt-1">Start a new request when you're ready.</p>
             </div>
           ) : (
             <div className="grid sm:grid-cols-2 gap-4">
@@ -180,23 +184,33 @@ export default async function DashboardPage() {
           )}
         </section>
 
-        {/* ── Past Requests ── */}
         {pastRequests.length > 0 && (
-          <section className="space-y-5 pt-6 border-t border-gray-100">
-            <h2 className="text-[18px] font-bold text-gray-900">Past Requests</h2>
+          <section className="space-y-4">
+            <h2 className="text-lg font-bold">Past requests</h2>
             <div className="space-y-2.5">
               {pastRequests.slice(0, 4).map((r) => <RequestCard key={r.id} request={r} compact />)}
             </div>
           </section>
         )}
 
-        {/* ── Notifications (inline at bottom, compact) ── */}
-        {data.notifications.length > 0 && (
-          <section className="pt-6 border-t border-gray-100">
-            <NotificationsPanel notifications={data.notifications.slice(0, 3)} unread={data.unreadCount} />
-          </section>
-        )}
-
+        <section className="rounded-2xl border border-gray-200 overflow-hidden">
+          <div className="px-4 md:px-5 py-3.5 border-b border-gray-100 flex items-center justify-between">
+            <h3 className="text-sm font-bold text-gray-900">Recent notifications</h3>
+            <Link href="/notifications" className="text-xs font-semibold text-gray-600">View all</Link>
+          </div>
+          {data.notifications.length === 0 ? (
+            <div className="p-6 text-sm text-gray-500 text-center">No notifications yet.</div>
+          ) : (
+            <div>
+              {data.notifications.slice(0, 5).map((n) => (
+                <Link key={n.id} href={n.reference_type === "switch_request" ? `/switch/${n.reference_id}` : "/notifications"} className="block px-4 md:px-5 py-3 border-b last:border-0 border-gray-100 hover:bg-gray-50">
+                  <p className="text-sm font-semibold text-gray-900">{n.title}</p>
+                  <p className="text-xs text-gray-600 mt-1">{n.body}</p>
+                </Link>
+              ))}
+            </div>
+          )}
+        </section>
       </main>
     </div>
   );
