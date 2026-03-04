@@ -4,13 +4,10 @@ import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  LayoutDashboard, Search, Bell, User, LogOut, Menu, X, ArrowRight, ClipboardList, Shield, Heart, MapPin, Phone, Languages
+  LayoutDashboard, Search, Bell, User, LogOut, Menu, X
 } from "lucide-react";
 import { Logo } from "@/components/ui/logo";
-import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { LanguageSwitcher } from "@/components/ui/language-switcher";
-import type { DashboardData } from "@/lib/dashboard-actions";
 
 interface DashboardNavProps {
   userName: string | null;
@@ -18,7 +15,7 @@ interface DashboardNavProps {
 }
 
 const NAV_LINKS = [
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
   { href: "/agencies", label: "Find Agencies", icon: Search },
   { href: "/notifications", label: "Notifications", icon: Bell },
   { href: "/profile", label: "Profile", icon: User },
@@ -26,100 +23,79 @@ const NAV_LINKS = [
 
 export function DashboardNav({ userName, unreadCount }: DashboardNavProps) {
   const pathname = usePathname();
-  const [scrolled, setScrolled] = React.useState(false);
   const [mobileOpen, setMobileOpen] = React.useState(false);
   const firstName = userName?.split(" ")[0] ?? "Account";
 
-  React.useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 10);
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
   return (
     <>
-      <nav className={cn(
-        "sticky top-0 z-50 transition-all duration-300",
-        scrolled 
-          ? "bg-cream/95 backdrop-blur-md border-b border-[rgba(26,61,43,0.06)] shadow-sm" 
-          : "bg-transparent"
-      )}>
-        <div className="max-w-7xl mx-auto px-6 lg:px-8 h-16 flex items-center gap-4">
-          <Link href="/" className="transition-opacity hover:opacity-80">
+      <nav className="sticky top-0 z-50 bg-white border-b border-gray-100 shadow-[0_4px_24px_rgba(0,0,0,0.02)]">
+        <div className="max-w-[1100px] mx-auto px-6 h-[72px] flex items-center gap-8">
+          <Link href="/" className="transition-opacity hover:opacity-80 shrink-0">
             <Logo size="md" />
           </Link>
 
-          <div className="hidden md:flex items-center gap-1 flex-1 ml-10">
-            {NAV_LINKS.map(({ href, label, icon: Icon }) => (
-              <Link
-                key={href}
-                href={href}
-                className={cn(
-                  "flex items-center gap-2 px-4 py-2 rounded-full text-[14px] font-medium transition-all relative",
-                  pathname === href || (href !== "/dashboard" && pathname.startsWith(href))
-                    ? "bg-forest-600 text-cream shadow-md"
-                    : "text-[#6B7B6E] hover:text-forest-600 hover:bg-[rgba(26,61,43,0.04)]"
-                )}
-              >
-                <Icon className="size-4" />
-                {label}
-                {href === "/notifications" && unreadCount > 0 && (
-                  <span className="ml-1 px-1.5 py-0.5 rounded-full bg-amber-500 text-white text-[10px] font-bold">
-                    {unreadCount}
-                  </span>
-                )}
-              </Link>
-            ))}
+          <div className="hidden md:flex items-center gap-1.5 flex-1 text-[14px] font-medium text-gray-500">
+            {NAV_LINKS.map(({ href, label, icon: Icon }) => {
+              const active = pathname === href || (href !== "/dashboard" && pathname.startsWith(href));
+              return (
+                <Link key={href} href={href}
+                  className={cn(
+                    "relative flex items-center gap-2 px-4 py-2 rounded-full transition-all duration-200",
+                    active ? "bg-gray-900 text-white shadow-sm" : "hover:bg-gray-50 hover:text-gray-900"
+                  )}>
+                  <Icon className={cn("size-4", active ? "text-white" : "text-gray-400")} />
+                  {label}
+                  {href === "/notifications" && unreadCount > 0 && (
+                    <span className={cn("ml-1 px-2 py-0.5 rounded-full text-[11px] font-bold leading-none", active ? "bg-white/20 text-white" : "bg-red-100 text-red-700")}>
+                      {unreadCount}
+                    </span>
+                  )}
+                </Link>
+              );
+            })}
           </div>
 
           <div className="flex-1 md:flex-none" />
 
+          {/* User info */}
           <div className="hidden md:flex items-center gap-4">
-            <LanguageSwitcher />
-            <div className="flex items-center gap-3 pl-3 border-l border-[rgba(26,61,43,0.1)]">
-              <div className="text-[14px] font-medium text-forest-600">{firstName}</div>
-              <Button variant="ghost" size="sm" asChild className="text-forest-400 hover:text-red-600 hover:bg-red-50">
-                <Link href="/api/auth/signout">
-                  <LogOut className="size-4" />
-                </Link>
-              </Button>
-            </div>
+            <div className="h-8 w-px bg-gray-100" />
+            <span className="text-[14px] font-semibold text-gray-900 capitalize">{firstName}</span>
+            <Link href="/api/auth/signout"
+              className="h-9 w-9 rounded-full flex items-center justify-center text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+              title="Sign out">
+              <LogOut className="size-4" />
+            </Link>
           </div>
 
-          <div className="flex md:hidden items-center gap-2">
-            <LanguageSwitcher compact />
-            <button onClick={() => setMobileOpen(!mobileOpen)} className="p-2 rounded-lg hover:bg-[rgba(26,61,43,0.04)] text-forest-500">
-              {mobileOpen ? <X className="size-5" /> : <Menu className="size-5" />}
-            </button>
-          </div>
+          <button onClick={() => setMobileOpen(!mobileOpen)}
+            className="md:hidden p-2.5 rounded-full text-gray-600 hover:bg-gray-50 transition-colors">
+            {mobileOpen ? <X className="size-5" /> : <Menu className="size-5" />}
+          </button>
         </div>
       </nav>
 
       {mobileOpen && (
         <div className="fixed inset-0 z-40 md:hidden" onClick={() => setMobileOpen(false)}>
-          <div className="absolute inset-0 bg-black/10" />
-          <div className="absolute top-16 left-0 right-0 bg-cream border-b border-[rgba(26,61,43,0.06)] shadow-xl" onClick={(e) => e.stopPropagation()}>
-            <div className="px-6 py-4 space-y-2">
-              {NAV_LINKS.map(({ href, label, icon: Icon }) => (
-                <Link
-                  key={href}
-                  href={href}
-                  onClick={() => setMobileOpen(false)}
-                  className={cn(
-                    "flex items-center gap-3 px-4 py-3.5 rounded-2xl text-[15px] font-medium",
-                    pathname === href ? "bg-forest-600 text-cream shadow-md" : "text-forest-600 hover:bg-[rgba(26,61,43,0.04)]"
-                  )}
-                >
-                  <Icon className="size-5" />
-                  {label}
-                </Link>
-              ))}
-              <div className="border-t border-[rgba(26,61,43,0.08)] pt-4 mt-4">
-                <Link href="/api/auth/signout" className="flex items-center gap-3 px-4 py-3.5 rounded-2xl text-[15px] text-red-500 hover:bg-red-50">
-                  <LogOut className="size-5" />
-                  Sign out
-                </Link>
-              </div>
+          <div className="absolute inset-0 bg-gray-900/10 backdrop-blur-sm" />
+          <div className="absolute top-[72px] left-0 right-0 bg-white border-b border-gray-100 shadow-2xl rounded-b-3xl overflow-hidden" onClick={e => e.stopPropagation()}>
+            <div className="p-6 space-y-2">
+              {NAV_LINKS.map(({ href, label, icon: Icon }) => {
+                const active = pathname === href;
+                return (
+                  <Link key={href} href={href} onClick={() => setMobileOpen(false)}
+                    className={cn("flex items-center gap-4 px-5 py-3.5 rounded-2xl text-[15px] font-semibold transition-all",
+                      active ? "bg-gray-900 text-white" : "text-gray-600 hover:bg-gray-50 hover:text-gray-900")}>
+                    <Icon className={cn("size-5", active ? "text-white" : "text-gray-400")} />{label}
+                  </Link>
+                );
+              })}
+            </div>
+            <div className="bg-gray-50 p-6 flex items-center justify-between">
+              <span className="text-[15px] font-semibold text-gray-900 capitalize">{firstName}</span>
+              <Link href="/api/auth/signout" className="h-11 w-11 flex items-center justify-center text-red-600 hover:bg-white rounded-full transition-colors">
+                <LogOut className="size-5" />
+              </Link>
             </div>
           </div>
         </div>
@@ -128,46 +104,53 @@ export function DashboardNav({ userName, unreadCount }: DashboardNavProps) {
   );
 }
 
-function ProfileCard({ profile, details }: { profile: DashboardData["profile"]; details: DashboardData["patientDetails"] }) {
-  const initials = profile?.full_name?.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2) ?? "?";
+/* ─────────────── Supporting UI pieces (exported for page.tsx) ─────────────── */
 
+import type { DashboardData } from "@/lib/dashboard-actions";
+import {
+  ArrowRight, ClipboardList, Shield, Heart, MapPin, Phone, Bell as BellIcon,
+  CheckCircle2, ArrowUpRight
+} from "lucide-react";
+import { cn as twCn } from "@/lib/utils";
+
+export function ProfileCard({ profile, details }: { profile: DashboardData["profile"]; details: DashboardData["patientDetails"] }) {
+  const initials = profile?.full_name?.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2) ?? "?";
   return (
-    <div className="bg-white rounded-3xl border border-[rgba(26,61,43,0.06)] p-6 hover:border-[rgba(26,61,43,0.12)] transition-all">
-      <div className="flex items-center gap-4 mb-6">
-        <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-forest-600 to-forest-700 flex items-center justify-center shadow-lg">
-          <span className="font-fraunces text-lg font-semibold text-cream">{initials}</span>
+    <div className="rounded-2xl bg-gray-50 border border-gray-100 p-6 space-y-5">
+      <div className="flex items-center gap-4">
+        <div className="h-12 w-12 rounded-full bg-gray-900 flex items-center justify-center shrink-0">
+          <span className="text-[16px] font-bold text-white">{initials}</span>
         </div>
         <div className="flex-1 min-w-0">
-          <p className="font-fraunces text-lg font-semibold text-forest-800 truncate">{profile?.full_name ?? "Your name"}</p>
-          <p className="text-sm text-[#6B7B6E] truncate">{profile?.email}</p>
+          <p className="text-[15px] font-bold text-gray-900 truncate">{profile?.full_name ?? "Your name"}</p>
+          <p className="text-[12px] font-medium text-gray-500 truncate">{profile?.email}</p>
         </div>
-        <Link href="/profile" className="p-2 rounded-xl hover:bg-[rgba(26,61,43,0.04)] text-forest-400 transition-colors">
-          <ArrowRight className="size-4 rotate-[-45deg]" />
+        <Link href="/profile" className="h-8 w-8 rounded-full flex items-center justify-center text-gray-400 hover:text-gray-900 hover:bg-white transition-colors">
+          <ArrowUpRight className="size-4" />
         </Link>
       </div>
-      
-      <div className="space-y-3">
+      <div className="space-y-3 pt-1">
         {details?.address_city && (
-          <div className="flex items-center gap-3 text-sm text-forest-600">
-            <div className="w-8 h-8 rounded-lg bg-[rgba(26,61,43,0.04)] flex items-center justify-center"><MapPin className="size-4 text-forest-500" /></div>
+          <div className="flex items-center gap-3 text-[13px] font-medium text-gray-600">
+            <MapPin className="size-4 text-gray-400 shrink-0" />
             {details.address_city}, {details.address_county} County, PA
           </div>
         )}
         {details?.payer_type && (
-          <div className="flex items-center gap-3 text-sm text-forest-600">
-            <div className="w-8 h-8 rounded-lg bg-[rgba(26,61,43,0.04)] flex items-center justify-center"><Shield className="size-4 text-forest-500" /></div>
-            {details.payer_type === "medicaid" ? "Medicaid" : details.payer_type === "medicare" ? "Medicare" : details.payer_type === "private" ? "Private Pay" : details.payer_type}
+          <div className="flex items-center gap-3 text-[13px] font-medium text-gray-600">
+            <Shield className="size-4 text-gray-400 shrink-0" />
+            {details.payer_type === "medicaid" ? "Medicaid" : details.payer_type === "medicare" ? "Medicare" : "Private Pay"}
           </div>
         )}
         {details?.care_type && (
-          <div className="flex items-center gap-3 text-sm text-forest-600">
-            <div className="w-8 h-8 rounded-lg bg-[rgba(26,61,43,0.04)] flex items-center justify-center"><Heart className="size-4 text-forest-500" /></div>
+          <div className="flex items-center gap-3 text-[13px] font-medium text-gray-600">
+            <Heart className="size-4 text-gray-400 shrink-0" />
             {details.care_type === "home_health" ? "Home Health" : "Home Care"}
           </div>
         )}
         {profile?.phone && (
-          <div className="flex items-center gap-3 text-sm text-forest-600">
-            <div className="w-8 h-8 rounded-lg bg-[rgba(26,61,43,0.04)] flex items-center justify-center"><Phone className="size-4 text-forest-500" /></div>
+          <div className="flex items-center gap-3 text-[13px] font-medium text-gray-600">
+            <Phone className="size-4 text-gray-400 shrink-0" />
             {profile.phone}
           </div>
         )}
@@ -176,173 +159,139 @@ function ProfileCard({ profile, details }: { profile: DashboardData["profile"]; 
   );
 }
 
-function StatsGrid({ requests }: { requests: DashboardData["switchRequests"] }) {
-  const stats = [
-    { label: "Total Requests", value: requests.length, color: "text-forest-600", bg: "bg-forest-50" },
-    { label: "Active", value: requests.filter(r => ["submitted", "under_review", "accepted"].includes(r.status)).length, color: "text-amber-500", bg: "bg-amber-50" },
-    { label: "Completed", value: requests.filter(r => r.status === "completed").length, color: "text-green-600", bg: "bg-green-50" },
+export function StatsGrid({ requests }: { requests: DashboardData["switchRequests"] }) {
+  const items = [
+    { label: "Total Requests", value: requests.length },
+    { label: "Active", value: requests.filter(r => ["submitted", "under_review", "accepted"].includes(r.status)).length, highlight: true },
+    { label: "Completed", value: requests.filter(r => r.status === "completed").length },
   ];
-
   return (
-    <div className="grid grid-cols-3 gap-4">
-      {stats.map((s) => (
-        <div key={s.label} className={cn("rounded-2xl p-6 text-center", s.bg)}>
-          <p className={cn("font-fraunces text-4xl font-bold", s.color)}>{s.value}</p>
-          <p className="text-xs font-medium text-[#6B7B6E] mt-2 uppercase tracking-wide">{s.label}</p>
+    <div className="grid grid-cols-3 gap-5">
+      {items.map((s) => (
+        <div key={s.label} className="flex flex-col border-l-2 pl-5" style={{ borderColor: s.highlight ? "#2563eb" : "#e5e7eb" }}>
+          <p className={twCn("text-3xl font-extrabold tracking-tight leading-none mb-1", s.highlight ? "text-blue-600" : "text-gray-900")}>{s.value}</p>
+          <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">{s.label}</p>
         </div>
       ))}
     </div>
   );
 }
 
-function QuickActions({ complete, hasActive }: { complete: boolean; hasActive: boolean }) {
+export function QuickActions({ complete, hasActive }: { complete: boolean; hasActive: boolean }) {
+  const links = [
+    { href: "/agencies", label: "Browse Agencies", desc: "Find agencies in your area", enabled: complete },
+    { href: "/agencies", label: hasActive ? "Request in Progress" : "Start a Switch", desc: hasActive ? "View your active request" : "We handle all paperwork", enabled: complete && !hasActive },
+    { href: complete ? "/profile" : "/onboarding", label: "Update Profile", desc: "Edit your information", enabled: true },
+  ];
   return (
-    <div className="bg-white rounded-3xl border border-[rgba(26,61,43,0.06)] p-6">
-      <h3 className="font-fraunces text-lg font-semibold text-forest-800 mb-5">Quick Actions</h3>
-      <div className="space-y-3">
-        <Link href="/agencies" className={cn(
-          "flex items-center gap-4 p-4 rounded-2xl border transition-all",
-          complete ? "border-[rgba(26,61,43,0.08)] hover:border-forest-300 hover:bg-[rgba(26,61,43,0.02)]" : "border-[rgba(26,61,43,0.04)] bg-[rgba(26,61,43,0.02)] opacity-50 pointer-events-none"
-        )}>
-          <div className="w-11 h-11 rounded-xl bg-forest-100 flex items-center justify-center"><Search className="size-5 text-forest-600" /></div>
-          <div className="flex-1">
-            <p className="text-sm font-semibold text-forest-700">Browse Agencies</p>
-            <p className="text-xs text-[#6B7B6E]">Find agencies in your area</p>
+    <div className="space-y-2">
+      {links.map((l) => (
+        <Link key={l.label} href={l.enabled ? l.href : "#"}
+          className={twCn("flex items-center justify-between group p-4 rounded-2xl transition-colors",
+            l.enabled ? "hover:bg-gray-50 cursor-pointer" : "opacity-40 pointer-events-none")}>
+          <div>
+            <p className="text-[14px] font-bold text-gray-900">{l.label}</p>
+            <p className="text-[12px] font-medium text-gray-500">{l.desc}</p>
           </div>
-          <ArrowRight className="size-4 text-forest-400" />
+          <ArrowUpRight className="size-5 text-gray-300 group-hover:text-gray-900 transition-colors" strokeWidth={2.5} />
         </Link>
-        
-        <Link href="/agencies" className={cn(
-          "flex items-center gap-4 p-4 rounded-2xl border transition-all",
-          complete && !hasActive ? "border-amber-200 bg-amber-50/50 hover:bg-amber-100" : "border-[rgba(26,61,43,0.04)] bg-[rgba(26,61,43,0.02)] opacity-50 pointer-events-none"
-        )}>
-          <div className="w-11 h-11 rounded-xl bg-amber-100 flex items-center justify-center"><ClipboardList className="size-5 text-amber-600" /></div>
-          <div className="flex-1">
-            <p className="text-sm font-semibold text-forest-700">{hasActive ? "Request in Progress" : "Start Switch"}</p>
-            <p className="text-xs text-[#6B7B6E]">{hasActive ? "View your active request" : "We handle all paperwork"}</p>
-          </div>
-          <ArrowRight className="size-4 text-amber-500" />
-        </Link>
-
-        <Link href={complete ? "/profile" : "/onboarding"} className="flex items-center gap-4 p-4 rounded-2xl border border-[rgba(26,61,43,0.08)] hover:border-forest-300 hover:bg-[rgba(26,61,43,0.02)] transition-all">
-          <div className="w-11 h-11 rounded-xl bg-forest-100 flex items-center justify-center"><User className="size-5 text-forest-600" /></div>
-          <div className="flex-1">
-            <p className="text-sm font-semibold text-forest-700">Update Profile</p>
-            <p className="text-xs text-[#6B7B6E]">Edit your information</p>
-          </div>
-          <ArrowRight className="size-4 text-forest-400" />
-        </Link>
-      </div>
+      ))}
     </div>
   );
 }
 
-function RequestCard({ request, compact = false }: { request: any; compact?: boolean }) {
-  const statusColors: Record<string, string> = {
-    submitted: "bg-blue-100 text-blue-700 border-blue-200",
-    under_review: "bg-amber-100 text-amber-700 border-amber-200",
-    accepted: "bg-green-100 text-green-700 border-green-200",
-    completed: "bg-forest-100 text-forest-700 border-forest-200",
-    denied: "bg-red-100 text-red-700 border-red-200",
-    cancelled: "bg-gray-100 text-gray-700 border-gray-200",
+export function RequestCard({ request, compact = false }: { request: any; compact?: boolean }) {
+  const STATUS: Record<string, { label: string; dot: string; text: string; bg: string }> = {
+    submitted: { label: "Submitted", dot: "bg-blue-500", text: "text-blue-700", bg: "bg-blue-50" },
+    under_review: { label: "Under Review", dot: "bg-amber-500", text: "text-amber-700", bg: "bg-amber-50" },
+    accepted: { label: "Accepted", dot: "bg-green-500", text: "text-green-700", bg: "bg-green-50" },
+    completed: { label: "Completed", dot: "bg-gray-400", text: "text-gray-600", bg: "bg-gray-100" },
+    denied: { label: "Denied", dot: "bg-red-400", text: "text-red-700", bg: "bg-red-50" },
+    cancelled: { label: "Cancelled", dot: "bg-gray-300", text: "text-gray-500", bg: "bg-gray-50" },
   };
+  const s = STATUS[request.status] ?? STATUS.submitted;
+  const agencyName = request.new_agency?.name ?? "Agency";
 
-  const statusSteps = [
-    { key: "submitted", label: "Submitted" },
-    { key: "under_review", label: "Under Review" },
-    { key: "accepted", label: "Accepted" },
-    { key: "completed", label: "Completed" },
-  ];
-
-  const currentStepIndex = statusSteps.findIndex(s => s.key === request.status);
+  const steps = ["submitted", "under_review", "accepted", "completed"];
+  const stepIdx = steps.indexOf(request.status);
 
   if (compact) {
     return (
-      <div className="bg-white rounded-2xl border border-[rgba(26,61,43,0.06)] p-4 hover:border-[rgba(26,61,43,0.12)] transition-all">
-        <div className="flex items-center justify-between gap-3">
-          <p className="font-fraunces font-semibold text-forest-800 truncate">{request.new_agency_name || "Agency"}</p>
-          <span className={cn("px-2.5 py-1 rounded-full text-[11px] font-medium border", statusColors[request.status] || "bg-gray-100 text-gray-700")}>
-            {request.status === "completed" ? "Done" : request.status === "denied" ? "Denied" : "Cancelled"}
-          </span>
+      <div className="flex items-center justify-between p-4 rounded-2xl border border-gray-100 bg-white hover:border-gray-200 hover:shadow-sm transition-all">
+        <div>
+          <p className="text-[14px] font-bold text-gray-900 truncate">{agencyName}</p>
+          <p className="text-[12px] font-medium text-gray-500">{new Date(request.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</p>
         </div>
-        <p className="text-xs text-[#6B7B6E] mt-2">
-          {new Date(request.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
-        </p>
+        <span className={twCn("flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 rounded-full", s.bg, s.text)}>
+          <span className={twCn("h-1.5 w-1.5 rounded-full", s.dot)} />
+          {s.label}
+        </span>
       </div>
     );
   }
 
   return (
-    <div className="bg-white rounded-3xl border border-[rgba(26,61,43,0.06)] p-6 hover:border-[rgba(26,61,43,0.12)] transition-all hover:shadow-lg">
+    <div className="rounded-2xl border border-gray-100 bg-white p-6 hover:border-gray-200 hover:shadow-lg hover:shadow-gray-900/5 transition-all duration-300">
       {/* Header */}
-      <div className="flex items-start justify-between gap-4 mb-5">
-        <div className="flex-1 min-w-0">
-          <p className="font-fraunces text-lg font-semibold text-forest-800 truncate">{request.new_agency_name || "New Agency"}</p>
-          <p className="text-sm text-[#6B7B6E] mt-1">Switch request</p>
+      <div className="flex items-start justify-between gap-4 mb-6">
+        <div>
+          <p className="text-[18px] font-bold text-gray-900 leading-tight">{agencyName}</p>
+          <p className="text-[13px] font-medium text-gray-500 mt-0.5">Switch request</p>
         </div>
-        <span className={cn("px-3 py-1.5 rounded-full text-xs font-semibold border shrink-0", statusColors[request.status] || "bg-gray-100 text-gray-700")}>
-          {request.status === "submitted" ? "Submitted" : 
-           request.status === "under_review" ? "Under Review" :
-           request.status === "accepted" ? "Accepted" :
-           request.status === "completed" ? "Completed" :
-           request.status === "denied" ? "Denied" : "Cancelled"}
+        <span className={twCn("flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[12px] font-bold shrink-0", s.bg, s.text)}>
+          <span className={twCn("h-2 w-2 rounded-full", s.dot)} />
+          {s.label}
         </span>
       </div>
 
-      {/* Progress Steps */}
-      <div className="mb-6">
-        <div className="flex items-center justify-between">
-          {statusSteps.map((step, i) => (
-            <React.Fragment key={step.key}>
-              <div className="flex flex-col items-center">
-                <div className={cn(
-                  "w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold transition-all",
-                  i < currentStepIndex ? "bg-forest-600 text-cream" :
-                  i === currentStepIndex ? "bg-amber-500 text-white" :
-                  "bg-[rgba(26,61,43,0.08)] text-[#6B7B6E]"
-                )}>
-                  {i < currentStepIndex ? "✓" : i + 1}
+      {/* Progress Track */}
+      <div className="flex items-center gap-0 mb-6">
+        {["Submitted", "Review", "Accepted", "Done"].map((label, i) => {
+          const done = i < stepIdx;
+          const current = i === stepIdx;
+          return (
+            <React.Fragment key={label}>
+              <div className="flex flex-col items-center shrink-0">
+                <div className={twCn("h-7 w-7 rounded-full flex items-center justify-center text-[11px] font-bold transition-all",
+                  done ? "bg-gray-900 text-white" : current ? "bg-blue-600 text-white" : "bg-gray-100 text-gray-400")}>
+                  {done ? <CheckCircle2 className="size-4" /> : i + 1}
                 </div>
-                <span className={cn("text-[10px] mt-1 font-medium", i <= currentStepIndex ? "text-forest-600" : "text-[#6B7B6E]")}>
-                  {step.label}
-                </span>
+                <span className={twCn("text-[10px] font-semibold mt-1.5 whitespace-nowrap", done || current ? "text-gray-900" : "text-gray-400")}>{label}</span>
               </div>
-              {i < statusSteps.length - 1 && (
-                <div className={cn("flex-1 h-0.5 mx-2", i < currentStepIndex ? "bg-forest-600" : "bg-[rgba(26,61,43,0.08)]")} />
-              )}
+              {i < 3 && <div className={twCn("flex-1 h-[2px] mx-1.5 -mt-4", done ? "bg-gray-900" : "bg-gray-100")} />}
             </React.Fragment>
-          ))}
-        </div>
+          );
+        })}
       </div>
 
-      {/* Details Grid */}
-      <div className="grid grid-cols-2 gap-4 p-4 bg-[rgba(26,61,43,0.02)] rounded-2xl mb-5">
+      {/* Detail Rows */}
+      <div className="grid grid-cols-2 gap-x-6 gap-y-3 mb-6 text-[13px]">
         <div>
-          <p className="text-[10px] uppercase tracking-wider text-[#6B7B6E] mb-1">Started</p>
-          <p className="text-sm font-medium text-forest-700">
-            {new Date(request.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
-          </p>
+          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-0.5">Started</p>
+          <p className="font-semibold text-gray-900">{new Date(request.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</p>
         </div>
         <div>
-          <p className="text-[10px] uppercase tracking-wider text-[#6B7B6E] mb-1">Request ID</p>
-          <p className="text-sm font-medium text-forest-700 font-mono">{request.id?.slice(0, 8) || "—"}</p>
+          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-0.5">Request ID</p>
+          <p className="font-semibold text-gray-900 font-mono">{request.id?.slice(0, 8) ?? "—"}</p>
         </div>
         <div>
-          <p className="text-[10px] uppercase tracking-wider text-[#6B7B6E] mb-1">Care Type</p>
-          <p className="text-sm font-medium text-forest-700">{request.care_type || "Home Care"}</p>
+          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-0.5">Care Type</p>
+          <p className="font-semibold text-gray-900 capitalize">{request.care_type?.replace("_", " ") ?? "—"}</p>
         </div>
         <div>
-          <p className="text-[10px] uppercase tracking-wider text-[#6B7B6E] mb-1">Status</p>
-          <p className="text-sm font-medium text-forest-700 capitalize">{request.status?.replace("_", " ") || "—"}</p>
+          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-0.5">Location</p>
+          <p className="font-semibold text-gray-900">{request.new_agency?.address_city ?? "—"}</p>
         </div>
       </div>
 
       {/* Actions */}
       <div className="flex gap-3">
-        <Link href={`/switch/${request.id}`} className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-forest-600 text-cream text-sm font-medium hover:bg-forest-700 transition-colors">
+        <Link href={`/switch/${request.id}`}
+          className="flex-1 flex items-center justify-center gap-2 h-10 rounded-lg bg-gray-900 text-white text-[13px] font-bold hover:bg-gray-800 transition-colors">
           View Details <ArrowRight className="size-4" />
         </Link>
-        <Link href={`/switch/${request.id}/messages`} className="px-4 py-2.5 rounded-xl border border-[rgba(26,61,43,0.1)] text-forest-600 text-sm font-medium hover:bg-[rgba(26,61,43,0.02)] transition-colors">
+        <Link href={`/switch/${request.id}/messages`}
+          className="h-10 px-5 rounded-lg border border-gray-200 text-gray-700 text-[13px] font-bold hover:bg-gray-50 transition-colors flex items-center">
           Messages
         </Link>
       </div>
@@ -350,33 +299,33 @@ function RequestCard({ request, compact = false }: { request: any; compact?: boo
   );
 }
 
-function NotificationsPanel({ notifications, unread }: { notifications: any[]; unread: number }) {
+export function NotificationsPanel({ notifications, unread }: { notifications: any[]; unread: number }) {
   if (notifications.length === 0) {
     return (
-      <div className="bg-white rounded-3xl border border-[rgba(26,61,43,0.06)] p-8 text-center">
-        <div className="w-14 h-14 rounded-2xl bg-[rgba(26,61,43,0.04)] flex items-center justify-center mx-auto mb-4">
-          <Bell className="size-6 text-forest-400" />
+      <div className="rounded-2xl bg-gray-50 border border-gray-100 p-6 text-center">
+        <div className="h-10 w-10 rounded-full bg-white border border-gray-200 flex items-center justify-center mx-auto mb-3">
+          <BellIcon className="size-4 text-gray-400" />
         </div>
-        <p className="font-fraunces font-semibold text-forest-700">All caught up!</p>
-        <p className="text-sm text-[#6B7B6E] mt-1">No new notifications</p>
+        <p className="text-[14px] font-bold text-gray-900">All caught up!</p>
+        <p className="text-[12px] font-medium text-gray-500 mt-1">No new notifications</p>
       </div>
     );
   }
 
   return (
-    <div className="bg-white rounded-3xl border border-[rgba(26,61,43,0.06)] overflow-hidden">
-      <div className="p-5 border-b border-[rgba(26,61,43,0.06)] flex items-center justify-between">
-        <h3 className="font-fraunces text-lg font-semibold text-forest-800 flex items-center gap-2">
-          <Bell className="size-5 text-forest-500" />
-          Notifications
-          {unread > 0 && <span className="h-5 w-5 rounded-full bg-amber-500 text-white text-xs font-bold flex items-center justify-center">{unread}</span>}
+    <div className="rounded-2xl bg-white border border-gray-100 overflow-hidden">
+      <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
+        <h3 className="text-[14px] font-bold text-gray-900 flex items-center gap-2">
+          <BellIcon className="size-4 text-gray-400" /> Notifications
+          {unread > 0 && <span className="h-5 px-1.5 rounded-full bg-blue-100 text-blue-700 text-[10px] font-bold flex items-center justify-center">{unread}</span>}
         </h3>
+        <Link href="/notifications" className="text-[12px] font-bold text-blue-600 hover:text-blue-800">View all</Link>
       </div>
-      <div className="divide-y divide-[rgba(26,61,43,0.04)]">
+      <div className="divide-y divide-gray-50">
         {notifications.slice(0, 5).map((n: any, i: number) => (
-          <div key={n.id || i} className="p-4 hover:bg-[rgba(26,61,43,0.02)] transition-colors">
-            <p className="text-sm font-medium text-forest-700">{n.title}</p>
-            <p className="text-xs text-[#6B7B6E] mt-1 line-clamp-2">{n.body}</p>
+          <div key={n.id || i} className="p-4 hover:bg-gray-50 transition-colors">
+            <p className="text-[13px] font-bold text-gray-900">{n.title}</p>
+            <p className="text-[12px] font-medium text-gray-500 mt-0.5 line-clamp-2 leading-snug">{n.body}</p>
           </div>
         ))}
       </div>
@@ -384,4 +333,4 @@ function NotificationsPanel({ notifications, unread }: { notifications: any[]; u
   );
 }
 
-export { ProfileCard, StatsGrid, QuickActions, RequestCard, NotificationsPanel };
+export { ProfileCard as default };
