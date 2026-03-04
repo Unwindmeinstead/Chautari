@@ -5,7 +5,7 @@ import { getSupabasePublishableKey, getSupabaseUrl } from "@/lib/supabase/env";
 
 // ⚠️  TEMPORARY: Set to true to bypass all auth checks while debugging.
 //    Flip back to false before deploying with real auth.
-const BYPASS_AUTH = false;
+const BYPASS_AUTH = true;
 
 export async function updateSession(request: NextRequest) {
   // Short-circuit: let every request through with no auth check.

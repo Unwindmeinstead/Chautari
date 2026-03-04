@@ -3,7 +3,15 @@
 import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, ClipboardList, Settings, Users, MessageSquare, LogOut, Menu, X, Building2, Bell } from "lucide-react";
+import {
+  LayoutDashboard,
+  ClipboardList,
+  Settings,
+  MessageSquare,
+  Menu,
+  X,
+  Bell,
+} from "lucide-react";
 import { Logo } from "@/components/ui/logo";
 import { cn } from "@/lib/utils";
 
@@ -13,17 +21,17 @@ interface AgencyNavProps {
   staffRole: string | null;
   pendingCount: number;
   unreadMessages?: number;
+  unreadNotifications?: number;
 }
 
 const NAV = [
   { href: "/agency/dashboard", label: "Overview", icon: LayoutDashboard },
   { href: "/agency/requests", label: "Requests", icon: ClipboardList },
   { href: "/agency/messages", label: "Messages", icon: MessageSquare },
-  { href: "/agency/team", label: "Team", icon: Users },
   { href: "/agency/profile", label: "Profile", icon: Settings },
 ];
 
-export function AgencyNav({ agencyName, staffName, staffRole, pendingCount, unreadMessages = 0 }: AgencyNavProps) {
+export function AgencyNav({ agencyName, staffName, staffRole, pendingCount, unreadMessages = 0, unreadNotifications = 0 }: AgencyNavProps) {
   const pathname = usePathname();
   const [open, setOpen] = React.useState(false);
 
@@ -34,32 +42,17 @@ export function AgencyNav({ agencyName, staffName, staffRole, pendingCount, unre
 
   return (
     <>
-      <nav
-        className="sticky top-0 z-50 transition-all"
-        style={{
-          background: "rgba(10,22,40,0.95)",
-          borderBottom: "1px solid rgba(59,130,246,0.15)",
-          backdropFilter: "blur(20px) saturate(1.5)",
-        }}
-      >
-        <div className="max-w-[1400px] mx-auto px-6 h-[68px] flex items-center gap-6">
-
-          {/* Brand — links back to landing page */}
-          <Link href="/" className="flex items-center gap-3 shrink-0 hover:opacity-80 transition-opacity">
-            <Logo size="sm" light />
-            <div className="hidden sm:flex items-center gap-2.5 pl-4" style={{ borderLeft: "1px solid rgba(255,255,255,0.08)" }}>
-              <div className="h-7 w-7 rounded-lg flex items-center justify-center"
-                style={{ background: "rgba(59,130,246,0.15)", border: "1px solid rgba(59,130,246,0.25)" }}>
-                <Building2 className="size-3.5 text-blue-400" />
-              </div>
-              <span className="text-[14px] font-semibold text-white/80 tracking-tight truncate max-w-[200px]">
-                {agencyName ?? "Agency Portal"}
-              </span>
+      <header className="sticky top-0 z-50 border-b border-zinc-200/80 bg-white/95 backdrop-blur-xl">
+        <div className="max-w-[1240px] mx-auto h-16 px-4 md:px-6 flex items-center gap-4">
+          <Link href="/agency/dashboard" className="flex items-center gap-2.5 shrink-0">
+            <Logo size="sm" />
+            <div className="hidden sm:block">
+              <p className="text-[12px] font-semibold text-zinc-900 leading-none truncate max-w-[180px]">{agencyName ?? "Agency Portal"}</p>
+              <p className="text-[11px] text-zinc-500 mt-1">Operations Workspace</p>
             </div>
           </Link>
 
-          {/* Desktop nav */}
-          <div className="hidden md:flex items-center gap-1 flex-1 ml-2">
+          <nav className="hidden md:flex items-center gap-1 flex-1">
             {NAV.map(({ href, label, icon: Icon }) => {
               const active = isActive(href);
               return (
@@ -67,127 +60,89 @@ export function AgencyNav({ agencyName, staffName, staffRole, pendingCount, unre
                   key={href}
                   href={href}
                   className={cn(
-                    "relative flex items-center gap-2 px-3.5 py-2 rounded-xl text-[13px] font-medium transition-all duration-200",
+                    "h-9 px-3.5 rounded-lg text-[13px] font-medium inline-flex items-center gap-2 border transition-all",
                     active
-                      ? "text-white"
-                      : "text-white/35 hover:text-white/70 hover:bg-white/[0.04]"
+                      ? "text-zinc-900 border-zinc-300 bg-zinc-100"
+                      : "text-zinc-600 border-transparent hover:text-zinc-900 hover:bg-zinc-100/80"
                   )}
-                  style={active ? {
-                    background: "linear-gradient(135deg, rgba(59,130,246,0.2), rgba(99,102,241,0.2))",
-                    border: "1px solid rgba(59,130,246,0.3)"
-                  } : {}}
                 >
-                  <Icon className={cn("size-3.5 shrink-0", active ? "text-blue-400" : "text-white/25")} />
+                  <Icon className="size-3.5" />
                   {label}
                   {label === "Requests" && pendingCount > 0 && (
-                    <span className={cn(
-                      "ml-0.5 px-1.5 py-0.5 rounded-full text-[10px] font-bold leading-none",
-                      active ? "bg-white/20 text-white" : "bg-blue-500/20 text-blue-400 border border-blue-500/30"
-                    )}>
-                      {pendingCount}
-                    </span>
+                    <span className="ml-0.5 h-5 min-w-5 px-1 rounded-full text-[10px] font-bold bg-amber-100 text-amber-700 border border-amber-200 inline-flex items-center justify-center">{pendingCount}</span>
                   )}
                   {label === "Messages" && unreadMessages > 0 && (
-                    <span className={cn(
-                      "ml-0.5 px-1.5 py-0.5 rounded-full text-[10px] font-bold leading-none",
-                      active ? "bg-white/20 text-white" : "bg-amber-500/20 text-amber-400 border border-amber-500/30"
-                    )}>
-                      {unreadMessages}
-                    </span>
+                    <span className="ml-0.5 h-5 min-w-5 px-1 rounded-full text-[10px] font-bold bg-sky-100 text-sky-700 border border-sky-200 inline-flex items-center justify-center">{unreadMessages}</span>
                   )}
                 </Link>
               );
             })}
-          </div>
+          </nav>
 
-          <div className="flex-1 md:flex-none" />
-
-          {/* Right items */}
-          <div className="hidden md:flex items-center gap-4">
-            <button className="h-9 w-9 rounded-xl flex items-center justify-center transition-colors"
-              style={{ border: "1px solid rgba(255,255,255,0.07)", background: "rgba(255,255,255,0.04)" }}>
-              <Bell className="size-4 text-white/30" />
-            </button>
-            <div style={{ width: 1, height: 24, background: "rgba(255,255,255,0.08)" }} />
-            <div className="flex items-center gap-3">
-              <div className="text-right">
-                <p className="text-[13px] font-semibold text-white/80 leading-none">{staffName}</p>
-                {staffRole && (
-                  <p className="text-[11px] text-blue-300/50 capitalize mt-1 leading-none font-medium">{staffRole}</p>
-                )}
-              </div>
-              <Link
-                href="/api/auth/signout"
-                className="h-9 w-9 rounded-xl flex items-center justify-center transition-all"
-                style={{ border: "1px solid rgba(252,165,165,0.15)", background: "rgba(252,165,165,0.05)" }}
-                title="Sign out"
-              >
-                <LogOut className="size-3.5 text-red-400/60 hover:text-red-400 transition-colors" />
-              </Link>
+          <div className="hidden md:flex items-center gap-3">
+            <Link href="/agency/notifications" className="relative h-9 w-9 rounded-xl border border-zinc-200 bg-white inline-flex items-center justify-center text-zinc-600 hover:bg-zinc-100">
+              <Bell className="size-4" />
+              {unreadNotifications > 0 && <span className="absolute -top-1 -right-1 min-w-4 h-4 px-1 rounded-full bg-rose-500 text-white text-[10px] font-bold inline-flex items-center justify-center">{unreadNotifications > 9 ? "9+" : unreadNotifications}</span>}
+            </Link>
+            <div className="h-8 w-8 rounded-full border border-zinc-200 bg-zinc-100 text-[11px] font-bold text-zinc-700 inline-flex items-center justify-center">{(staffName ?? "S").charAt(0).toUpperCase()}</div>
+            <div className="text-right">
+              <p className="text-[12px] font-semibold text-zinc-900 leading-none">{staffName ?? "Staff"}</p>
+              <p className="text-[11px] text-zinc-500 mt-1">{staffRole ?? "Member"}</p>
             </div>
+            <Link href="/api/auth/signout" className="h-8 px-3 rounded-lg border border-zinc-200 text-zinc-600 text-xs font-medium hover:bg-zinc-100"><span className="h-full inline-flex items-center">Sign out</span></Link>
           </div>
 
-          {/* Mobile hamburger */}
-          <button
-            onClick={() => setOpen(!open)}
-            className="md:hidden p-2.5 rounded-xl transition-colors"
-            style={{ border: "1px solid rgba(255,255,255,0.08)", background: "rgba(255,255,255,0.04)" }}
-          >
-            {open ? <X className="size-5 text-white/60" /> : <Menu className="size-5 text-white/60" />}
+          <button type="button" onClick={() => setOpen((v) => !v)} className="md:hidden ml-auto h-9 w-9 rounded-lg border border-zinc-200 bg-white inline-flex items-center justify-center text-zinc-700" aria-label="Toggle menu">
+            {open ? <X className="size-4" /> : <Menu className="size-4" />}
           </button>
         </div>
-      </nav>
+      </header>
 
-      {/* Mobile menu */}
       {open && (
-        <div className="fixed inset-0 z-40 md:hidden" onClick={() => setOpen(false)}>
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity" />
-          <div
-            className="absolute top-[68px] left-0 right-0 rounded-b-3xl overflow-hidden shadow-2xl"
-            onClick={(e) => e.stopPropagation()}
-            style={{ background: "rgba(10,22,40,0.98)", border: "1px solid rgba(59,130,246,0.15)", borderTop: "none" }}
-          >
-            <div className="p-5 space-y-1">
-              <p className="text-[10px] font-bold uppercase tracking-widest text-blue-300/40 px-4 pb-2">{agencyName}</p>
+        <div className="md:hidden fixed inset-0 z-40 bg-black/20" onClick={() => setOpen(false)}>
+          <div className="absolute top-16 left-0 right-0 bg-white border-b border-zinc-200 px-4 pb-4 pt-2" onClick={(e) => e.stopPropagation()}>
+            <div className="space-y-1">
               {NAV.map(({ href, label, icon: Icon }) => {
                 const active = isActive(href);
                 return (
-                  <Link
-                    key={href}
-                    href={href}
-                    onClick={() => setOpen(false)}
-                    className={cn(
-                      "flex items-center gap-4 px-5 py-3.5 rounded-2xl text-[15px] font-semibold transition-all",
-                      active
-                        ? "text-white"
-                        : "text-white/40 hover:text-white/70 hover:bg-white/[0.04]"
-                    )}
-                    style={active ? {
-                      background: "linear-gradient(135deg, rgba(59,130,246,0.2), rgba(99,102,241,0.2))",
-                      border: "1px solid rgba(59,130,246,0.25)"
-                    } : {}}
-                  >
-                    <Icon className={cn("size-5 shrink-0", active ? "text-blue-400" : "text-white/25")} />
+                  <Link key={href} href={href} onClick={() => setOpen(false)} className={cn("h-10 px-3 rounded-lg flex items-center gap-2.5 text-sm font-medium", active ? "bg-zinc-100 text-zinc-900" : "text-zinc-700")}>
+                    <Icon className="size-4" />
                     {label}
                   </Link>
                 );
               })}
-            </div>
-            <div className="p-5 flex items-center justify-between"
-              style={{ borderTop: "1px solid rgba(255,255,255,0.06)", background: "rgba(0,0,0,0.2)" }}>
-              <div>
-                <p className="text-[14px] font-semibold text-white/80">{staffName}</p>
-                <p className="text-[12px] text-blue-300/50 capitalize font-medium">{staffRole}</p>
-              </div>
-              <Link href="/api/auth/signout"
-                className="h-11 w-11 flex items-center justify-center rounded-xl transition-colors"
-                style={{ background: "rgba(252,165,165,0.08)", border: "1px solid rgba(252,165,165,0.15)" }}>
-                <LogOut className="size-5 text-red-400" />
+              <Link href="/agency/notifications" onClick={() => setOpen(false)} className="h-10 px-3 rounded-lg flex items-center gap-2.5 text-sm font-medium text-zinc-700">
+                <Bell className="size-4" /> Notifications {unreadNotifications > 0 ? <span className="text-[10px] rounded-full px-1.5 py-0.5 bg-rose-100 text-rose-700 border border-rose-200">{unreadNotifications}</span> : null}
               </Link>
+            </div>
+
+            <div className="mt-3 rounded-xl border border-zinc-200 bg-zinc-50 p-3 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="h-8 w-8 rounded-full bg-white border border-zinc-200 inline-flex items-center justify-center text-xs font-semibold text-zinc-700">{(staffName ?? "S").charAt(0).toUpperCase()}</div>
+                <div>
+                  <p className="text-xs font-semibold text-zinc-900">{staffName ?? "Staff"}</p>
+                  <p className="text-[11px] text-zinc-500">{staffRole ?? "Member"}</p>
+                </div>
+              </div>
+              <Link href="/api/auth/signout" className="text-xs font-medium text-zinc-600">Sign out</Link>
             </div>
           </div>
         </div>
       )}
+
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 border-t border-zinc-200 bg-white/95 backdrop-blur px-2 py-2">
+        <div className="grid grid-cols-4 gap-1">
+          {NAV.map(({ href, label, icon: Icon }) => {
+            const active = isActive(href);
+            return (
+              <Link key={href} href={href} className={cn("h-12 rounded-xl flex flex-col items-center justify-center gap-0.5", active ? "bg-zinc-100 text-zinc-900" : "text-zinc-500")}>
+                <Icon className="size-4" />
+                <span className="text-[10px] font-medium">{label}</span>
+              </Link>
+            );
+          })}
+        </div>
+      </div>
     </>
   );
 }
