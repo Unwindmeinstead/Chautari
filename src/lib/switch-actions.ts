@@ -41,7 +41,7 @@ export async function createSwitchRequest(
   }
 
   try {
-    // 1. Create the switch request record
+    // 1. Create the switch request record — goes directly to admin review
     const { data: request, error: requestError } = await supabase
       .from("switch_requests")
       .insert({
@@ -53,8 +53,8 @@ export async function createSwitchRequest(
         services_requested: data.services_requested,
         requested_start_date: data.requested_start_date,
         special_instructions: data.special_instructions || null,
-        status: "pending_payment",
-        // submitted_at is set by the Stripe webhook after payment succeeds
+        status: "submitted",
+        submitted_at: new Date().toISOString(),
       })
       .select("id")
       .single();
@@ -80,15 +80,34 @@ export async function createSwitchRequest(
 
     if (sigError) throw sigError;
 
-    // 3. Create initial notification for patient
+    // 3. Notify patient
     await supabase.from("notifications").insert({
       user_id: user.id,
       type: "request_submitted",
       title: "Switch request submitted",
-      body: "Your agency switch request has been submitted. We'll notify you when the agency responds.",
+      body: "Your agency switch request has been received by our team. We'll review it and be in touch shortly.",
       reference_id: requestId,
       reference_type: "switch_request",
     });
+
+    // 4. Notify all admin users so they can review and assign to agency
+    const { data: admins } = await supabase
+      .from("profiles")
+      .select("id")
+      .eq("role", "switchmycare_admin");
+
+    if (admins?.length) {
+      await supabase.from("notifications").insert(
+        admins.map((admin) => ({
+          user_id: admin.id,
+          type: "new_switch_request",
+          title: "New switch request submitted",
+          body: `A patient submitted a new agency switch request and needs admin review.`,
+          reference_id: requestId,
+          reference_type: "switch_request",
+        }))
+      );
+    }
 
     // 4. Audit log
     await supabase.from("audit_logs").insert({

@@ -10,6 +10,7 @@ import { Stepper } from "@/components/ui/stepper";
 import type { SwitchRequestData } from "@/lib/switch-schema";
 import { SWITCH_STEPS } from "@/lib/switch-schema";
 import type { Agency } from "@/types/database";
+import { createSwitchRequest } from "@/lib/switch-actions";
 
 import { SwitchStep1Agency } from "./switch-step-1-agency";
 import { SwitchStep2Situation } from "./switch-step-2-situation";
@@ -39,7 +40,7 @@ export function SwitchWizard({ agency, userName }: SwitchWizardProps) {
     const newData = { ...formData, ...stepData };
     setFormData(newData);
     if (isLastStep) {
-      handleCheckout(newData as SwitchRequestData);
+      handleSubmit(newData as SwitchRequestData);
     } else {
       setCurrentStep((s) => s + 1);
       window.scrollTo({ top: 0, behavior: "smooth" });
@@ -53,25 +54,16 @@ export function SwitchWizard({ agency, userName }: SwitchWizardProps) {
     }
   }
 
-  async function handleCheckout(data: SwitchRequestData) {
+  async function handleSubmit(data: SwitchRequestData) {
     setRedirecting(true);
     setError(null);
     try {
-      const res = await fetch("/api/checkout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          agencyId: agency.id,
-          agencyName: agency.dba_name ?? agency.name,
-          switchData: data,
-        }),
-      });
-      const json = await res.json();
-      if (!res.ok || !json.url) {
-        throw new Error(json.error ?? "Failed to start checkout");
+      const result = await createSwitchRequest(data);
+      if (result.error || !result.requestId) {
+        throw new Error(result.error ?? "Failed to submit request");
       }
-      // Redirect to Stripe Checkout
-      window.location.href = json.url;
+      // Redirect to success page with the new request ID
+      window.location.href = `/switch/success?request_id=${result.requestId}`;
     } catch (err: any) {
       setError(err.message ?? "Something went wrong. Please try again.");
       setRedirecting(false);
@@ -105,14 +97,14 @@ export function SwitchWizard({ agency, userName }: SwitchWizardProps) {
           Step {currentStep + 1} of {TOTAL_STEPS} — {SWITCH_STEPS[currentStep].label}
         </div>
 
-        {/* Fee notice on last step */}
+        {/* Submit notice on last step */}
         {isLastStep && (
-          <div className="rounded-xl bg-amber-50 border border-amber-200 px-4 py-3 flex items-center gap-3">
-            <span className="text-2xl">💳</span>
+          <div className="rounded-xl bg-forest-50 border border-forest-200 px-4 py-3 flex items-center gap-3">
+            <span className="text-2xl">✅</span>
             <div>
-              <p className="text-sm font-semibold text-amber-800">$97 coordination fee</p>
-              <p className="text-xs text-amber-700">
-                Clicking &quot;Submit &amp; Pay&quot; takes you to a secure Stripe checkout. Your switch request is created after payment completes.
+              <p className="text-sm font-semibold text-forest-800">Almost there</p>
+              <p className="text-xs text-forest-700">
+                Clicking &quot;Submit request&quot; sends your request to our team for review. We&apos;ll be in touch shortly.
               </p>
             </div>
           </div>
@@ -129,7 +121,7 @@ export function SwitchWizard({ agency, userName }: SwitchWizardProps) {
         {redirecting && (
           <div className="rounded-xl bg-forest-50 border border-forest-200 px-4 py-4 flex items-center gap-3">
             <Loader2 className="size-5 text-forest-600 animate-spin shrink-0" />
-            <p className="text-sm text-forest-700">Redirecting to secure checkout…</p>
+            <p className="text-sm text-forest-700">Submitting your request…</p>
           </div>
         )}
 
@@ -211,7 +203,7 @@ export function StepNav({ onBack, isFirst, isLast, loading, nextLabel, disabled 
           <Loader2 className="size-4 animate-spin" />
         ) : (
           <>
-            {nextLabel ?? (isLast ? "Submit & Pay $97" : "Continue")}
+            {nextLabel ?? (isLast ? "Submit request" : "Continue")}
             <ArrowRight className="size-4" />
           </>
         )}

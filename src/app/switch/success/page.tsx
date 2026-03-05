@@ -1,51 +1,46 @@
 import { redirect } from "next/navigation";
-import { getStripe } from "@/lib/stripe";
-import { SwitchRequestSuccess } from "@/components/switch/switch-request-success";
 import { createClient } from "@/lib/supabase/server";
-
+import { SwitchRequestSuccess } from "@/components/switch/switch-request-success";
 
 interface Props {
-    searchParams: Promise<{ session_id?: string }>;
+    searchParams: Promise<{ request_id?: string }>;
 }
 
 export default async function SwitchSuccessPage({ searchParams }: Props) {
     const params = await searchParams;
-    if (!params.session_id) redirect("/agencies");
-
-    const session = await getStripe().checkout.sessions.retrieve(params.session_id);
-    if (session.payment_status !== "paid") redirect("/agencies");
+    if (!params.request_id) redirect("/agencies");
 
     const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) redirect("/auth/login");
 
-    // Find the switch request created by the webhook
-    // Webhook may be slightly behind — poll up to 5s
-    let request = null;
-    for (let i = 0; i < 5; i++) {
-        const { data } = await supabase
-            .from("switch_payments")
-            .select("switch_request_id, switch_requests(id, new_agency_id, requested_start_date, agencies!switch_requests_new_agency_id_fkey(name))")
-            .eq("stripe_checkout_session_id", params.session_id)
-            .single();
-        if (data?.switch_request_id) { request = data; break; }
-        await new Promise(r => setTimeout(r, 1000));
-    }
+    // Load the switch request and agency name
+    const { data: request } = await supabase
+        .from("switch_requests")
+        .select(`
+      id,
+      requested_start_date,
+      new_agency:agencies!switch_requests_new_agency_id_fkey (name)
+    `)
+        .eq("id", params.request_id)
+        .eq("patient_id", user.id)
+        .single();
+
+    if (!request) redirect("/dashboard");
 
     const { data: profile } = await supabase
         .from("profiles")
         .select("full_name")
-        .eq("id", (await supabase.auth.getUser()).data.user?.id ?? "")
+        .eq("id", user.id)
         .single();
 
-    const switchReq = (request as any)?.switch_requests;
-    const agencyName = (switchReq as any)?.agencies?.name ?? session.metadata?.agency_name ?? "your new agency";
-    const requestId = switchReq?.id ?? "pending";
-    const startDate = switchReq?.requested_start_date;
+    const agencyName = (request.new_agency as any)?.name ?? "your new agency";
 
     return (
         <SwitchRequestSuccess
-            requestId={requestId}
+            requestId={request.id}
             agencyName={agencyName}
-            requestedStartDate={startDate}
+            requestedStartDate={request.requested_start_date ?? undefined}
             userName={profile?.full_name}
         />
     );
