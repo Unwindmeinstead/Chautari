@@ -13,25 +13,21 @@ export async function updateSession(request: NextRequest) {
           return request.cookies.getAll();
         },
         setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value, options }) => {
+          cookiesToSet.forEach(({ name, value }) => {
             request.cookies.set(name, value);
           });
           supabaseResponse = NextResponse.next({ request });
-          cookiesToSet.forEach(({ name, value, options }) => {
-            supabaseResponse.cookies.set(name, value, {
-              path: "/",
-              maxAge: 60 * 60 * 24 * 7,
-              sameSite: "lax",
-              httpOnly: false,
-              secure: process.env.NODE_ENV === "production",
-            });
+          cookiesToSet.forEach(({ name, value }) => {
+            supabaseResponse.cookies.set(name, value);
           });
         },
       },
     }
   );
 
-  await supabase.auth.getUser();
+  // Refresh session if needed
+  const { data: { session }, error } = await supabase.auth.getSession();
 
+  // Even if there's no session, continue - let the page handle auth state
   return supabaseResponse;
 }

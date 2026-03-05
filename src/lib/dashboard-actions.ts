@@ -58,7 +58,9 @@ export interface DashboardData {
 export async function getDashboardData(): Promise<DashboardData> {
   const supabase = await createClient();
 
-  const { data: { user } } = await supabase.auth.getUser();
+  const { data: { session } } = await supabase.auth.getSession();
+  const user = session?.user;
+  
   if (!user && !BYPASS_AUTH) {
     redirect("/auth/login?redirectedFrom=/dashboard");
   }
@@ -82,6 +84,9 @@ export async function getDashboardData(): Promise<DashboardData> {
   }
 
   const effectiveUser = user!;
+  if (!effectiveUser) {
+    redirect("/auth/login?redirectedFrom=/dashboard");
+  }
 
   const [profileRes, detailsRes, requestsRes, notificationsRes] = await Promise.all([
     supabase
