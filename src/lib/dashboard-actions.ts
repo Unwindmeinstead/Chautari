@@ -4,7 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
-const BYPASS_AUTH = false;
+const BYPASS_AUTH = true;
 
 export interface DashboardData {
   profile: {
