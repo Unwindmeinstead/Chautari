@@ -231,12 +231,23 @@ export default function HomePage() {
               <Link href="#how-it-works" onClick={(e) => handleSmoothScroll(e, '#how-it-works')} className="text-base text-[#6B7B6E] no-underline inline-flex items-center gap-1.5 hover:text-forest-600 transition-colors font-medium cursor-pointer">See how it works ↓</Link>
             </div>
 
-            <div className="flex items-center gap-7 flex-wrap pt-7 border-t border-[rgba(26,61,43,0.08)]">
-              {["HIPAA compliant", "Free for patients to browse", "PA-verified agencies only", "English · नेपाली · हिन्दी"].map((t) => (
-                <div key={t} className="flex items-center gap-2 text-[15px] text-[#6B7B6E] font-medium">
-                  <div className="w-[5px] h-[5px] rounded-full bg-[#3D7A57] shrink-0" />{t}
-                </div>
-              ))}
+            <div className="flex items-center gap-2.5 flex-wrap pt-7 border-t border-[rgba(26,61,43,0.08)]">
+              <span className="inline-flex items-center gap-2 px-3.5 py-2 rounded-full bg-[rgba(26,61,43,0.06)] text-[13px] font-medium text-forest-700">
+                <svg className="w-4 h-4 text-forest-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
+                HIPAA compliant
+              </span>
+              <span className="inline-flex items-center gap-2 px-3.5 py-2 rounded-full bg-[rgba(232,147,58,0.1)] text-[13px] font-medium text-amber-700">
+                <svg className="w-4 h-4 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                Free for patients
+              </span>
+              <span className="inline-flex items-center gap-2 px-3.5 py-2 rounded-full bg-[rgba(26,61,43,0.06)] text-[13px] font-medium text-forest-700">
+                <svg className="w-4 h-4 text-forest-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                PA-verified
+              </span>
+              <span className="inline-flex items-center gap-2 px-3.5 py-2 rounded-full bg-forest-600 text-[13px] font-medium text-cream">
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129" /></svg>
+                English · नेपाली · हिन्दी
+              </span>
             </div>
           </div>
 
