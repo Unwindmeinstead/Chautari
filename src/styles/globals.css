@@ -3,12 +3,12 @@
 @tailwind utilities;
 
 /* ── Fonts ─────────────────────────────────────────── */
-@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..700&family=DM+Sans:wght@300;400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..700&family=Poppins:wght@300;400;500;600;700&display=swap');
 
 /* ── CSS Variables ──────────────────────────────────── */
 :root {
   --font-fraunces: 'Fraunces', Georgia, serif;
-  --font-dm-sans: 'DM Sans', system-ui, sans-serif;
+  --font-poppins: 'Poppins', system-ui, sans-serif;
 
   /* Brand */
   --forest-50: #f0f5f2;
@@ -60,7 +60,7 @@ section, [id] {
 body {
   background-color: var(--background);
   color: var(--foreground);
-  font-family: var(--font-dm-sans);
+  font-family: var(--font-poppins);
   font-size: 1rem;
   line-height: 1.6;
 }
@@ -122,7 +122,7 @@ h1, h2, h3, .font-display {
 
 /* ── Form elements ──────────────────────────────────── */
 input, textarea, select {
-  font-family: var(--font-dm-sans);
+  font-family: var(--font-poppins);
 }
 
 /* ── Scrollbar styling ──────────────────────────────── */
