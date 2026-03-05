@@ -5,13 +5,61 @@
 -- ============================================================
 
 
+-- ── 0. PROFILES ─────────────────────────────────────────────────────────────────
+
+CREATE TABLE IF NOT EXISTS public.profiles (
+  id              UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+  full_name       TEXT,
+  email           TEXT,
+  phone           TEXT,
+  preferred_lang  TEXT DEFAULT 'en',
+  role            TEXT DEFAULT 'patient',
+  created_at      TIMESTAMPTZ DEFAULT now(),
+  updated_at      TIMESTAMPTZ DEFAULT now()
+);
+
+ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "profiles_self_read" ON public.profiles;
+CREATE POLICY "profiles_self_read"
+  ON public.profiles FOR SELECT
+  USING (auth.uid() = id);
+
+DROP POLICY IF EXISTS "profiles_self_update" ON public.profiles;
+CREATE POLICY "profiles_self_update"
+  ON public.profiles FOR UPDATE
+  USING (auth.uid() = id);
+
+-- Helper function: is_chautari_admin
+CREATE OR REPLACE FUNCTION public.is_chautari_admin()
+RETURNS BOOLEAN
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+STABLE
+AS $$
+DECLARE
+  _is_admin boolean;
+BEGIN
+  IF auth.uid() IS NULL THEN
+    RETURN false;
+  END IF;
+
+  SELECT role = 'chautari_admin' INTO _is_admin
+  FROM public.profiles
+  WHERE id = auth.uid();
+  
+  RETURN COALESCE(_is_admin, false);
+END;
+$$;
+
 -- ── 1. SWITCH REQUESTS ──────────────────────────────────────────────────────────
 
 CREATE TABLE IF NOT EXISTS public.switch_requests (
   id                        UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   patient_id                UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-  new_agency_id             UUID NOT NULL REFERENCES public.agencies(id),
-  current_agency_id         UUID REFERENCES public.agencies(id),
+  new_agency_id             TEXT NOT NULL REFERENCES public.agencies(id),
+  current_agency_id         TEXT REFERENCES public.agencies(id),
   current_agency_name       TEXT,
   care_type                 TEXT NOT NULL,
   payer_type                TEXT,
@@ -127,7 +175,7 @@ CREATE INDEX IF NOT EXISTS notifications_created_at_idx ON public.notifications(
 
 CREATE TABLE IF NOT EXISTS public.agency_members (
   id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  agency_id   UUID NOT NULL REFERENCES public.agencies(id) ON DELETE CASCADE,
+  agency_id   TEXT NOT NULL REFERENCES public.agencies(id) ON DELETE CASCADE,
   user_id     UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   role        TEXT NOT NULL DEFAULT 'staff' CHECK (role IN ('owner','admin','staff')),
   title       TEXT,
@@ -253,7 +301,7 @@ CREATE TABLE IF NOT EXISTS public.conversations (
   id               UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   request_id       UUID NOT NULL UNIQUE REFERENCES public.switch_requests(id) ON DELETE CASCADE,
   patient_id       UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-  agency_id        UUID NOT NULL REFERENCES public.agencies(id) ON DELETE CASCADE,
+  agency_id        TEXT NOT NULL REFERENCES public.agencies(id) ON DELETE CASCADE,
   created_at       TIMESTAMPTZ DEFAULT now(),
   updated_at       TIMESTAMPTZ DEFAULT now(),
   last_message_at  TIMESTAMPTZ,
@@ -649,30 +697,7 @@ CREATE POLICY "admin_read_all_conversations"
   ON public.conversations FOR SELECT
   USING (public.is_chautari_admin());
 
-CREATE OR REPLACE FUNCTION public.is_chautari_admin()
-RETURNS BOOLEAN
-LANGUAGE plpgsql
-SECURITY DEFINER
-SET search_path = public
-STABLE
-AS $$
-DECLARE
-  _is_admin boolean;
-BEGIN
-  IF auth.uid() IS NULL THEN
-    RETURN false;
-  END IF;
-
-  SELECT role = 'chautari_admin' INTO _is_admin
-  FROM public.profiles
-  WHERE id = auth.uid();
-  
-  RETURN COALESCE(_is_admin, false);
-END;
-$$;
-
-
--- ── DONE ────────────────────────────────────────────────────────────────────────
+-- ── DONE ─────────────────────────────────────────────────────────────────────---
 -- After this succeeds:
 -- 1. Go to Supabase Dashboard → Authentication → URL Configuration
 --    Set Site URL and add your Vercel URL to Redirect URLs
