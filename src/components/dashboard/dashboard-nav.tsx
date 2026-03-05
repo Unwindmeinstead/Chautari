@@ -28,25 +28,25 @@ export function DashboardNav({ userName, unreadCount }: DashboardNavProps) {
 
   return (
     <>
-      <nav className="sticky top-0 z-50 bg-white border-b border-gray-100 shadow-[0_4px_24px_rgba(0,0,0,0.02)]">
+      <nav className="sticky top-0 z-50 bg-cream/95 backdrop-blur-md border-b border-[rgba(26,61,43,0.08)]">
         <div className="max-w-[1100px] mx-auto px-6 h-[72px] flex items-center gap-8">
           <Link href="/" className="transition-opacity hover:opacity-80 shrink-0">
             <Logo size="md" />
           </Link>
 
-          <div className="hidden md:flex items-center gap-1.5 flex-1 text-[14px] font-medium text-gray-500">
+          <div className="hidden md:flex items-center gap-1.5 flex-1 text-[14px] font-medium text-[#6B7B6E]">
             {NAV_LINKS.map(({ href, label, icon: Icon }) => {
               const active = pathname === href || (href !== "/dashboard" && pathname.startsWith(href));
               return (
                 <Link key={href} href={href}
                   className={cn(
                     "relative flex items-center gap-2 px-4 py-2 rounded-full transition-all duration-200",
-                    active ? "bg-gray-900 text-white shadow-sm" : "hover:bg-gray-50 hover:text-gray-900"
+                    active ? "bg-forest-600 text-cream shadow-md" : "hover:bg-forest-50 hover:text-forest-700"
                   )}>
-                  <Icon className={cn("size-4", active ? "text-white" : "text-gray-400")} />
+                  <Icon className={cn("size-4", active ? "text-cream" : "text-forest-400")} />
                   {label}
                   {href === "/notifications" && unreadCount > 0 && (
-                    <span className={cn("ml-1 px-2 py-0.5 rounded-full text-[11px] font-bold leading-none", active ? "bg-white/20 text-white" : "bg-red-100 text-red-700")}>
+                    <span className={cn("ml-1 px-2 py-0.5 rounded-full text-[11px] font-bold leading-none", active ? "bg-amber-500 text-[#0F2419]" : "bg-amber-100 text-amber-700")}>
                       {unreadCount}
                     </span>
                   )}
@@ -59,17 +59,17 @@ export function DashboardNav({ userName, unreadCount }: DashboardNavProps) {
 
           {/* User info */}
           <div className="hidden md:flex items-center gap-4">
-            <div className="h-8 w-px bg-gray-100" />
-            <span className="text-[14px] font-semibold text-gray-900 capitalize">{firstName}</span>
+            <div className="h-8 w-px bg-[rgba(26,61,43,0.1)]" />
+            <span className="text-[14px] font-semibold text-forest-700 capitalize">{firstName}</span>
             <Link href="/api/auth/signout"
-              className="h-9 w-9 rounded-full flex items-center justify-center text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+              className="h-9 w-9 rounded-full flex items-center justify-center text-forest-400 hover:text-red-600 hover:bg-red-50 transition-colors"
               title="Sign out">
               <LogOut className="size-4" />
             </Link>
           </div>
 
           <button onClick={() => setMobileOpen(!mobileOpen)}
-            className="md:hidden p-2.5 rounded-full text-gray-600 hover:bg-gray-50 transition-colors">
+            className="md:hidden p-2.5 rounded-full text-forest-600 hover:bg-forest-50 transition-colors">
             {mobileOpen ? <X className="size-5" /> : <Menu className="size-5" />}
           </button>
         </div>
@@ -77,22 +77,22 @@ export function DashboardNav({ userName, unreadCount }: DashboardNavProps) {
 
       {mobileOpen && (
         <div className="fixed inset-0 z-40 md:hidden" onClick={() => setMobileOpen(false)}>
-          <div className="absolute inset-0 bg-gray-900/10 backdrop-blur-sm" />
-          <div className="absolute top-[72px] left-0 right-0 bg-white border-b border-gray-100 shadow-2xl rounded-b-3xl overflow-hidden" onClick={e => e.stopPropagation()}>
+          <div className="absolute inset-0 bg-forest-900/10 backdrop-blur-sm" />
+          <div className="absolute top-[72px] left-0 right-0 bg-cream border-b border-[rgba(26,61,43,0.08)] shadow-2xl rounded-b-3xl overflow-hidden" onClick={e => e.stopPropagation()}>
             <div className="p-6 space-y-2">
               {NAV_LINKS.map(({ href, label, icon: Icon }) => {
                 const active = pathname === href;
                 return (
                   <Link key={href} href={href} onClick={() => setMobileOpen(false)}
                     className={cn("flex items-center gap-4 px-5 py-3.5 rounded-2xl text-[15px] font-semibold transition-all",
-                      active ? "bg-gray-900 text-white" : "text-gray-600 hover:bg-gray-50 hover:text-gray-900")}>
-                    <Icon className={cn("size-5", active ? "text-white" : "text-gray-400")} />{label}
+                      active ? "bg-forest-600 text-cream" : "text-forest-600 hover:bg-forest-50")}>
+                    <Icon className={cn("size-5", active ? "text-cream" : "text-forest-400")} />{label}
                   </Link>
                 );
               })}
             </div>
-            <div className="bg-gray-50 p-6 flex items-center justify-between">
-              <span className="text-[15px] font-semibold text-gray-900 capitalize">{firstName}</span>
+            <div className="bg-forest-50/50 p-6 flex items-center justify-between">
+              <span className="text-[15px] font-semibold text-forest-700 capitalize">{firstName}</span>
               <Link href="/api/auth/signout" className="h-11 w-11 flex items-center justify-center text-red-600 hover:bg-white rounded-full transition-colors">
                 <LogOut className="size-5" />
               </Link>
