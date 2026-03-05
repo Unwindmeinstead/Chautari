@@ -53,34 +53,49 @@ export default function HomePage() {
   const [navDark, setNavDark] = React.useState(false);
   const [mobileMenu, setMobileMenu] = React.useState(false);
   const [authUser, setAuthUser] = React.useState<{ name: string; email: string } | null>(null);
+  const [authLoading, setAuthLoading] = React.useState(true);
 
   // Check auth state on mount and listen for changes
   React.useEffect(() => {
     const supabase = createClient();
 
     const getUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        const name = (user.user_metadata?.full_name as string) ?? user.email?.split('@')[0] ?? 'Account';
-        setAuthUser({ name: name.split(' ')[0], email: user.email ?? '' });
-      } else {
-        setAuthUser(null);
-      }
-    };
-
-    getUser();
-
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      const { data: { session } } = await supabase.auth.getSession();
       if (session?.user) {
         const name = (session.user.user_metadata?.full_name as string) ?? session.user.email?.split('@')[0] ?? 'Account';
         setAuthUser({ name: name.split(' ')[0], email: session.user.email ?? '' });
       } else {
         setAuthUser(null);
       }
+      setAuthLoading(false);
+    };
+
+    getUser();
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === "SIGNED_IN" || event === "SIGNED_OUT" || event === "TOKEN_REFRESHED") {
+        if (session?.user) {
+          const name = (session.user.user_metadata?.full_name as string) ?? session.user.email?.split('@')[0] ?? 'Account';
+          setAuthUser({ name: name.split(' ')[0], email: session.user.email ?? '' });
+        } else {
+          setAuthUser(null);
+        }
+      }
     });
 
-    return () => subscription.unsubscribe();
+    // Also check auth when page becomes visible (e.g., after switching tabs)
+    const handleVisibility = () => {
+      if (document.visibilityState === "visible") {
+        getUser();
+      }
+    };
+    document.addEventListener("visibilitychange", handleVisibility);
+
+    return () => {
+      subscription.unsubscribe();
+      document.removeEventListener("visibilitychange", handleVisibility);
+    };
   }, []);
 
   React.useEffect(() => {
@@ -198,11 +213,11 @@ export default function HomePage() {
             ))}
           </div>
           <div className="flex items-center gap-2 lg:gap-3">
-            {authUser ? (
+            {!authLoading && authUser ? (
               <Link href="/dashboard" className={`text-[13px] lg:text-[14px] font-semibold no-underline transition-colors ${navDark ? "text-cream hover:text-cream" : "text-forest-600 hover:text-forest-800"}`}>{authUser.name}</Link>
-            ) : (
+            ) : !authLoading ? (
               <Link href="/auth/login" className={`text-[13px] font-medium no-underline transition-colors px-3 lg:px-4 py-1.5 lg:py-2 rounded-full ${navDark ? "text-cream hover:bg-white/10" : "text-forest-600 hover:bg-forest-50"}`}>Sign in</Link>
-            )}
+            ) : null}
             <Link href="/auth/register" className={`text-[12px] lg:text-[13px] font-medium tracking-wide px-4 lg:px-5 py-1.5 lg:py-2 rounded-full no-underline transition-all hover:-translate-y-px ${navDark ? "bg-amber-500 text-[#0F2419]" : "bg-forest-600 text-cream"}`} style={{ boxShadow: "0 8px 24px rgba(26,61,43,0.15)" }}>
               Start for free
             </Link>
@@ -216,7 +231,7 @@ export default function HomePage() {
           {mobileMenu && (
             <div className="absolute top-[68px] left-0 right-0 bg-cream border-b border-forest-100 px-6 py-4 space-y-3 lg:hidden">
               {[["#how-it-works", "How it works"], ["#agencies", "Find agencies"], ["#rights", "Your rights"], ["#faq", "FAQ"],
-              ...(authUser ? [["/dashboard", authUser.name]] : [["/auth/login", "Sign in"]])].map(([h, l]) => (
+              ...(!authLoading && authUser ? [["/dashboard", authUser.name]] : !authLoading ? [["/auth/login", "Sign in"]] : [])].map(([h, l]) => (
                 <Link key={h} href={h} onClick={(e) => { if (h.startsWith('#')) { e.preventDefault(); const element = document.querySelector(h); if (element) { element.scrollIntoView({ behavior: 'smooth' }); } } setMobileMenu(false); }} className="block py-2 text-forest-600 font-medium text-sm">{l}</Link>
               ))}
             </div>
