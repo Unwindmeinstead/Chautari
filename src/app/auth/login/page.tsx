@@ -69,13 +69,21 @@ export default function LoginPage() {
     setLoading(true);
     setError(null);
 
-    const { error: err } = await supabase.auth.signInWithOAuth({
+    const { data, error: err } = await supabase.auth.signInWithOAuth({
       provider: "google",
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback`,
+      },
     });
 
     if (err) {
       setError(err.message);
       setLoading(false);
+      return;
+    }
+
+    if (data.url) {
+      window.location.href = data.url;
     }
   };
 
