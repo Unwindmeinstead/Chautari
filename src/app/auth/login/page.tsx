@@ -69,21 +69,32 @@ export default function LoginPage() {
     setLoading(true);
     setError(null);
 
-    const { data, error: err } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
-      },
-    });
+    try {
+      const { data, error: err } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+          queryParams: {
+            access_type: "offline",
+            prompt: "consent",
+          },
+        },
+      });
 
-    if (err) {
-      setError(err.message);
+      if (err) {
+        setError(err.message);
+        setLoading(false);
+        return;
+      }
+
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        setLoading(false);
+      }
+    } catch (e: any) {
+      setError(e.message || "Google sign in failed");
       setLoading(false);
-      return;
-    }
-
-    if (data.url) {
-      window.location.href = data.url;
     }
   };
 
