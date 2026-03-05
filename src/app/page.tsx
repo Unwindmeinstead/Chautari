@@ -165,7 +165,7 @@ export default function HomePage() {
 
         {/* ═══════════════════  NAV  ═══════════════════════════════════════════ */}
         <nav
-          className={`fixed top-0 left-0 right-0 z-[200] h-[68px] flex items-center justify-between px-6 md:px-12 transition-all duration-400 border-b ${navDark
+          className={`fixed top-0 left-0 right-0 z-[200] h-[68px] flex items-center justify-between px-6 lg:px-12 transition-all duration-400 border-b ${navDark
             ? "bg-[#0F2419]/97 border-transparent"
             : "bg-cream/90 border-[rgba(26,61,43,0.08)]"
             }`}
@@ -174,29 +174,29 @@ export default function HomePage() {
           <Link href="/" className="transition-colors">
             <Logo size="md" />
           </Link>
-          <div className="hidden md:flex items-center gap-8">
+          <div className="hidden lg:flex items-center gap-6">
             {[["#how-it-works", "How it works"], ["#agencies", "Find agencies"], ["#rights", "Your rights"], ["#faq", "FAQ"]].map(([href, label]) => (
-              <Link key={href} href={href} onClick={(e) => handleSmoothScroll(e, href)} className={`text-[14px] font-medium no-underline transition-colors cursor-pointer ${navDark ? "text-cream/90 hover:text-cream" : "text-[#3D5A45] hover:text-forest-600"}`}>{label}</Link>
+              <Link key={href} href={href} onClick={(e) => handleSmoothScroll(e, href)} className={`text-[13px] font-medium no-underline transition-colors cursor-pointer ${navDark ? "text-cream/90 hover:text-cream" : "text-[#3D5A45] hover:text-forest-600"}`}>{label}</Link>
             ))}
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 lg:gap-3">
             {authUser ? (
-              <Link href="/dashboard" className={`text-[14px] font-semibold no-underline transition-colors hidden sm:inline ${navDark ? "text-cream hover:text-cream" : "text-forest-600 hover:text-forest-800"}`}>{authUser.name}</Link>
+              <Link href="/dashboard" className={`text-[13px] lg:text-[14px] font-semibold no-underline transition-colors ${navDark ? "text-cream hover:text-cream" : "text-forest-600 hover:text-forest-800"}`}>{authUser.name}</Link>
             ) : (
-              <Link href="/auth/login" className={`text-[14px] font-medium no-underline transition-colors hidden sm:inline px-4 py-2 rounded-full ${navDark ? "text-cream hover:bg-white/10" : "text-forest-600 hover:bg-forest-50"}`}>Sign in</Link>
+              <Link href="/auth/login" className={`text-[13px] font-medium no-underline transition-colors px-3 lg:px-4 py-1.5 lg:py-2 rounded-full ${navDark ? "text-cream hover:bg-white/10" : "text-forest-600 hover:bg-forest-50"}`}>Sign in</Link>
             )}
-            <Link href="/auth/register" className={`text-[13px] font-medium tracking-wide px-5 py-2 rounded-full no-underline transition-all hover:-translate-y-px ${navDark ? "bg-amber-500 text-[#0F2419]" : "bg-forest-600 text-cream"}`} style={{ boxShadow: "0 8px 24px rgba(26,61,43,0.15)" }}>
+            <Link href="/auth/register" className={`text-[12px] lg:text-[13px] font-medium tracking-wide px-4 lg:px-5 py-1.5 lg:py-2 rounded-full no-underline transition-all hover:-translate-y-px ${navDark ? "bg-amber-500 text-[#0F2419]" : "bg-forest-600 text-cream"}`} style={{ boxShadow: "0 8px 24px rgba(26,61,43,0.15)" }}>
               Start for free
             </Link>
             {/* Mobile toggle */}
-            <button onClick={() => setMobileMenu(!mobileMenu)} className="md:hidden p-2 rounded-lg" aria-label="Menu">
+            <button onClick={() => setMobileMenu(!mobileMenu)} className="lg:hidden p-2 rounded-lg" aria-label="Menu">
               <svg className="w-5 h-5" fill="none" stroke={navDark ? "#FFF8E7" : "#1A3D2B"} viewBox="0 0 24 24">
                 {mobileMenu ? <path strokeLinecap="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /> : <path strokeLinecap="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />}
               </svg>
             </button>
           </div>
           {mobileMenu && (
-            <div className="absolute top-[68px] left-0 right-0 bg-cream border-b border-forest-100 px-6 py-4 space-y-3 md:hidden">
+            <div className="absolute top-[68px] left-0 right-0 bg-cream border-b border-forest-100 px-6 py-4 space-y-3 lg:hidden">
               {[["#how-it-works", "How it works"], ["#agencies", "Find agencies"], ["#rights", "Your rights"], ["#faq", "FAQ"],
               ...(authUser ? [["/dashboard", authUser.name]] : [["/auth/login", "Sign in"]])].map(([h, l]) => (
                 <Link key={h} href={h} onClick={(e) => { if (h.startsWith('#')) { e.preventDefault(); const element = document.querySelector(h); if (element) { element.scrollIntoView({ behavior: 'smooth' }); } } setMobileMenu(false); }} className="block py-2 text-forest-600 font-medium text-sm">{l}</Link>
