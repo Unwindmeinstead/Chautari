@@ -176,14 +176,14 @@ export default function HomePage() {
           </Link>
           <div className="hidden md:flex items-center gap-8">
             {[["#how-it-works", "How it works"], ["#agencies", "Find agencies"], ["#rights", "Your rights"], ["#faq", "FAQ"]].map(([href, label]) => (
-              <Link key={href} href={href} onClick={(e) => handleSmoothScroll(e, href)} className={`text-[13px] no-underline transition-colors cursor-pointer ${navDark ? "text-cream/55 hover:text-cream" : "text-[#6B7B6E] hover:text-forest-600"}`}>{label}</Link>
+              <Link key={href} href={href} onClick={(e) => handleSmoothScroll(e, href)} className={`text-[14px] font-medium no-underline transition-colors cursor-pointer ${navDark ? "text-cream/90 hover:text-cream" : "text-[#3D5A45] hover:text-forest-600"}`}>{label}</Link>
             ))}
           </div>
           <div className="flex items-center gap-3">
             {authUser ? (
-              <Link href="/dashboard" className={`text-[13px] font-semibold no-underline transition-colors hidden sm:inline ${navDark ? "text-cream/70 hover:text-cream" : "text-forest-600 hover:text-forest-800"}`}>{authUser.name}</Link>
+              <Link href="/dashboard" className={`text-[14px] font-semibold no-underline transition-colors hidden sm:inline ${navDark ? "text-cream hover:text-cream" : "text-forest-600 hover:text-forest-800"}`}>{authUser.name}</Link>
             ) : (
-              <Link href="/auth/login" className={`text-[13px] no-underline transition-colors hidden sm:inline ${navDark ? "text-cream/45 hover:text-cream" : "text-[#6B7B6E] hover:text-forest-600"}`}>Sign in</Link>
+              <Link href="/auth/login" className={`text-[14px] font-medium no-underline transition-colors hidden sm:inline px-4 py-2 rounded-full ${navDark ? "text-cream hover:bg-white/10" : "text-forest-600 hover:bg-forest-50"}`}>Sign in</Link>
             )}
             <Link href="/auth/register" className={`text-[13px] font-medium tracking-wide px-5 py-2 rounded-full no-underline transition-all hover:-translate-y-px ${navDark ? "bg-amber-500 text-[#0F2419]" : "bg-forest-600 text-cream"}`} style={{ boxShadow: "0 8px 24px rgba(26,61,43,0.15)" }}>
               Start for free
