@@ -2,10 +2,10 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   LayoutDashboard, Building2, Users, ArrowLeftRight,
-  Shield, LogOut, Settings, Bell, Zap,
+  Shield, LogOut, Settings, Bell, Zap, Eye,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -24,8 +24,22 @@ export const ADMIN_UTIL_NAV = [
 
 export function AdminSidebar({ adminName }: { adminName: string }) {
   const pathname = usePathname();
+  const router = useRouter();
+  const [switching, setSwitching] = React.useState(false);
   const isActive = (href: string, exact?: boolean) =>
     exact ? pathname === href : pathname.startsWith(href);
+
+  async function switchView(role: string) {
+    setSwitching(true);
+    const res = await fetch("/api/admin/view-as", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ role }),
+    });
+    const { redirectTo } = await res.json();
+    router.push(redirectTo);
+    setSwitching(false);
+  }
 
   return (
     <aside
@@ -88,23 +102,44 @@ export function AdminSidebar({ adminName }: { adminName: string }) {
 
       <div className="mx-4 h-px" style={{ background: "rgba(255,255,255,0.08)" }} />
 
-      <div className="p-4">
-        <div className="flex items-center gap-2.5 px-2 py-2.5 rounded-xl" style={{ background: "rgba(255,255,255,0.05)" }}>
-          <div
-            className="h-7 w-7 rounded-full flex items-center justify-center shrink-0 text-[11px] font-bold text-white"
-            style={{ background: "rgba(255,255,255,0.15)" }}
-          >
-            {adminName[0]?.toUpperCase() ?? "A"}
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-[12px] font-semibold text-white truncate">{adminName}</p>
-            <p className="text-[10px] text-white/30">Super Admin</p>
-          </div>
-          <Link href="/api/auth/signout" title="Sign out"
-            className="h-6 w-6 flex items-center justify-center rounded-lg text-white/25 hover:text-red-400 hover:bg-red-500/10 transition-all duration-150">
-            <LogOut className="size-3" />
-          </Link>
+      {/* View As switcher */}
+      <div className="px-4 py-3">
+        <p className="text-[10px] font-bold tracking-widest uppercase text-white/20 mb-2 px-1">Preview as</p>
+        <div className="flex gap-1.5">
+          {[
+            { role: "patient", label: "Patient" },
+            { role: "agency", label: "Agency" },
+          ].map(({ role, label }) => (
+            <button
+              key={role}
+              onClick={() => switchView(role)}
+              disabled={switching}
+              className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-[11px] font-semibold text-white/40 hover:text-white/80 transition-all disabled:opacity-40"
+              style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.08)" }}
+            >
+              <Eye className="size-3" />
+              {label}
+            </button>
+          ))}
         </div>
+      </div>
+
+      <div className="mx-4 h-px" style={{ background: "rgba(255,255,255,0.08)" }} />
+      <div className="flex items-center gap-2.5 px-2 py-2.5 rounded-xl" style={{ background: "rgba(255,255,255,0.05)" }}>
+        <div
+          className="h-7 w-7 rounded-full flex items-center justify-center shrink-0 text-[11px] font-bold text-white"
+          style={{ background: "rgba(255,255,255,0.15)" }}
+        >
+          {adminName[0]?.toUpperCase() ?? "A"}
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="text-[12px] font-semibold text-white truncate">{adminName}</p>
+          <p className="text-[10px] text-white/30">Super Admin</p>
+        </div>
+        <Link href="/api/auth/signout" title="Sign out"
+          className="h-6 w-6 flex items-center justify-center rounded-lg text-white/25 hover:text-red-400 hover:bg-red-500/10 transition-all duration-150">
+          <LogOut className="size-3" />
+        </Link>
       </div>
     </aside>
   );

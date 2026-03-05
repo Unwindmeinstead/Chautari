@@ -1,9 +1,11 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
+import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { getAgencyPortalData, acceptSwitchRequest, denySwitchRequest } from "@/lib/agency-portal-actions";
 import { AgencyNav } from "@/components/agency/agency-nav";
+import { AdminPreviewBanner } from "@/components/admin/admin-preview-banner";
 import { AcceptingPatientsToggle } from "@/components/agency/accepting-patients-toggle";
 import {
   Activity,
@@ -56,7 +58,35 @@ export default async function AgencyDashboardPage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
-  const { agency, member, requests, stats } = await getAgencyPortalData();
+  const cookieStore = await cookies();
+  const viewAs = cookieStore.get("chautari_view_as")?.value;
+
+  let { agency, member, requests, stats } = await getAgencyPortalData();
+
+  // Admin preview mode — inject demo data so the UI renders fully
+  if (!agency && viewAs === "agency") {
+    agency = {
+      id: "preview",
+      name: "Demo Home Care Agency",
+      dba_name: "Demo Care",
+      address_city: "Pittsburgh",
+      address_state: "PA",
+      phone: "(412) 555-0100",
+      email: "demo@agency.com",
+      website: null,
+      care_types: ["home_health", "home_care"],
+      payers_accepted: ["medicaid", "medicare"],
+      services_offered: ["skilled_nursing", "home_health_aide", "personal_care"],
+      languages_spoken: ["English"],
+      service_counties: ["Allegheny"],
+      is_verified_partner: true,
+      is_accepting_patients: true,
+      average_response_time_hours: 4,
+      medicare_quality_score: 4.2,
+      pa_license_number: "PA-DEMO-001",
+    };
+    member = { id: "preview-member", role: "admin", title: "Agency Admin" };
+  }
 
   if (!agency || !member) {
     return (
@@ -126,6 +156,7 @@ export default async function AgencyDashboardPage() {
 
   return (
     <div className="min-h-screen bg-zinc-50 pb-28 md:pb-8">
+      {viewAs && <AdminPreviewBanner viewingAs={viewAs} />}
       <AgencyNav
         agencyName={agency.name}
         staffName={staffName}
