@@ -44,7 +44,7 @@ export function AdminSidebar({ adminName }: { adminName: string }) {
   return (
     <aside
       className="hidden lg:flex w-[250px] shrink-0 flex-col sticky top-0 h-screen overflow-hidden"
-      style={{ background: "#09090B", borderRight: "1px solid rgba(255,255,255,0.08)" }}
+      style={{ background: "#0D1117", borderRight: "1px solid rgba(148,163,184,0.1)" }}
     >
       <Link href="/admin" className="block px-5 pt-6 pb-5 hover:opacity-90 transition-opacity">
         <div className="flex items-center gap-2.5">
