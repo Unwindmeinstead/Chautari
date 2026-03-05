@@ -54,15 +54,33 @@ export default function HomePage() {
   const [mobileMenu, setMobileMenu] = React.useState(false);
   const [authUser, setAuthUser] = React.useState<{ name: string; email: string } | null>(null);
 
-  // Check auth state on mount
+  // Check auth state on mount and listen for changes
   React.useEffect(() => {
     const supabase = createClient();
-    supabase.auth.getUser().then(({ data: { user } }) => {
+
+    const getUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
       if (user) {
         const name = (user.user_metadata?.full_name as string) ?? user.email?.split('@')[0] ?? 'Account';
         setAuthUser({ name: name.split(' ')[0], email: user.email ?? '' });
+      } else {
+        setAuthUser(null);
+      }
+    };
+
+    getUser();
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (session?.user) {
+        const name = (session.user.user_metadata?.full_name as string) ?? session.user.email?.split('@')[0] ?? 'Account';
+        setAuthUser({ name: name.split(' ')[0], email: session.user.email ?? '' });
+      } else {
+        setAuthUser(null);
       }
     });
+
+    return () => subscription.unsubscribe();
   }, []);
 
   React.useEffect(() => {
