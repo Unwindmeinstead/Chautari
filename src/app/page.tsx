@@ -211,7 +211,7 @@ export default function HomePage() {
           <div className="flex flex-col justify-center px-8 sm:px-12 lg:px-20 py-16 lg:py-20 relative z-[2]">
             <div className="absolute top-[-200px] right-[-100px] w-[600px] h-[600px] rounded-full pointer-events-none" style={{ background: "radial-gradient(circle, rgba(232,147,58,0.06), transparent 70%)" }} />
 
-            <div className="inline-flex items-center gap-2.5 mb-8 font-mono text-[11px] font-medium tracking-[0.12em] uppercase text-amber-500">
+            <div className="inline-flex items-center gap-2.5 mb-8 font-mono text-[13px] font-medium tracking-[0.12em] uppercase text-amber-500">
               <span className="w-7 h-px bg-amber-500" />Serving Pennsylvania residents
             </div>
 
@@ -233,7 +233,7 @@ export default function HomePage() {
 
             <div className="flex items-center gap-7 flex-wrap pt-7 border-t border-[rgba(26,61,43,0.08)]">
               {["HIPAA compliant", "Free for patients to browse", "PA-verified agencies only", "English · नेपाली · हिन्दी"].map((t) => (
-                <div key={t} className="flex items-center gap-2 text-sm text-[#6B7B6E] font-medium">
+                <div key={t} className="flex items-center gap-2 text-[15px] text-[#6B7B6E] font-medium">
                   <div className="w-[5px] h-[5px] rounded-full bg-[#3D7A57] shrink-0" />{t}
                 </div>
               ))}
@@ -256,7 +256,7 @@ export default function HomePage() {
             <div className="absolute bottom-8 left-7 z-10 bg-cream/95 rounded-2xl p-4 px-5 flex items-center gap-3.5 min-w-[210px] shadow-modal" style={{ backdropFilter: "blur(8px)" }}>
               <div className="w-[38px] h-[38px] rounded-[10px] bg-[rgba(26,61,43,0.08)] flex items-center justify-center shrink-0"><Building2 className="w-5 h-5 text-forest-600" /></div>
               <div>
-                <div className="text-[10px] font-medium text-[#6B7B6E] tracking-[0.04em] uppercase">Pittsburgh agencies</div>
+                <div className="text-[12px] font-medium text-[#6B7B6E] tracking-[0.04em] uppercase">Pittsburgh directory</div>
                 <div className="text-[17px] font-bold text-forest-600 leading-tight font-fraunces">27+ listed</div>
               </div>
             </div>
@@ -285,7 +285,7 @@ export default function HomePage() {
 
         {/* ═══════════════════  HOW IT WORKS  ═══════════════════════════════ */}
         <section className="py-20 lg:py-28 px-8 lg:px-20" id="how-it-works">
-          <div className="inline-flex items-center gap-2.5 font-mono text-[11px] font-medium tracking-[0.12em] uppercase text-amber-500 mb-5">
+          <div className="inline-flex items-center gap-2.5 font-mono text-[13px] font-medium tracking-[0.12em] uppercase text-amber-500 mb-5">
             Simple process<span className="w-8 h-px bg-amber-500" />
           </div>
           <h2 className="font-fraunces text-[clamp(40px,4.5vw,62px)] font-bold leading-[1.05] tracking-[-1.5px] text-forest-600 reveal">
@@ -384,7 +384,7 @@ export default function HomePage() {
         {/* ═══════════════════  YOUR RIGHTS  ═══════════════════════════════ */}
         <section className="bg-[#F5EDDA] grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24 items-center py-20 lg:py-28 px-8 lg:px-20" id="rights">
           <div className="reveal">
-            <div className="inline-flex items-center gap-2.5 font-mono text-[11px] font-medium tracking-[0.12em] uppercase text-amber-500 mb-5">Federal law<span className="w-8 h-px bg-amber-500" /></div>
+            <div className="inline-flex items-center gap-2.5 font-mono text-[13px] font-medium tracking-[0.12em] uppercase text-amber-500 mb-5">Federal law<span className="w-8 h-px bg-amber-500" /></div>
             <h2 className="font-fraunces text-[52px] font-bold tracking-[-1.5px] leading-[1.05] text-forest-600 mb-5">Switching is<br />your <em className="italic text-amber-500">right.</em></h2>
             <p className="text-[16px] font-light leading-[1.75] text-[#6B7B6E] mb-9">Under Medicare&apos;s Conditions of Participation, you can change your home health agency at any time, for any reason — or no reason at all.</p>
             <div className="flex flex-col gap-3">
@@ -414,7 +414,7 @@ export default function HomePage() {
 
         {/* ═══════════════════  WHO WE SERVE  ═══════════════════════════════ */}
         <section className="py-20 lg:py-28 px-8 lg:px-20">
-          <div className="inline-flex items-center gap-2.5 font-mono text-[11px] font-medium tracking-[0.12em] uppercase text-amber-500 mb-5">Who we serve<span className="w-8 h-px bg-amber-500" /></div>
+          <div className="inline-flex items-center gap-2.5 font-mono text-[13px] font-medium tracking-[0.12em] uppercase text-amber-500 mb-5">Who we serve<span className="w-8 h-px bg-amber-500" /></div>
           <h2 className="font-fraunces text-[clamp(40px,4.5vw,62px)] font-bold leading-[1.05] tracking-[-1.5px] text-forest-600 reveal">Built for<br />Pennsylvania families.</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mt-14">
             {[
@@ -437,7 +437,7 @@ export default function HomePage() {
 
         {/* ═══════════════════  TESTIMONIALS  ═══════════════════════════════ */}
         <section className="bg-forest-600 py-20 lg:py-28 px-8 lg:px-20">
-          <div className="inline-flex items-center gap-2.5 font-mono text-[11px] font-medium tracking-[0.12em] uppercase text-amber-300 mb-5">Real stories<span className="w-8 h-px bg-amber-300" /></div>
+          <div className="inline-flex items-center gap-2.5 font-mono text-[13px] font-medium tracking-[0.12em] uppercase text-amber-300 mb-5">Real stories<span className="w-8 h-px bg-amber-300" /></div>
           <h2 className="font-fraunces text-[clamp(40px,4.5vw,62px)] font-bold leading-[1.05] tracking-[-1.5px] text-cream mb-14 reveal">Families trust<br />SwitchMyCare.</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {[
@@ -465,7 +465,7 @@ export default function HomePage() {
         {/* ═══════════════════  FAQ  ═══════════════════════════════════════ */}
         <section className="bg-[#F5EDDA] grid grid-cols-1 lg:grid-cols-[340px_1fr] gap-16 lg:gap-24 py-20 lg:py-28 px-8 lg:px-20" id="faq">
           <div className="reveal">
-            <div className="inline-flex items-center gap-2.5 font-mono text-[11px] font-medium tracking-[0.12em] uppercase text-amber-500 mb-5">Common questions<span className="w-8 h-px bg-amber-500" /></div>
+            <div className="inline-flex items-center gap-2.5 font-mono text-[13px] font-medium tracking-[0.12em] uppercase text-amber-500 mb-5">Common questions<span className="w-8 h-px bg-amber-500" /></div>
             <h2 className="font-fraunces text-[clamp(36px,4vw,52px)] font-bold leading-[1.05] tracking-[-1.5px] text-forest-600 mb-4">We're here<br />to help.</h2>
             <p className="text-[15px] font-light text-[#6B7B6E] leading-[1.75] mt-4">Need assistance? Our team is here for you. Call <a href="tel:+14125551234" className="text-forest-600 font-medium no-underline">(412) 555-1234</a></p>
           </div>
