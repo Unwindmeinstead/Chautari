@@ -1,104 +1,121 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import * as React from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { ArrowRight, Eye, EyeOff, Lock, Mail } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
 type AuthMode = "password" | "magic";
 
 export default function LoginPage() {
-  const router = useRouter();
-  const [mode, setMode] = useState<AuthMode>("password");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
+  const searchParams = useSearchParams();
+  const redirectedFrom = searchParams.get("redirectedFrom");
+  const message = searchParams.get("message");
 
-  const supabase = createClient();
+  const supabase = React.useMemo(() => createClient(), []);
 
-  useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === "SIGNED_IN" && session) {
-        router.push("/dashboard");
-      }
-    });
+  const [mode, setMode] = React.useState<AuthMode>("password");
+  const [showPassword, setShowPassword] = React.useState(false);
+  const [loading, setLoading] = React.useState(false);
+  const [error, setError] = React.useState<string | null>(null);
+  const [success, setSuccess] = React.useState<string | null>(null);
 
-    return () => subscription.unsubscribe();
-  }, [supabase, router]);
+  const completeClientRedirect = React.useCallback(() => {
+    // Navigate to /dashboard — the middleware reads the role from the DB
+    // and immediately redirects admins to /admin, agency users to /agency/dashboard, etc.
+    // This avoids the race condition where the session cookie isn't yet sent to
+    // the server when we fetch /api/auth/redirect-path right after signInWithPassword.
+    const destination = (redirectedFrom && redirectedFrom.startsWith("/") && !redirectedFrom.startsWith("/auth/"))
+      ? redirectedFrom
+      : "/dashboard";
+    window.location.assign(destination);
+  }, [redirectedFrom]);
 
-  const handlePasswordSignIn = async (e: React.FormEvent) => {
-    e.preventDefault();
+  async function handlePasswordSignIn(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
     setLoading(true);
     setError(null);
+    setSuccess(null);
 
-    const { error: err } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+    const formData = new FormData(event.currentTarget);
+    const email = String(formData.get("email") ?? "").trim();
+    const password = String(formData.get("password") ?? "");
 
-    setLoading(false);
+    const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
 
-    if (err) {
-      setError(err.message);
-    }
-  };
-
-  const handleMagicLink = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError(null);
-
-    const { error: err } = await supabase.auth.signInWithOtp({
-      email,
-    });
-
-    setLoading(false);
-
-    if (err) {
-      setError(err.message);
-    } else {
-      setSuccess("Check your email for your secure sign-in link.");
-    }
-  };
-
-  const handleGoogle = async () => {
-    setLoading(true);
-    setError(null);
-
-    try {
-      const { data, error: err } = await supabase.auth.signInWithOAuth({
-        provider: "google",
-        options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
-          queryParams: {
-            access_type: "offline",
-            prompt: "consent",
-          },
-        },
-      });
-
-      if (err) {
-        setError(err.message);
-        setLoading(false);
-        return;
-      }
-
-      if (data.url) {
-        window.location.href = data.url;
-      } else {
-        setLoading(false);
-      }
-    } catch (e: any) {
-      setError(e.message || "Google sign in failed");
+    if (signInError) {
+      setError(signInError.message);
       setLoading(false);
+      return;
     }
-  };
 
-  const handleSubmit = mode === "password" ? handlePasswordSignIn : handleMagicLink;
+    completeClientRedirect();
+  }
+
+  async function handleMagicLink(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setLoading(true);
+    setError(null);
+    setSuccess(null);
+
+    const formData = new FormData(event.currentTarget);
+    const email = String(formData.get("email") ?? "").trim();
+
+    const safeNext = redirectedFrom && redirectedFrom.startsWith("/") && !redirectedFrom.startsWith("/auth/")
+      ? redirectedFrom
+      : "/dashboard";
+
+    const { error: otpError } = await supabase.auth.signInWithOtp({
+      email,
+      options: {
+        emailRedirectTo: `${window.location.origin}/api/auth/callback?next=${encodeURIComponent(safeNext)}`,
+      },
+    });
+
+    if (otpError) {
+      setError(otpError.message);
+      setLoading(false);
+      return;
+    }
+
+    setSuccess("Check your email for your secure sign-in link.");
+    setLoading(false);
+  }
+
+  async function handleGoogle() {
+    setLoading(true);
+    setError(null);
+    setSuccess(null);
+
+    const safeNext = redirectedFrom && redirectedFrom.startsWith("/") && !redirectedFrom.startsWith("/auth/")
+      ? redirectedFrom
+      : "/dashboard";
+
+    const { data, error: googleError } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: `${window.location.origin}/api/auth/callback?next=${encodeURIComponent(safeNext)}`,
+        queryParams: {
+          access_type: "offline",
+          prompt: "consent",
+        },
+      },
+    });
+
+    if (googleError) {
+      setError(googleError.message);
+      setLoading(false);
+      return;
+    }
+
+    if (data.url) {
+      window.location.assign(data.url);
+      return;
+    }
+
+    setLoading(false);
+  }
 
   return (
     <div className="space-y-7">
@@ -116,6 +133,11 @@ export default function LoginPage() {
         </p>
       </div>
 
+      {message && (
+        <div className="rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
+          {message}
+        </div>
+      )}
       {error && (
         <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
           {error}
@@ -152,28 +174,26 @@ export default function LoginPage() {
         <button
           type="button"
           onClick={() => setMode("password")}
-          className={`flex-1 rounded-xl px-4 py-2.5 text-[13px] font-medium transition-all duration-200 ${
-            mode === "password"
+          className={`flex-1 rounded-xl px-4 py-2.5 text-[13px] font-medium transition-all duration-200 ${mode === "password"
               ? "bg-forest-600 text-cream shadow-md"
               : "text-[#6B7B6E] hover:bg-white/50 hover:text-forest-600"
-          }`}
+            }`}
         >
           Password
         </button>
         <button
           type="button"
           onClick={() => setMode("magic")}
-          className={`flex-1 rounded-xl px-4 py-2.5 text-[13px] font-medium transition-all duration-200 ${
-            mode === "magic"
+          className={`flex-1 rounded-xl px-4 py-2.5 text-[13px] font-medium transition-all duration-200 ${mode === "magic"
               ? "bg-forest-600 text-cream shadow-md"
               : "text-[#6B7B6E] hover:bg-white/50 hover:text-forest-600"
-          }`}
+            }`}
         >
           Magic link
         </button>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-5">
+      <form onSubmit={mode === "password" ? handlePasswordSignIn : handleMagicLink} className="space-y-5">
         <div className="space-y-1.5">
           <label className="ml-1 text-[13px] font-medium text-forest-600">Email address</label>
           <div className="relative">
@@ -186,8 +206,6 @@ export default function LoginPage() {
               autoComplete="email"
               required
               placeholder="you@example.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
               className="w-full rounded-2xl border border-[rgba(26,61,43,0.1)] bg-white py-3.5 pl-12 pr-4 text-[15px] text-forest-800 placeholder:text-forest-300 transition-all focus:border-forest-400 focus:outline-none focus:ring-2 focus:ring-forest-100"
             />
           </div>
@@ -206,8 +224,6 @@ export default function LoginPage() {
                 autoComplete="current-password"
                 required
                 placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
                 className="w-full rounded-2xl border border-[rgba(26,61,43,0.1)] bg-white py-3.5 pl-12 pr-14 text-[15px] text-forest-800 placeholder:text-forest-300 transition-all focus:border-forest-400 focus:outline-none focus:ring-2 focus:ring-forest-100"
               />
               <button

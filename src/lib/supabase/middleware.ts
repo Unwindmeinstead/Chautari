@@ -19,9 +19,10 @@ export async function updateSession(request: NextRequest) {
     "/privacy",
     "/terms",
     "/hipaa",
+    "/api/auth/",
   ];
   const isPublicRoute = publicRoutePrefixes.some((route) =>
-    route === "/" ? pathname === "/" : pathname === route || pathname.startsWith(`${route}/`)
+    route === "/" ? pathname === "/" : pathname === route || pathname.startsWith(route.endsWith("/") ? route : `${route}/`)
   );
 
   // Keep all auth pages public
