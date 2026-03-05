@@ -1,6 +1,5 @@
 import type { UserRole } from "@/types/database";
 import type { User } from "@supabase/supabase-js";
-import { createServiceClient } from "@/lib/supabase/service";
 
 export function getRouteForRole(role: UserRole | null | undefined): string {
   if (role === "agency_staff" || role === "agency_admin") return "/agency/dashboard";
@@ -8,16 +7,16 @@ export function getRouteForRole(role: UserRole | null | undefined): string {
   return "/dashboard";
 }
 
-export async function getUserRedirectPath(_supabase: any, user: User): Promise<string> {
-  // Use the service client so RLS never blocks this lookup.
-  // The anon/publishable key can fail to read profiles depending on RLS policies,
-  // causing everyone to fall back to /dashboard regardless of their actual role.
-  const service = createServiceClient();
-  const { data: profile } = await service
+export async function getUserRedirectPath(supabase: any, user: User): Promise<string> {
+  const { data: profile, error } = await supabase
     .from("profiles")
     .select("role")
     .eq("id", user.id)
     .maybeSingle();
+
+  if (error) {
+    console.error("[getUserRedirectPath] profile lookup failed:", error.message);
+  }
 
   return getRouteForRole((profile?.role as UserRole | null | undefined) ?? null);
 }
