@@ -61,9 +61,21 @@ export default function HomePage() {
 
     const getUser = async () => {
       const { data: { session } } = await supabase.auth.getSession();
+      
+      // Also check localStorage as backup
+      const storedUser = typeof window !== "undefined" ? localStorage.getItem("chautari_user") : null;
+      
       if (session?.user) {
         const name = (session.user.user_metadata?.full_name as string) ?? session.user.email?.split('@')[0] ?? 'Account';
-        setAuthUser({ name: name.split(' ')[0], email: session.user.email ?? '' });
+        const userData = { name: name.split(' ')[0], email: session.user.email ?? '' };
+        setAuthUser(userData);
+        localStorage.setItem("chautari_user", JSON.stringify(userData));
+      } else if (storedUser) {
+        try {
+          setAuthUser(JSON.parse(storedUser));
+        } catch {
+          setAuthUser(null);
+        }
       } else {
         setAuthUser(null);
       }
@@ -77,14 +89,17 @@ export default function HomePage() {
       if (event === "SIGNED_IN" || event === "SIGNED_OUT" || event === "TOKEN_REFRESHED") {
         if (session?.user) {
           const name = (session.user.user_metadata?.full_name as string) ?? session.user.email?.split('@')[0] ?? 'Account';
-          setAuthUser({ name: name.split(' ')[0], email: session.user.email ?? '' });
-        } else {
+          const userData = { name: name.split(' ')[0], email: session.user.email ?? '' };
+          setAuthUser(userData);
+          localStorage.setItem("chautari_user", JSON.stringify(userData));
+        } else if (event === "SIGNED_OUT") {
           setAuthUser(null);
+          localStorage.removeItem("chautari_user");
         }
       }
     });
 
-    // Also check auth when page becomes visible (e.g., after switching tabs)
+    // Also check auth when page becomes visible
     const handleVisibility = () => {
       if (document.visibilityState === "visible") {
         getUser();
