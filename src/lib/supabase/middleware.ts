@@ -32,7 +32,9 @@ export async function updateSession(request: NextRequest) {
   const supabaseUrl = getSupabaseUrl();
   const supabaseKey = getSupabasePublishableKey();
 
-  if (!supabaseUrl || !supabaseKey || !supabaseKey.startsWith("eyJ")) {
+  // Accept both legacy JWT anon keys (eyJ...) and newer publishable keys (sb_publishable_...)
+  const keyIsValid = supabaseKey?.startsWith("eyJ") || supabaseKey?.startsWith("sb_publishable_");
+  if (!supabaseUrl || !supabaseKey || !keyIsValid) {
     if (shouldTreatAsPublic) {
       return supabaseResponse;
     }

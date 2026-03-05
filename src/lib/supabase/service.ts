@@ -1,10 +1,11 @@
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "@/types/database";
+import { getSupabaseServiceRoleKey, getSupabaseUrl } from "@/lib/supabase/env";
 
 export function createServiceClient() {
     return createClient<Database>(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.SUPABASE_SERVICE_ROLE_KEY!, // add this to your .env.local
+        getSupabaseUrl()!,
+        getSupabaseServiceRoleKey()!,
         { auth: { autoRefreshToken: false, persistSession: false } }
     );
 }
