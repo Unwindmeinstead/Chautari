@@ -18,13 +18,8 @@ export function AgencyCard({ agency, highlighted = false, showSelectButton = fal
   const stars = agency.medicare_quality_score ?? null;
   const topLangs = agency.languages_spoken.slice(0, 3);
 
-  return (
-    <div className={cn(
-      "group rounded-2xl bg-white border transition-all duration-300 cursor-pointer relative overflow-hidden flex flex-col",
-      highlighted
-        ? "border-gray-900 shadow-xl shadow-gray-900/10"
-        : "border-gray-100 hover:border-gray-300 hover:shadow-lg hover:shadow-gray-900/5"
-    )}>
+  const cardContent = (
+    <>
       {/* Left accent on hover/highlight */}
       <div className={cn("absolute left-0 top-0 bottom-0 w-1 transition-transform duration-300 bg-gray-900",
         highlighted ? "translate-x-0" : "-translate-x-full group-hover:translate-x-0")} />
@@ -116,18 +111,38 @@ export function AgencyCard({ agency, highlighted = false, showSelectButton = fal
         <div className="hidden sm:block flex-1" />
         {showSelectButton && onSelect ? (
           <button
-            onClick={() => onSelect(agency)}
+            onClick={(e) => { e.preventDefault(); e.stopPropagation(); onSelect(agency); }}
             className="flex items-center justify-center gap-1.5 h-9 px-4 rounded-full bg-gray-900 text-white text-[12px] font-bold hover:bg-gray-800 transition-colors w-full sm:w-auto">
-            <Heart className="size-3.5" /> Select
+            <Heart className="size-3.5" /> Select this agency
           </button>
         ) : (
-          <Link href={`/agencies/${agency.id}`}
-            className="flex items-center justify-center gap-1.5 h-9 px-4 rounded-full border border-gray-200 text-[12px] font-bold text-gray-700 hover:border-gray-900 hover:text-gray-900 transition-all group/btn w-full sm:w-auto">
-            View details <ArrowUpRight className="size-3.5 group-hover/btn:text-gray-900 transition-colors" />
-          </Link>
+          <span className="flex items-center justify-center gap-1.5 h-9 px-4 rounded-full border border-gray-200 text-[12px] font-bold text-gray-700 group-hover:border-gray-900 group-hover:text-gray-900 transition-all w-full sm:w-auto">
+            View details <ArrowUpRight className="size-3.5" />
+          </span>
         )}
       </div>
-    </div>
+    </>
+  );
+
+  const baseClass = cn(
+    "group rounded-2xl bg-white border transition-all duration-300 cursor-pointer relative overflow-hidden flex flex-col",
+    highlighted
+      ? "border-gray-900 shadow-xl shadow-gray-900/10"
+      : "border-gray-100 hover:border-gray-300 hover:shadow-lg hover:shadow-gray-900/5"
+  );
+
+  if (showSelectButton && onSelect) {
+    return (
+      <div className={baseClass} onClick={() => onSelect(agency)}>
+        {cardContent}
+      </div>
+    );
+  }
+
+  return (
+    <Link href={`/agencies/${agency.id}`} className={baseClass}>
+      {cardContent}
+    </Link>
   );
 }
 

@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Fraunces, DM_Sans } from "next/font/google";
+import { Fraunces, Poppins } from "next/font/google";
 import { cookies } from "next/headers";
 import "@/styles/globals.css";
 import { ToastProvider, ToastViewport } from "@/components/ui/toast";
@@ -13,10 +13,10 @@ const fraunces = Fraunces({
   display: "swap",
 });
 
-const dmSans = DM_Sans({
-  variable: "--font-dm-sans",
+const poppins = Poppins({
+  variable: "--font-poppins",
   subsets: ["latin"],
-  weight: ["300", "400", "500", "600"],
+  weight: ["300", "400", "500", "600", "700"],
   display: "swap",
 });
 
@@ -58,7 +58,7 @@ export default async function RootLayout({
   const initialLang = (["en", "ne", "hi"].includes(langCookie ?? "") ? langCookie : "en") as Lang;
 
   return (
-    <html lang={initialLang} className={`${fraunces.variable} ${dmSans.variable}`}>
+    <html lang={initialLang} className={`${fraunces.variable} ${poppins.variable}`}>
       <body className="min-h-screen bg-cream font-sans antialiased">
         <I18nProvider initialLang={initialLang}>
           <ToastProvider>

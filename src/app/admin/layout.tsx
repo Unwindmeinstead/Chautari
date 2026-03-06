@@ -11,14 +11,16 @@ export default async function AdminLayout({
   children: React.ReactNode;
 }) {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user && !BYPASS_AUTH) redirect("/auth/login");
+  const { data: authData, error: authError } = await supabase.auth.getUser();
+  const user = authData?.user;
+
+  if ((!user || authError) && !BYPASS_AUTH) redirect("/auth/login");
 
   const { data } = await supabase
     .from("profiles")
     .select("role, full_name")
     .eq("id", user?.id ?? "")
-    .single();
+    .maybeSingle();
 
   const profile = data as { role: string; full_name: string | null } | null;
   if (!BYPASS_AUTH && profile?.role !== "switchmycare_admin") redirect("/dashboard");

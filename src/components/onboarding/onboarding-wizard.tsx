@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Logo } from "@/components/ui/logo";
 import { Stepper } from "@/components/ui/stepper";
-import { saveOnboardingData } from "@/lib/onboarding-actions";
+import { saveOnboardingData, saveOnboardingDraft } from "@/lib/onboarding-actions";
 import type { OnboardingData } from "@/lib/onboarding-schema";
 import { ONBOARDING_STEPS } from "@/lib/onboarding-schema";
 
@@ -22,19 +22,33 @@ const TOTAL_STEPS = 5;
 
 interface OnboardingWizardProps {
   userName?: string | null;
+  initialStep?: number;
+  initialData?: Partial<OnboardingData>;
 }
 
-export function OnboardingWizard({ userName }: OnboardingWizardProps) {
+export function OnboardingWizard({ userName, initialStep = 0, initialData }: OnboardingWizardProps) {
   const router = useRouter();
-  const [currentStep, setCurrentStep] = React.useState(0);
+  const [currentStep, setCurrentStep] = React.useState(initialStep);
   const [saving, setSaving] = React.useState(false);
+  const [savingDraft, setSavingDraft] = React.useState(false);
   const [saveError, setSaveError] = React.useState<string | null>(null);
   const [completed, setCompleted] = React.useState(false);
 
-  // Accumulated form data across steps
+  async function handleSaveAndExit() {
+    setSavingDraft(true);
+    const result = await saveOnboardingDraft(formData);
+    setSavingDraft(false);
+    if (result?.error) {
+      console.error("Draft save failed:", result.error);
+    }
+    router.push("/dashboard");
+  }
+
+  // Accumulated form data — seeded with any saved draft from the server
   const [formData, setFormData] = React.useState<Partial<OnboardingData>>({
     preferred_lang: "en",
     address_state: "PA",
+    ...initialData,
   });
 
   const progress = ((currentStep) / TOTAL_STEPS) * 100;
@@ -87,10 +101,11 @@ export function OnboardingWizard({ userName }: OnboardingWizardProps) {
           </div>
           <button
             type="button"
-            onClick={() => router.push("/dashboard")}
-            className="text-xs text-forest-400 hover:text-forest-600 transition-colors shrink-0"
+            onClick={handleSaveAndExit}
+            disabled={savingDraft}
+            className="text-xs text-forest-400 hover:text-forest-600 transition-colors shrink-0 disabled:opacity-50"
           >
-            Save & exit
+            {savingDraft ? "Saving…" : "Save & exit"}
           </button>
         </div>
       </div>

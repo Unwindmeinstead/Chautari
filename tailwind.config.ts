@@ -75,7 +75,7 @@ const config: Config = {
       },
       fontFamily: {
         fraunces: ["var(--font-fraunces)", "Georgia", "serif"],
-        sans: ["var(--font-dm-sans)", "system-ui", "sans-serif"],
+        sans: ["var(--font-poppins)", "system-ui", "sans-serif"],
       },
       fontSize: {
         "display-xl": ["4rem", { lineHeight: "1.1", fontWeight: "700" }],

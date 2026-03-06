@@ -26,12 +26,7 @@ export async function signInWithEmail(formData: FormData) {
     return { error: error.message };
   }
 
-  const { data: { user } } = await supabase.auth.getUser();
-  const requestedPath = safeNextPath(formData.get("redirectedFrom"));
-  const redirectPath = requestedPath ?? (user ? await getUserRedirectPath(supabase, user) : "/dashboard");
-
-  revalidatePath("/", "layout");
-  redirect(redirectPath);
+  return { success: true };
 }
 
 export async function signUpWithEmail(formData: FormData) {

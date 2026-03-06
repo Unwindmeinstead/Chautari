@@ -14,9 +14,7 @@ export async function GET(request: Request) {
   const requestedPath = safeNextPath(searchParams.get("redirectedFrom"));
 
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const { data: { user } } = await supabase.auth.getUser();
 
   if (!user) {
     return NextResponse.json({ redirectTo: "/auth/login" });

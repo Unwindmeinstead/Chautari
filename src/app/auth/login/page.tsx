@@ -21,29 +21,16 @@ export default function LoginPage() {
   const [error, setError] = React.useState<string | null>(null);
   const [success, setSuccess] = React.useState<string | null>(null);
 
-  const resolveRedirectPath = React.useCallback(async () => {
-    const params = new URLSearchParams();
-    if (redirectedFrom && redirectedFrom.startsWith("/") && !redirectedFrom.startsWith("/auth/")) {
-      params.set("redirectedFrom", redirectedFrom);
-    }
-
-    const response = await fetch(`/api/auth/redirect-path?${params.toString()}`, {
-      method: "GET",
-      cache: "no-store",
-    });
-
-    if (!response.ok) {
-      return "/dashboard";
-    }
-
-    const data = (await response.json()) as { redirectTo?: string };
-    return data.redirectTo && data.redirectTo.startsWith("/") ? data.redirectTo : "/dashboard";
+  const completeClientRedirect = React.useCallback(() => {
+    // Navigate to /dashboard — the middleware reads the role from the DB
+    // and immediately redirects admins to /admin, agency users to /agency/dashboard, etc.
+    // This avoids the race condition where the session cookie isn't yet sent to
+    // the server when we fetch /api/auth/redirect-path right after signInWithPassword.
+    const destination = (redirectedFrom && redirectedFrom.startsWith("/") && !redirectedFrom.startsWith("/auth/"))
+      ? redirectedFrom
+      : "/dashboard";
+    window.location.assign(destination);
   }, [redirectedFrom]);
-
-  const completeClientRedirect = React.useCallback(async () => {
-    const redirectTo = await resolveRedirectPath();
-    window.location.assign(redirectTo);
-  }, [resolveRedirectPath]);
 
   async function handlePasswordSignIn(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -63,7 +50,7 @@ export default function LoginPage() {
       return;
     }
 
-    await completeClientRedirect();
+    completeClientRedirect();
   }
 
   async function handleMagicLink(event: React.FormEvent<HTMLFormElement>) {
@@ -187,22 +174,20 @@ export default function LoginPage() {
         <button
           type="button"
           onClick={() => setMode("password")}
-          className={`flex-1 rounded-xl px-4 py-2.5 text-[13px] font-medium transition-all duration-200 ${
-            mode === "password"
+          className={`flex-1 rounded-xl px-4 py-2.5 text-[13px] font-medium transition-all duration-200 ${mode === "password"
               ? "bg-forest-600 text-cream shadow-md"
               : "text-[#6B7B6E] hover:bg-white/50 hover:text-forest-600"
-          }`}
+            }`}
         >
           Password
         </button>
         <button
           type="button"
           onClick={() => setMode("magic")}
-          className={`flex-1 rounded-xl px-4 py-2.5 text-[13px] font-medium transition-all duration-200 ${
-            mode === "magic"
+          className={`flex-1 rounded-xl px-4 py-2.5 text-[13px] font-medium transition-all duration-200 ${mode === "magic"
               ? "bg-forest-600 text-cream shadow-md"
               : "text-[#6B7B6E] hover:bg-white/50 hover:text-forest-600"
-          }`}
+            }`}
         >
           Magic link
         </button>

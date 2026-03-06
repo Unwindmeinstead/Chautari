@@ -61,11 +61,11 @@ export function DashboardNav({ userName, unreadCount }: DashboardNavProps) {
           <div className="hidden md:flex items-center gap-4">
             <div className="h-8 w-px bg-gray-100" />
             <span className="text-[14px] font-semibold text-gray-900 capitalize">{firstName}</span>
-            <Link href="/api/auth/signout"
+            <a href="/api/auth/signout"
               className="h-9 w-9 rounded-full flex items-center justify-center text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors"
               title="Sign out">
               <LogOut className="size-4" />
-            </Link>
+            </a>
           </div>
 
           <button onClick={() => setMobileOpen(!mobileOpen)}
@@ -93,9 +93,9 @@ export function DashboardNav({ userName, unreadCount }: DashboardNavProps) {
             </div>
             <div className="bg-gray-50 p-6 flex items-center justify-between">
               <span className="text-[15px] font-semibold text-gray-900 capitalize">{firstName}</span>
-              <Link href="/api/auth/signout" className="h-11 w-11 flex items-center justify-center text-red-600 hover:bg-white rounded-full transition-colors">
+              <a href="/api/auth/signout" className="h-11 w-11 flex items-center justify-center text-red-600 hover:bg-white rounded-full transition-colors">
                 <LogOut className="size-5" />
-              </Link>
+              </a>
             </div>
           </div>
         </div>
@@ -140,12 +140,6 @@ export function ProfileCard({ profile, details }: { profile: DashboardData["prof
           <div className="flex items-center gap-3 text-[13px] font-medium text-gray-600">
             <Shield className="size-4 text-gray-400 shrink-0" />
             {details.payer_type === "medicaid" ? "Medicaid" : details.payer_type === "medicare" ? "Medicare" : "Private Pay"}
-          </div>
-        )}
-        {details?.care_type && (
-          <div className="flex items-center gap-3 text-[13px] font-medium text-gray-600">
-            <Heart className="size-4 text-gray-400 shrink-0" />
-            {details.care_type === "home_health" ? "Home Health" : "Home Care"}
           </div>
         )}
         {profile?.phone && (

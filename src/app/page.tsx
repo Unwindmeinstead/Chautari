@@ -179,14 +179,15 @@ export default function HomePage() {
               <Link key={href} href={href} onClick={(e) => handleSmoothScroll(e, href)} className={`text-[13px] no-underline transition-colors cursor-pointer ${navDark ? "text-cream/55 hover:text-cream" : "text-[#6B7B6E] hover:text-forest-600"}`}>{label}</Link>
             ))}
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
+            {/* Sign in / name — desktop only, hidden on mobile (shown in hamburger instead) */}
             {authUser ? (
-              <Link href="/dashboard" className={`text-[13px] font-semibold no-underline transition-colors hidden sm:inline ${navDark ? "text-cream/70 hover:text-cream" : "text-forest-600 hover:text-forest-800"}`}>{authUser.name}</Link>
+              <Link href="/dashboard" className={`text-[13px] font-semibold no-underline transition-colors hidden md:inline ${navDark ? "text-cream/70 hover:text-cream" : "text-forest-600 hover:text-forest-800"}`}>{authUser.name}</Link>
             ) : (
-              <Link href="/auth/login" className={`text-[13px] no-underline transition-colors hidden sm:inline ${navDark ? "text-cream/45 hover:text-cream" : "text-[#6B7B6E] hover:text-forest-600"}`}>Sign in</Link>
+              <Link href="/auth/login" className={`text-[13px] no-underline transition-colors hidden md:inline ${navDark ? "text-cream/45 hover:text-cream" : "text-[#6B7B6E] hover:text-forest-600"}`}>Sign in</Link>
             )}
-            <Link href="/auth/register" className={`text-[13px] font-medium tracking-wide px-5 py-2 rounded-full no-underline transition-all hover:-translate-y-px ${navDark ? "bg-amber-500 text-[#0F2419]" : "bg-forest-600 text-cream"}`} style={{ boxShadow: "0 8px 24px rgba(26,61,43,0.15)" }}>
-              Start for free
+            <Link href="/auth/register" className={`text-[12px] sm:text-[13px] font-medium tracking-wide px-4 sm:px-5 py-2 rounded-full no-underline transition-all hover:-translate-y-px whitespace-nowrap ${navDark ? "bg-amber-500 text-[#0F2419]" : "bg-forest-600 text-cream"}`} style={{ boxShadow: "0 8px 24px rgba(26,61,43,0.15)" }}>
+              Start free
             </Link>
             {/* Mobile toggle */}
             <button onClick={() => setMobileMenu(!mobileMenu)} className="md:hidden p-2 rounded-lg" aria-label="Menu">
@@ -223,12 +224,12 @@ export default function HomePage() {
               SwitchMyCare guides Pennsylvania Medicaid and Medicare patients through finding and switching home health or home care agencies — simply, guided, and free to browse. When you decide to switch, there&apos;s a one-time $97 coordination fee for paperwork and support.
             </p>
 
-            <div className="flex items-center gap-3.5 flex-wrap mb-12">
-              <Link href="/agencies" className="bg-forest-600 text-cream text-sm font-medium tracking-wide px-7 py-3.5 rounded-full no-underline inline-flex items-center gap-2 transition-all hover:bg-[#2A5C41] hover:-translate-y-0.5" style={{ boxShadow: "0 12px 36px rgba(26,61,43,0.22)" }}>
+            <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-3.5 mb-12">
+              <Link href="/agencies" className="bg-forest-600 text-cream text-sm font-medium tracking-wide px-7 py-3.5 rounded-full no-underline inline-flex items-center justify-center gap-2 transition-all hover:bg-[#2A5C41] hover:-translate-y-0.5" style={{ boxShadow: "0 12px 36px rgba(26,61,43,0.22)" }}>
                 Browse agencies
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8H13M13 8L9 4M13 8L9 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
               </Link>
-              <Link href="#how-it-works" onClick={(e) => handleSmoothScroll(e, '#how-it-works')} className="text-base text-[#6B7B6E] no-underline inline-flex items-center gap-1.5 hover:text-forest-600 transition-colors font-medium cursor-pointer">See how it works ↓</Link>
+              <Link href="#how-it-works" onClick={(e) => handleSmoothScroll(e, '#how-it-works')} className="text-base text-[#6B7B6E] no-underline inline-flex items-center gap-1.5 hover:text-forest-600 transition-colors font-medium cursor-pointer self-start sm:self-auto">See how it works ↓</Link>
             </div>
 
             <div className="flex items-center gap-7 flex-wrap pt-7 border-t border-[rgba(26,61,43,0.08)]">

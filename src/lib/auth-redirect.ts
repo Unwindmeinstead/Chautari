@@ -8,11 +8,15 @@ export function getRouteForRole(role: UserRole | null | undefined): string {
 }
 
 export async function getUserRedirectPath(supabase: any, user: User): Promise<string> {
-  const { data: profile } = await supabase
+  const { data: profile, error } = await supabase
     .from("profiles")
     .select("role")
     .eq("id", user.id)
     .maybeSingle();
+
+  if (error) {
+    console.error("[getUserRedirectPath] profile lookup failed:", error.message);
+  }
 
   return getRouteForRole((profile?.role as UserRole | null | undefined) ?? null);
 }

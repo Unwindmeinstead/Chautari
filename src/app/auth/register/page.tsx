@@ -26,13 +26,19 @@ export default function RegisterPage() {
     setError(null);
 
     try {
+      console.log("Submitting registration...");
       const result = await signUpWithEmail(formData);
+      console.log("Registration result:", result);
       if (result?.error) {
         setError(result.error);
       }
-    } catch (err) {
-      // Next.js redirect throws an error, so we must let it bubble up
-      throw err;
+    } catch (err: any) {
+      console.error("Registration error:", err);
+      // Next.js redirect() throws an error - that's expected and means success
+      if (err?.digest?.startsWith("NEXT_REDIRECT")) {
+        return; // Redirect is happening
+      }
+      setError("Registration failed. Please try again.");
     } finally {
       setLoading(false);
     }

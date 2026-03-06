@@ -26,7 +26,7 @@ export const switchStep3Schema = z
     }),
     services_requested: z
       .array(z.string())
-      .min(1, "Please select at least one service"),
+      .default([]),
     requested_start_date: z
       .string()
       .min(1, "Please select a start date")

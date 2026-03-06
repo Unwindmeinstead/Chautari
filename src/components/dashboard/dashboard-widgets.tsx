@@ -67,12 +67,6 @@ export function ProfileSummaryCard({ profile, details }: ProfileSummaryCardProps
               {payerLabel(details.payer_type)}
             </div>
           )}
-          {details?.care_type && (
-            <div className="flex items-center gap-2 text-sm text-forest-600">
-              <Heart className="size-3.5 text-forest-400 shrink-0" />
-              {careTypeLabel(details.care_type)}
-            </div>
-          )}
           {profile?.phone && (
             <div className="flex items-center gap-2 text-sm text-forest-600">
               <Phone className="size-3.5 text-forest-400 shrink-0" />
@@ -88,16 +82,16 @@ export function ProfileSummaryCard({ profile, details }: ProfileSummaryCardProps
         </div>
 
         {/* Services needed */}
-        {details?.services_needed && details.services_needed.length > 0 && (
+        {details?.care_needs && details.care_needs.length > 0 && (
           <div className="flex flex-wrap gap-1.5 pt-1">
-            {details.services_needed.slice(0, 5).map((s) => (
+            {details.care_needs.slice(0, 5).map((s) => (
               <Badge key={s} variant="secondary" className="text-xs">
                 {s.replace(/_/g, " ")}
               </Badge>
             ))}
-            {details.services_needed.length > 5 && (
+            {details.care_needs.length > 5 && (
               <Badge variant="secondary" className="text-xs">
-                +{details.services_needed.length - 5}
+                +{details.care_needs.length - 5}
               </Badge>
             )}
           </div>
@@ -190,8 +184,8 @@ export function QuickActions({ onboardingComplete, hasActiveRequest }: QuickActi
               a.disabled
                 ? "border-forest-100 bg-forest-50 opacity-50 pointer-events-none"
                 : a.cta
-                ? "border-amber-200 bg-amber-50 hover:bg-amber-100"
-                : "border-forest-100 hover:border-forest-200 hover:bg-forest-50"
+                  ? "border-amber-200 bg-amber-50 hover:bg-amber-100"
+                  : "border-forest-100 hover:border-forest-200 hover:bg-forest-50"
             )}
           >
             <div className={cn(

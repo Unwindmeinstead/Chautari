@@ -1,13 +1,11 @@
 import Link from "next/link";
+import { cookies } from "next/headers";
 import { getDashboardData } from "@/lib/dashboard-actions";
 import { DashboardNav, RequestCard } from "@/components/dashboard/dashboard-nav";
+import { AdminPreviewBanner } from "@/components/admin/admin-preview-banner";
 import {
-  ArrowRight,
-  Bell,
-  Calendar,
-  ClipboardList,
-  MessageSquare,
-  Upload,
+  ArrowRight, Bell, Calendar, ClipboardList,
+  MessageSquare, Upload, CheckCircle2, AlertCircle,
 } from "lucide-react";
 
 export const metadata = { title: "Dashboard | SwitchMyCare" };
@@ -62,6 +60,8 @@ function statusCopy(status: string) {
 
 export default async function DashboardPage() {
   const data = await getDashboardData();
+  const cookieStore = await cookies();
+  const viewAs = cookieStore.get("chautari_view_as")?.value;
 
   const firstName = data.profile?.full_name?.split(" ")[0] ?? "there";
   const hour = new Date().getHours();
@@ -77,9 +77,49 @@ export default async function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-white text-gray-900 font-sans pb-20">
+      {viewAs && <AdminPreviewBanner viewingAs={viewAs} />}
       <DashboardNav userName={data.profile?.full_name ?? null} unreadCount={data.unreadCount} />
 
       <main className="max-w-[1100px] mx-auto px-4 md:px-6 mt-6 md:mt-10 space-y-6 md:space-y-8">
+
+        {/* ── Resume setup banner ─────────────────────────────────────────── */}
+        {!data.onboardingComplete && (
+          <section className="rounded-2xl border-2 border-amber-200 bg-amber-50 p-4 md:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex items-start gap-3">
+              <div className="h-9 w-9 rounded-xl bg-amber-100 border border-amber-200 flex items-center justify-center shrink-0">
+                <AlertCircle className="size-5 text-amber-600" />
+              </div>
+              <div>
+                <p className="text-[14px] font-bold text-amber-900">Your profile setup isn't complete</p>
+                <p className="text-[12px] text-amber-700 mt-0.5">
+                  Finish setting up your profile so we can match you with the right home care agencies.
+                  Your progress has been saved — pick up right where you left off.
+                </p>
+                <div className="flex items-center gap-4 mt-2">
+                  {[
+                    { label: "Personal info", done: !!data.profile?.full_name },
+                    { label: "Address", done: !!data.patientDetails?.address_city },
+                    { label: "Insurance", done: !!data.patientDetails?.payer_type },
+                    { label: "Care needs", done: !!(data.patientDetails as any)?.care_needs?.length },
+                    { label: "Situation", done: false },
+                  ].map(({ label, done }) => (
+                    <div key={label} className="flex items-center gap-1">
+                      <CheckCircle2 className={`size-3.5 ${done ? "text-emerald-500" : "text-amber-300"}`} />
+                      <span className={`text-[10px] font-medium ${done ? "text-emerald-700" : "text-amber-600"}`}>{label}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+            <Link
+              href="/onboarding"
+              className="shrink-0 h-10 px-5 rounded-xl bg-amber-600 text-white text-sm font-bold inline-flex items-center gap-2 hover:bg-amber-700 transition-colors"
+            >
+              Continue setup <ArrowRight className="size-4" />
+            </Link>
+          </section>
+        )}
+
         <section className="rounded-2xl border border-gray-200 bg-white p-4 md:p-6">
           <p className="text-[12px] font-bold uppercase tracking-widest text-gray-400">{greeting}</p>
           <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight text-gray-900 mt-2">Hi {firstName} 👋</h1>
@@ -88,13 +128,12 @@ export default async function DashboardPage() {
           </p>
 
           {copy && currentRequest ? (
-            <div className="mt-5 rounded-2xl border border-gray-200 bg-gray-50 p-4 md:p-5 space-y-4">
-              <div>
-                <p className="text-[11px] font-bold uppercase tracking-widest text-gray-400">Current request status</p>
-                <h2 className="text-lg md:text-xl font-bold text-gray-900 mt-1">{copy.title}</h2>
-                <p className="text-sm text-gray-600 mt-1">{copy.detail}</p>
-                <p className="text-sm text-gray-700 mt-2 font-medium">{copy.next}</p>
-              </div>
+            <div className="mt-5 rounded-2xl border border-gray-200 bg-gray-50 p-4 md:p-5 space-y-4">              <div>
+              <p className="text-[11px] font-bold uppercase tracking-widest text-gray-400">Current request status</p>
+              <h2 className="text-lg md:text-xl font-bold text-gray-900 mt-1">{copy.title}</h2>
+              <p className="text-sm text-gray-600 mt-1">{copy.detail}</p>
+              <p className="text-sm text-gray-700 mt-2 font-medium">{copy.next}</p>
+            </div>
 
               <div>
                 <div className="h-2 rounded-full bg-gray-200 overflow-hidden">
@@ -122,12 +161,40 @@ export default async function DashboardPage() {
               </div>
             </div>
           ) : (
-            <div className="mt-5 rounded-2xl border border-dashed border-gray-300 bg-gray-50 p-6 text-center">
-              <p className="text-sm font-semibold text-gray-900">No active request yet</p>
-              <p className="text-xs text-gray-500 mt-1">When you start a switch request, your status and next steps appear here.</p>
-              <Link href="/switch/new" className="mt-4 inline-flex h-10 px-5 rounded-full bg-gray-900 text-white text-sm font-bold items-center gap-1.5">
-                Start new request <ArrowRight className="size-4" />
-              </Link>
+            <div className="mt-5 space-y-3">
+              {data.onboardingComplete ? (
+                /* Profile done — guide them to browse agencies and submit a request */
+                <div className="rounded-2xl border-2 border-green-200 bg-green-50 p-5">
+                  <div className="flex items-start gap-3">
+                    <div className="h-9 w-9 rounded-xl bg-green-100 border border-green-200 flex items-center justify-center shrink-0">
+                      <CheckCircle2 className="size-5 text-green-700" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[14px] font-bold text-green-900">Profile complete — ready to find an agency</p>
+                      <p className="text-[12px] text-green-700 mt-1">
+                        Browse agencies that match your insurance and care needs, then submit a switch request. Our team will coordinate everything.
+                      </p>
+                      <div className="flex flex-wrap gap-2 mt-3">
+                        <Link href="/agencies" className="h-9 px-4 rounded-xl bg-green-700 text-white text-xs font-bold inline-flex items-center gap-1.5 hover:bg-green-800 transition-colors">
+                          Browse agencies <ArrowRight className="size-3.5" />
+                        </Link>
+                        <Link href="/switch/new" className="h-9 px-4 rounded-xl border border-green-300 text-green-800 text-xs font-bold inline-flex items-center gap-1.5 hover:bg-green-100 transition-colors">
+                          Submit request directly
+                        </Link>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                /* Profile incomplete */
+                <div className="rounded-2xl border border-dashed border-gray-300 bg-gray-50 p-6 text-center">
+                  <p className="text-sm font-semibold text-gray-900">Complete your profile first</p>
+                  <p className="text-xs text-gray-500 mt-1">Finish setting up your profile so we can match you with the right agencies.</p>
+                  <Link href="/onboarding" className="mt-4 inline-flex h-10 px-5 rounded-full bg-gray-900 text-white text-sm font-bold items-center gap-1.5">
+                    Complete setup <ArrowRight className="size-4" />
+                  </Link>
+                </div>
+              )}
             </div>
           )}
         </section>
