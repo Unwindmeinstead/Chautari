@@ -3,6 +3,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { cookies } from "next/headers";
 
 const BYPASS_AUTH = false;
 
@@ -56,8 +57,66 @@ export interface DashboardData {
 
 export async function getDashboardData(): Promise<DashboardData> {
   const supabase = await createClient();
+  const cookieStore = await cookies();
+  const viewAs = cookieStore.get("chautari_view_as")?.value;
 
   const { data: { user } } = await supabase.auth.getUser();
+
+  // If admin is previewing as patient, return mock data
+  if (viewAs === "patient") {
+    return {
+      profile: {
+        id: "preview-patient-id",
+        full_name: "John Doe (Admin Preview)",
+        email: "patient-preview@switchmycare.com",
+        phone: "(555) 123-4567",
+        preferred_lang: "en",
+        role: "patient",
+      },
+      patientDetails: {
+        address_line1: "123 Healing Way",
+        address_city: "Philadelphia",
+        address_state: "PA",
+        address_zip: "19104",
+        address_county: "Philadelphia",
+        payer_type: "medicare",
+        care_needs: ["skilled_nursing", "physical_therapy"],
+      },
+      switchRequests: [
+        {
+          id: "req-1",
+          status: "under_review",
+          care_type: "skilled_nursing",
+          switch_reason: "Moving to a new area and need local support.",
+          requested_start_date: new Date().toISOString(),
+          submitted_at: new Date().toISOString(),
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          new_agency: {
+            id: "agency-1",
+            name: "Evergreen Home Health",
+            address_city: "Philadelphia",
+            phone: "(555) 987-6543",
+          },
+        },
+      ],
+      notifications: [
+        {
+          id: "n-1",
+          type: "status_change",
+          title: "Request Updated",
+          body: "Evergreen Home Health is reviewing your switch request.",
+          read_at: null,
+          created_at: new Date().toISOString(),
+          reference_id: "req-1",
+          reference_type: "switch_request",
+        },
+      ],
+      unreadCount: 1,
+      onboardingComplete: true,
+    };
+  }
+
   if (!user && !BYPASS_AUTH) {
     redirect("/auth/login?redirectedFrom=/dashboard");
   }
@@ -134,7 +193,7 @@ export async function getDashboardData(): Promise<DashboardData> {
   }
 
   const notifications = notificationsRes.data ?? [];
-  const unreadCount = notifications.filter((n) => !n.read_at).length;
+  const unreadCount = notifications.filter((n: any) => !n.read_at).length;
   const onboardingComplete = !!(detailsRes.data?.payer_type && detailsRes.data?.care_needs?.length);
 
   return {
@@ -146,6 +205,7 @@ export async function getDashboardData(): Promise<DashboardData> {
     onboardingComplete,
   };
 }
+
 
 export async function markNotificationRead(
   notificationId: string

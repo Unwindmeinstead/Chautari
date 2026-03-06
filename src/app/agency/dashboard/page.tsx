@@ -19,17 +19,87 @@ export default async function AgencyDashboardPage() {
 
   if (!agency && viewAs === "agency") {
     agency = {
-      id: "preview", name: "AHN Healthcare@Home", dba_name: "dba AHN",
-      address_city: "Pittsburgh", address_state: "PA",
-      phone: "800-555-0109", email: "homehealth@ahn.org", website: "ahn.org",
-      care_types: ["home_health"], payers_accepted: ["medicaid", "medicare"],
-      services_offered: ["skilled_nursing", "home_health_aide"],
-      languages_spoken: ["English", "Nepali", "Hindi"], service_counties: ["Allegheny"],
-      is_verified_partner: true, is_accepting_patients: true,
-      average_response_time_hours: 1, medicare_quality_score: 4.7,
-      pa_license_number: "PA-HH-00421",
+      id: "preview-agency",
+      name: "Evergreen Home Health",
+      dba_name: "dba Evergreen",
+      address_city: "Philadelphia",
+      address_state: "PA",
+      phone: "(555) 123-4567",
+      email: "hello@evergreen.com",
+      website: "evergreen.com",
+      care_types: ["home_health"],
+      payers_accepted: ["medicaid", "medicare"],
+      services_offered: ["skilled_nursing", "physical_therapy", "home_health_aide"],
+      languages_spoken: ["English", "Spanish", "Nepali"],
+      service_counties: ["Philadelphia", "Bucks", "Montgomery"],
+      is_verified_partner: true,
+      is_accepting_patients: true,
+      average_response_time_hours: 1,
+      medicare_quality_score: 4.8,
+      pa_license_number: "PA-HH-99201",
     };
-    member = { id: "preview-member", role: "admin", title: "Agency Director" };
+    member = {
+      id: "preview-member",
+      role: "admin",
+      title: "Agency Director"
+    };
+    requests = [
+      {
+        id: "prev-req-1",
+        patient_id: "p1",
+        status: "submitted",
+        care_type: "skilled_nursing",
+        switch_reason: "Seeking better communication and faster response times.",
+        services_requested: ["skilled_nursing"],
+        requested_start_date: new Date().toISOString(),
+        special_instructions: "Patient prefers morning visits.",
+        submitted_at: new Date().toISOString(),
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        patient: {
+          id: "p1",
+          full_name: "Sarah Miller (Demo)",
+          phone: "(555) 998-0012",
+          preferred_lang: "en",
+        },
+        patient_details: {
+          address_city: "Philadelphia",
+          address_county: "Philadelphia",
+          payer_type: "medicare",
+          care_type: "skilled_nursing",
+          services_needed: ["skilled_nursing"],
+        },
+        e_signatures: [{ id: "sig-1", signed_at: new Date().toISOString(), consent_hipaa: true }],
+      },
+      {
+        id: "prev-req-2",
+        patient_id: "p2",
+        status: "under_review",
+        care_type: "physical_therapy",
+        switch_reason: "Current agency has staffing issues.",
+        services_requested: ["physical_therapy"],
+        requested_start_date: new Date().toISOString(),
+        special_instructions: null,
+        submitted_at: new Date().toISOString(),
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        patient: {
+          id: "p2",
+          full_name: "Marcus Thompson (Demo)",
+          phone: "(555) 776-8833",
+          preferred_lang: "en",
+        },
+        patient_details: {
+          address_city: "Lower Merion",
+          address_county: "Montgomery",
+          payer_type: "private_insurance",
+          care_type: "physical_therapy",
+          services_needed: ["physical_therapy"],
+        },
+        e_signatures: [{ id: "sig-2", signed_at: new Date().toISOString(), consent_hipaa: true }],
+      }
+    ];
+    stats = { total: 2, pending: 2, accepted: 0, completed: 0 };
   }
 
   if (!agency || !member) {

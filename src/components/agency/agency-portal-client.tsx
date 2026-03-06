@@ -642,7 +642,8 @@ export function AgencyPortalClient({ agency, member, requests, notifications, st
 
     return (
         <div style={{ minHeight: "100vh", display: "flex", background: FD, fontFamily: "'DM Sans',sans-serif", color: CR }}>
-            <style>{`
+            <style dangerouslySetInnerHTML={{
+                __html: `
         @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,700;0,800;0,900;1,700;1,800&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500;600&display=swap');
         *{box-sizing:border-box;margin:0;padding:0;}
         a{text-decoration:none;}
@@ -660,7 +661,7 @@ export function AgencyPortalClient({ agency, member, requests, notifications, st
           .mobile-topbar{display:none!important}
           .bottom-nav{display:none!important}
         }
-      `}</style>
+      ` }} />
 
             {/* DESKTOP SIDEBAR */}
             <aside className="desktop-sidebar" style={{ width: 240, flexShrink: 0, height: "100vh", position: "sticky", top: 0, display: "flex", flexDirection: "column", background: "rgba(255,255,255,0.02)", borderRight: "1px solid rgba(255,248,231,0.06)" }}>

@@ -356,6 +356,20 @@ export function AdminDashboardClient({
         if (!res.error) setUsers(prev => prev.filter(u => u.id !== id));
     }
 
+    async function handleViewAs(role: string) {
+        try {
+            const res = await fetch("/api/admin/view-as", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ role }),
+            });
+            const { redirectTo } = await res.json();
+            if (redirectTo) window.location.href = redirectTo;
+        } catch (err) {
+            console.error("View as failed:", err);
+        }
+    }
+
     /* ── SUB-VIEWS ── */
 
     const Overview = () => {
@@ -377,6 +391,45 @@ export function AdminDashboardClient({
                         <I.ChevR size={14} stroke="#FBBF24" />
                     </div>
                 )}
+
+                {/* Quick Previews Section */}
+                <div>
+                    <p style={{
+                        fontSize: 10, fontWeight: 600, color: "rgba(255,248,231,0.3)",
+                        letterSpacing: "0.14em", textTransform: "uppercase", fontFamily: "'DM Mono',monospace",
+                        marginBottom: 10
+                    }}>Platform Tools</p>
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }} className="summary-grid">
+                        <Card style={{ padding: "16px 20px", display: "flex", alignItems: "center", justifyContent: "space-between", background: "rgba(232,147,58,0.03)", border: "1px solid rgba(232,147,58,0.15)" }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                                <div style={{ width: 36, height: 36, borderRadius: 10, background: `${AM}15`, border: `1px solid ${AM}25`, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                    <I.Eye size={18} stroke={AM} />
+                                </div>
+                                <div>
+                                    <p style={{ fontSize: 13, fontWeight: 700, color: CR }}>Patient Preview</p>
+                                    <p style={{ fontSize: 11, color: "rgba(255,248,231,0.35)" }}>View dashboard as a patient</p>
+                                </div>
+                            </div>
+                            <button onClick={() => handleViewAs("patient")} style={{ background: AM, color: FD, border: "none", borderRadius: 10, padding: "8px 16px", fontWeight: 800, fontSize: 12, cursor: "pointer", transition: "transform .2s" }} className="hover:scale-[1.05]">
+                                Preview Dashboard
+                            </button>
+                        </Card>
+                        <Card style={{ padding: "16px 20px", display: "flex", alignItems: "center", justifyContent: "space-between", background: "rgba(232,147,58,0.03)", border: "1px solid rgba(232,147,58,0.15)" }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                                <div style={{ width: 36, height: 36, borderRadius: 10, background: `${AM}15`, border: `1px solid ${AM}25`, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                    <I.Agency size={18} stroke={AM} />
+                                </div>
+                                <div>
+                                    <p style={{ fontSize: 13, fontWeight: 700, color: CR }}>Agency Preview</p>
+                                    <p style={{ fontSize: 11, color: "rgba(255,248,231,0.35)" }}>View dashboard as agency staff</p>
+                                </div>
+                            </div>
+                            <button onClick={() => handleViewAs("agency")} style={{ background: AM, color: FD, border: "none", borderRadius: 10, padding: "8px 16px", fontWeight: 800, fontSize: 12, cursor: "pointer", transition: "transform .2s" }} className="hover:scale-[1.05]">
+                                Preview Portal
+                            </button>
+                        </Card>
+                    </div>
+                </div>
 
                 <div>
                     <p style={{

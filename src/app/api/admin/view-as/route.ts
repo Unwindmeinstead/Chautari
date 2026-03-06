@@ -10,17 +10,22 @@ const ROLE_DESTINATIONS: Record<string, string> = {
 
 export async function POST(request: NextRequest) {
     const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-    const { data: profile } = await supabase
-        .from("profiles")
-        .select("role")
-        .eq("id", user.id)
-        .maybeSingle();
+    // TEMP BYPASS FOR DEMO
+    const isBypass = false;
+    if (!isBypass) {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-    if (profile?.role !== "switchmycare_admin") {
-        return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+        const { data: profile } = await supabase
+            .from("profiles")
+            .select("role")
+            .eq("id", user.id)
+            .maybeSingle();
+
+        if (profile?.role !== "switchmycare_admin") {
+            return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+        }
     }
 
     const { role } = await request.json();
