@@ -137,7 +137,7 @@ function FAQItem({ q, a, defaultOpen = false }: any) {
         {q}
         <span style={{ width: 26, height: 26, borderRadius: 8, border: open ? "1px solid #E8933A" : "1px solid rgba(26,61,43,0.15)", background: open ? "#E8933A" : "transparent", display: "flex", alignItems: "center", justifyContent: "center", color: open ? "#0F2419" : "rgba(26,61,43,0.4)", fontSize: 18, flexShrink: 0, transition: "all 0.2s ease", transform: open ? "rotate(45deg)" : "none" }}>+</span>
       </button>
-      <div className={`faq - body ${open ? "open" : ""} `}>
+      <div className={`faq-body ${open ? "open" : ""}`}>
         <div style={{ padding: "0 22px 20px", fontSize: 14, lineHeight: 1.8, color: "#6B7B6E", fontWeight: 300 }}>{a}</div>
       </div>
     </div>
@@ -188,21 +188,23 @@ export default function LandingPage() {
         borderBottom: navDark ? "1px solid transparent" : "1px solid rgba(26,61,43,0.08)",
         transition: "background 0.35s ease, border-color 0.35s ease",
       }}>
-        <a href="#" style={{ textDecoration: "none" }}><Logo light={navDark} /></a>
+        <div style={{ display: "flex", alignItems: "center", gap: 32 }}>
+          <a href="#" style={{ textDecoration: "none" }}><Logo light={navDark} /></a>
 
-        {/* Desktop nav */}
-        <div style={{ display: "flex", alignItems: "center", gap: 32, position: "absolute", left: "50%", transform: "translateX(-50%)" }} className="desktop-nav">
-          {[["#how-it-works", "How it works"], ["#agencies", "Find agencies"], ["#rights", "Your rights"], ["#faq", "FAQ"]].map(([h, l]) => (
-            <a key={h} href={h} onClick={e => scrollTo(e, h)} className="nav-link"
-              style={{ fontSize: 13, textDecoration: "none", color: navDark ? "rgba(255,248,231,0.6)" : MU, fontWeight: 500, transition: "color 0.2s" }}>
-              {l}
-            </a>
-          ))}
+          {/* Desktop nav links - adjacent to logo, hidden on smaller desktop if space is tight */}
+          <div style={{ display: "flex", alignItems: "center", gap: 24 }} className="desktop-nav">
+            {[["#how-it-works", "How it works"], ["#agencies", "Find agencies"], ["#rights", "Your rights"], ["#faq", "FAQ"]].map(([h, l]) => (
+              <a key={h} href={h} onClick={e => scrollTo(e, h)} className="nav-link"
+                style={{ fontSize: 13, textDecoration: "none", color: navDark ? "rgba(255,248,231,0.6)" : MU, fontWeight: 500, transition: "color 0.2s" }}>
+                {l}
+              </a>
+            ))}
+          </div>
         </div>
 
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           {/* Sign in — desktop only */}
-          <a href="/auth/login" className="desktop-nav" style={{ fontSize: 13, textDecoration: "none", color: navDark ? "rgba(255,248,231,0.55)" : MU, fontWeight: 400, transition: "color 0.2s" }}>Sign in</a>
+          <a href="/auth/login" className="desktop-nav" style={{ fontSize: 13, textDecoration: "none", color: navDark ? "rgba(255,248,231,0.55)" : MU, fontWeight: 400, transition: "color 0.2s", marginRight: 12 }}>Sign in</a>
           {/* CTA */}
           <a href="/auth/register" style={{
             fontSize: 13, fontWeight: 600, letterSpacing: "0.01em", padding: "8px 20px",
@@ -223,7 +225,7 @@ export default function LandingPage() {
         </div>
 
         {/* Mobile dropdown */}
-        <div className={`mobile - menu ${menuOpen ? "open" : ""} `} style={{
+        <div className={`mobile-menu ${menuOpen ? "open" : ""}`} style={{
           position: "absolute", top: 68, left: 0, right: 0,
           background: CR, borderBottom: `1px solid rgba(26, 61, 43, 0.1)`,
           padding: "16px 24px 20px",
@@ -244,11 +246,11 @@ export default function LandingPage() {
       </nav>
 
       <style>{`
-@media(max - width: 768px) {
-          .desktop - nav{ display: none!important }
-          .hamburger{ display: flex!important }
-}
-`}</style>
+        @media (max-width: 1024px) {
+          .desktop-nav { display: none !important; }
+          .hamburger { display: flex !important; }
+        }
+      `}</style>
 
       {/* ══════════ HERO ══════════ */}
       <section id="home" style={{ display: "grid", gridTemplateColumns: "1fr", minHeight: 720, paddingTop: 68 }}>
