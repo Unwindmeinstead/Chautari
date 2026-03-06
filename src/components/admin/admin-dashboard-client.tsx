@@ -206,10 +206,10 @@ const FunnelBar = ({ label, value, total, color }: any) => {
     );
 };
 
-/* ── Table wrapper ── */
+/* ── Responsive Table / Card Switcher ── */
 const TableWrap = ({ children }: any) => (
-    <div style={{ overflowX: "auto", WebkitOverflowScrolling: "touch" }}>
-        <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 600 }}>{children}</table>
+    <div style={{ overflowX: "auto", WebkitOverflowScrolling: "touch" }} className="hide-scrollbar">
+        <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 650 }}>{children}</table>
     </div>
 );
 const Th = ({ children, right }: any) => (
@@ -455,20 +455,43 @@ export function AdminDashboardClient({
                 </div>
                 <Card>
                     <div style={{ padding: "0 22px" }}><TabBar tabs={[{ v: "all", l: "All" }, { v: "submitted", l: "New" }, { v: "under_review", l: "Reviewing" }, { v: "accepted", l: "Accepted" }, { v: "completed", l: "Done" }].map(t => ({ value: t.v, label: t.l }))} active={tab} onChange={setTab} /></div>
-                    <TableWrap>
-                        <thead><tr><Th>Patient</Th><Th>Agency</Th><Th>Care</Th><Th>Status</Th><Th right>Actions</Th></tr></thead>
-                        <tbody>
-                            {filtered.map(r => (
-                                <tr key={r.id}>
-                                    <Td><p style={{ fontWeight: 600 }}>{r.patient_name}</p><p style={{ fontSize: 10, color: "rgba(255,248,231,0.3)" }}>{r.payer_type}</p></Td>
-                                    <Td muted>{r.agency_name}</Td>
-                                    <Td muted>{r.care_type}</Td>
-                                    <Td><Badge type={r.status} label={r.status} /></Td>
-                                    <Td right><Link href={`/admin/requests/${r.id}`} style={{ color: AM, fontSize: 12, fontWeight: 700, textDecoration: "none" }}>View</Link></Td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </TableWrap>
+
+                    {/* Desktop View */}
+                    <div className="desktop-view">
+                        <TableWrap>
+                            <thead><tr><Th>Patient</Th><Th>Agency</Th><Th>Care</Th><Th>Status</Th><Th right>Actions</Th></tr></thead>
+                            <tbody>
+                                {filtered.map(r => (
+                                    <tr key={r.id}>
+                                        <Td><p style={{ fontWeight: 600 }}>{r.patient_name}</p><p style={{ fontSize: 10, color: "rgba(255,248,231,0.3)" }}>{r.payer_type}</p></Td>
+                                        <Td muted>{r.agency_name}</Td>
+                                        <Td muted>{r.care_type}</Td>
+                                        <Td><Badge type={r.status} label={r.status} /></Td>
+                                        <Td right><Link href={`/admin/requests/${r.id}`} style={{ color: AM, fontSize: 12, fontWeight: 700, textDecoration: "none" }}>View</Link></Td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </TableWrap>
+                    </div>
+
+                    {/* Mobile View */}
+                    <div className="mobile-view" style={{ display: "none" }}>
+                        {filtered.length === 0 ? <Empty icon={I.Requests} text="No matching requests" /> : filtered.map(r => (
+                            <div key={r.id} style={{ padding: "16px 20px", borderBottom: "1px solid rgba(255,248,231,0.06)" }}>
+                                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 12 }}>
+                                    <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+                                        <Avatar name={r.patient_name || "?"} />
+                                        <div><p style={{ fontSize: 14, fontWeight: 700, color: CR }}>{r.patient_name}</p><p style={{ fontSize: 11, color: "rgba(255,248,231,0.35)" }}>{r.payer_type?.replace(/_/g, " ")}</p></div>
+                                    </div>
+                                    <Badge type={r.status} label={r.status.replace("_", " ")} />
+                                </div>
+                                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                                    <div><p style={{ fontSize: 10, color: "rgba(255,248,231,0.3)", textTransform: "uppercase", letterSpacing: "0.05em" }}>Agency</p><p style={{ fontSize: 12, color: "rgba(255,248,231,0.6)" }}>{r.agency_name}</p></div>
+                                    <Link href={`/admin/requests/${r.id}`} style={{ background: "rgba(232,147,58,0.1)", color: AM, padding: "6px 14px", borderRadius: 8, fontSize: 11, fontWeight: 700, textDecoration: "none" }}>Manage</Link>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
                 </Card>
             </div>
         );
@@ -485,24 +508,47 @@ export function AdminDashboardClient({
                 </div>
                 <Card>
                     <div style={{ padding: "0 22px" }}><TabBar tabs={[{ value: "all", label: "All" }, { value: "pending", label: "Pending" }, { value: "approved", label: "Approved" }]} active={tab} onChange={setTab} /></div>
-                    <TableWrap>
-                        <thead><tr><Th>Agency</Th><Th>NPI</Th><Th>Status</Th><Th right>Actions</Th></tr></thead>
-                        <tbody>
-                            {filtered.map(a => (
-                                <tr key={a.id}>
-                                    <Td><p style={{ fontWeight: 600 }}>{a.name}</p><p style={{ fontSize: 11, color: "rgba(255,248,231,0.3)" }}>{a.address_city}, PA</p></Td>
-                                    <Td mono muted>{a.npi}</Td>
-                                    <Td><Badge type={a.is_approved ? "approved" : "pending"} label={a.is_approved ? "Approved" : "Pending"} /></Td>
-                                    <Td right>
-                                        <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
-                                            <Link href={`/admin/agencies/${a.id}`} style={{ color: CR, opacity: 0.5, fontSize: 12, fontWeight: 700, textDecoration: "none" }}>Details</Link>
-                                            {!a.is_approved && <button onClick={() => handleApproveAgency(a.id)} style={{ background: AM, color: FD, border: "none", borderRadius: 8, padding: "4px 10px", fontWeight: 700, fontSize: 11, cursor: "pointer" }}>Approve</button>}
-                                        </div>
-                                    </Td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </TableWrap>
+
+                    {/* Desktop */}
+                    <div className="desktop-view">
+                        <TableWrap>
+                            <thead><tr><Th>Agency</Th><Th>NPI</Th><Th>Status</Th><Th right>Actions</Th></tr></thead>
+                            <tbody>
+                                {filtered.map(a => (
+                                    <tr key={a.id}>
+                                        <Td><p style={{ fontWeight: 600 }}>{a.name}</p><p style={{ fontSize: 11, color: "rgba(255,248,231,0.3)" }}>{a.address_city}, PA</p></Td>
+                                        <Td mono muted>{a.npi}</Td>
+                                        <Td><Badge type={a.is_approved ? "approved" : "pending"} label={a.is_approved ? "Approved" : "Pending"} /></Td>
+                                        <Td right>
+                                            <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
+                                                <Link href={`/admin/agencies/${a.id}`} style={{ color: CR, opacity: 0.5, fontSize: 12, fontWeight: 700, textDecoration: "none" }}>Details</Link>
+                                                {!a.is_approved && <button onClick={() => handleApproveAgency(a.id)} style={{ background: AM, color: FD, border: "none", borderRadius: 8, padding: "4px 10px", fontWeight: 700, fontSize: 11, cursor: "pointer" }}>Approve</button>}
+                                            </div>
+                                        </Td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </TableWrap>
+                    </div>
+
+                    {/* Mobile */}
+                    <div className="mobile-view" style={{ display: "none" }}>
+                        {filtered.length === 0 ? <Empty icon={I.Agency} text="No agencies found" /> : filtered.map(a => (
+                            <div key={a.id} style={{ padding: "16px 20px", borderBottom: "1px solid rgba(255,248,231,0.06)" }}>
+                                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 }}>
+                                    <div><p style={{ fontSize: 15, fontWeight: 700, color: CR }}>{a.name}</p><p style={{ fontSize: 11, color: "rgba(255,248,231,0.35)" }}>{a.address_city}, PA</p></div>
+                                    <Badge type={a.is_approved ? "approved" : "pending"} label={a.is_approved ? "Live" : "Review"} />
+                                </div>
+                                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                                    <p style={{ fontSize: 11, color: "rgba(255,248,231,0.3)", fontFamily: "'DM Mono',monospace" }}>NPI: {a.npi}</p>
+                                    <div style={{ display: "flex", gap: 8 }}>
+                                        <Link href={`/admin/agencies/${a.id}`} style={{ fontSize: 12, fontWeight: 700, color: "rgba(255,248,231,0.5)", textDecoration: "none" }}>View</Link>
+                                        {!a.is_approved && <button onClick={() => handleApproveAgency(a.id)} style={{ background: AM, color: FD, border: "none", borderRadius: 8, padding: "4px 12px", fontSize: 11, fontWeight: 700 }}>Approve</button>}
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
                 </Card>
             </div>
         );
@@ -519,24 +565,44 @@ export function AdminDashboardClient({
                 </div>
                 <Card>
                     <div style={{ padding: "0 22px" }}><TabBar tabs={[{ v: "all", l: "All" }, { v: "patient", l: "Patients" }, { v: "agency_admin", l: "Ag. Admins" }, { v: "switchmycare_admin", l: "System" }].map(t => ({ value: t.v, label: t.l }))} active={tab} onChange={setTab} /></div>
-                    <TableWrap>
-                        <thead><tr><Th>Name</Th><Th>Email</Th><Th>Role</Th><Th right>Actions</Th></tr></thead>
-                        <tbody>
-                            {filtered.map(u => (
-                                <tr key={u.id}>
-                                    <Td><div style={{ display: "flex", alignItems: "center", gap: 10 }}><Avatar name={u.full_name || "?"} />{u.full_name}</div></Td>
-                                    <Td muted>{u.email}</Td>
-                                    <Td><Badge type={u.role} label={u.role.replace("_", " ")} /></Td>
-                                    <Td right>
-                                        <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
-                                            <button onClick={() => handleToggleSuspend(u.id, u.is_suspended || false)} style={{ background: "none", border: "none", cursor: "pointer" }}>{u.is_suspended ? <I.UserChk size={16} stroke="#4ADE80" /> : <I.Ban size={16} stroke="#FBBF24" />}</button>
-                                            <button onClick={() => handleDeleteUser(u.id)} style={{ background: "none", border: "none", cursor: "pointer" }}><I.X size={16} stroke="#F87171" /></button>
-                                        </div>
-                                    </Td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </TableWrap>
+
+                    {/* Desktop */}
+                    <div className="desktop-view">
+                        <TableWrap>
+                            <thead><tr><Th>Name</Th><Th>Email</Th><Th>Role</Th><Th right>Actions</Th></tr></thead>
+                            <tbody>
+                                {filtered.map(u => (
+                                    <tr key={u.id}>
+                                        <Td><div style={{ display: "flex", alignItems: "center", gap: 10 }}><Avatar name={u.full_name || "?"} />{u.full_name}</div></Td>
+                                        <Td muted>{u.email}</Td>
+                                        <Td><Badge type={u.role} label={u.role.replace("_", " ")} /></Td>
+                                        <Td right>
+                                            <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
+                                                <button onClick={() => handleToggleSuspend(u.id, u.is_suspended || false)} style={{ background: "none", border: "none", cursor: "pointer" }}>{u.is_suspended ? <I.UserChk size={16} stroke="#4ADE80" /> : <I.Ban size={16} stroke="#FBBF24" />}</button>
+                                                <button onClick={() => handleDeleteUser(u.id)} style={{ background: "none", border: "none", cursor: "pointer" }}><I.X size={16} stroke="#F87171" /></button>
+                                            </div>
+                                        </Td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </TableWrap>
+                    </div>
+
+                    {/* Mobile */}
+                    <div className="mobile-view" style={{ display: "none" }}>
+                        {filtered.length === 0 ? <Empty icon={I.Users} text="No users found" /> : filtered.map(u => (
+                            <div key={u.id} style={{ padding: "16px 20px", borderBottom: "1px solid rgba(255,248,231,0.06)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                                <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                                    <Avatar name={u.full_name || "?"} />
+                                    <div><p style={{ fontSize: 13, fontWeight: 700, color: CR }}>{u.full_name}</p><p style={{ fontSize: 11, color: "rgba(255,248,231,0.3)" }}>{u.role.replace("_", " ")}</p></div>
+                                </div>
+                                <div style={{ display: "flex", gap: 12 }}>
+                                    <button onClick={() => handleToggleSuspend(u.id, u.is_suspended || false)} style={{ background: "none", border: "none" }}>{u.is_suspended ? <I.UserChk size={18} stroke="#4ADE80" /> : <I.Ban size={18} stroke="#FBBF24" />}</button>
+                                    <button onClick={() => handleDeleteUser(u.id)} style={{ background: "none", border: "none" }}><I.X size={18} stroke="#F87171" /></button>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
                 </Card>
             </div>
         );
@@ -547,17 +613,24 @@ export function AdminDashboardClient({
             <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
                 <h2 style={{ fontFamily: "'Fraunces',serif", fontSize: 22, fontWeight: 800, color: CR }}>Audit trail</h2>
                 <Card>
-                    {logs.map((log, i) => (
-                        <div key={log.id} style={{ padding: "16px 22px", borderBottom: i < logs.length - 1 ? "1px solid rgba(255,248,231,0.05)" : "none" }}>
-                            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
-                                <Badge type={log.action.includes("approve") ? "approved" : "pending"} label={log.action.toUpperCase().replace(/_/g, " ")} />
-                                <span style={{ fontSize: 13, fontWeight: 600 }}>{log.resource} <span style={{ opacity: 0.3 }}>#{log.resource_id}</span></span>
+                    <div style={{ display: "flex", flexDirection: "column" }}>
+                        {logs.length === 0 ? <Empty icon={I.Audit} text="No audit logs available" /> : logs.map((log, i) => (
+                            <div key={log.id} style={{ padding: "20px 22px", borderBottom: i < logs.length - 1 ? "1px solid rgba(255,248,231,0.05)" : "none", display: "flex", gap: 16 }}>
+                                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4 }}>
+                                    <div style={{ width: 32, height: 32, borderRadius: 10, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,248,231,0.08)", display: "flex", alignItems: "center", justifyContent: "center" }}><I.Activity size={14} stroke={AM} /></div>
+                                    {i < logs.length - 1 && <div style={{ width: 1, flex: 1, background: "rgba(255,248,231,0.06)" }} />}
+                                </div>
+                                <div style={{ flex: 1 }}>
+                                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 8, marginBottom: 6 }}>
+                                        <p style={{ fontSize: 14, fontWeight: 700, color: CR }}>{log.action.replace(/_/g, " ").toUpperCase()}</p>
+                                        <Badge type={log.action.includes("approve") ? "approved" : "pending"} label={(log.actor_role || "system").split("_")[0]} />
+                                    </div>
+                                    <p style={{ fontSize: 13, color: "rgba(255,248,231,0.55)", marginBottom: 8 }}>Modified <span style={{ color: AM, fontWeight: 600 }}>{log.resource}</span> (#{(log.resource_id || "").slice(0, 8)}...)</p>
+                                    <div style={{ fontSize: 11, color: "rgba(255,248,231,0.3)", fontFamily: "'DM Mono',monospace" }}>{new Date(log.created_at).toLocaleString("en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}</div>
+                                </div>
                             </div>
-                            <div style={{ fontSize: 11, color: "rgba(255,248,231,0.3)", fontFamily: "'DM Mono',monospace" }}>
-                                By {log.actor_role} · {new Date(log.created_at).toLocaleString()}
-                            </div>
-                        </div>
-                    ))}
+                        ))}
+                    </div>
                 </Card>
             </div>
         );
@@ -576,12 +649,15 @@ export function AdminDashboardClient({
         users: <Users />, audit: <Audit />, settings: <Settings />
     };
 
-    const NAV_ITEMS = [
+    const CORE_NAV = [
         { id: "overview", label: "Overview", icon: I.Home, badge: null },
         { id: "requests", label: "Requests", icon: I.Requests, badge: stats.activeRequests },
         { id: "agencies", label: "Agencies", icon: I.Agency, badge: stats.pendingAgencyApprovals },
         { id: "users", label: "Users", icon: I.Users, badge: null },
-        { id: "audit", label: "Audit", icon: I.Audit, badge: null },
+        { id: "audit", label: "Logs", icon: I.Audit, badge: null },
+    ];
+
+    const UTIL_NAV = [
         { id: "settings", label: "Settings", icon: I.Settings, badge: null },
     ];
 
@@ -594,12 +670,18 @@ export function AdminDashboardClient({
         .page-in{animation:fu .35s ease both}
         .live-dot{animation:pulse-dot 2s ease-in-out infinite}
         @keyframes pulse-dot{0%,100%{opacity:1}50%{opacity:.35}}
-        @media(max-width:1023px){
+          .desktop-view{display:block}
+          .mobile-view{display:none}
           .desktop-sidebar{display:none!important}
+          .desktop-topbar{display:none!important}
           .mobile-header{display:flex!important}
           .bottom-nav{display:flex!important}
           .main-pad{padding:16px 16px 100px!important}
+          .desktop-view{display:none!important}
+          .mobile-view{display:block!important}
         }
+        .hide-scrollbar::-webkit-scrollbar{display:none}
+        .hide-scrollbar{scrollbar-width:none}
         @media(min-width:1024px){
           .mobile-header{display:none!important}
           .bottom-nav{display:none!important}
@@ -620,7 +702,7 @@ export function AdminDashboardClient({
             <aside className="desktop-sidebar" style={{ width: 220, flexShrink: 0, height: "100vh", position: "sticky", top: 0, display: "flex", flexDirection: "column", background: "rgba(255,255,255,0.02)", borderRight: "1px solid rgba(255,248,231,0.06)" }}>
                 <div style={{ padding: "20px 18px 16px", borderBottom: "1px solid rgba(255,248,231,0.06)" }}><Logo /></div>
                 <nav style={{ flex: 1, padding: "10px 10px" }}>
-                    {NAV_ITEMS.map(item => (
+                    {[...CORE_NAV, ...UTIL_NAV].map(item => (
                         <button key={item.id} onClick={() => setView(item.id)}
                             style={{ width: "100%", display: "flex", alignItems: "center", gap: 10, padding: "9px 12px", borderRadius: 12, border: "none", cursor: "pointer", fontFamily: "inherit", transition: "all .15s", marginBottom: 2, position: "relative", background: view === item.id ? "rgba(255,255,255,0.07)" : "transparent", color: view === item.id ? CR : "rgba(255,248,231,0.45)" }}>
                             {view === item.id && <div style={{ position: "absolute", left: 0, top: "50%", transform: "translateY(-50%)", width: 3, height: 20, background: AM, borderRadius: "0 3px 3px 0" }} />}
@@ -649,13 +731,27 @@ export function AdminDashboardClient({
             {sidebarOpen && (
                 <>
                     <div className="mobile-overlay" onClick={() => setSidebarOpen(false)} style={{ position: "fixed", inset: 0, zIndex: 200, background: "rgba(0,0,0,0.6)", backdropFilter: "blur(4px)" }} />
-                    <aside style={{ position: "fixed", left: 0, top: 0, bottom: 0, width: 260, zIndex: 201, background: F, borderRight: "1px solid rgba(255,248,231,0.08)", transition: "transform .3s ease", transform: sidebarOpen ? "translateX(0)" : "translateX(-100%)", display: "flex", flexDirection: "column" }}>
-                        <div style={{ padding: "20px", display: "flex", justifyContent: "space-between" }}><Logo /><button onClick={() => setSidebarOpen(false)} style={{ background: "none", border: "none" }}><I.X size={20} stroke={CR} /></button></div>
-                        <nav style={{ padding: "10px" }}>
-                            {NAV_ITEMS.map(item => (
-                                <button key={item.id} onClick={() => { setView(item.id); setSidebarOpen(false) }} style={{ width: "100%", display: "flex", alignItems: "center", gap: 12, padding: "12px 16px", borderRadius: 12, border: "none", background: view === item.id ? "rgba(255,255,255,0.08)" : "none", color: view === item.id ? AM : CR, fontSize: 15, fontWeight: view === item.id ? 700 : 400, marginBottom: 4 }}><item.icon size={18} stroke="currentColor" />{item.label}</button>
+                    <aside style={{ position: "fixed", left: 0, top: 0, bottom: 0, width: 280, zIndex: 201, background: FD, borderRight: "1px solid rgba(255,248,231,0.08)", transition: "transform .3s ease", transform: sidebarOpen ? "translateX(0)" : "translateX(-100%)", display: "flex", flexDirection: "column" }}>
+                        <div style={{ padding: "20px", display: "flex", justifyContent: "space-between", borderBottom: "1px solid rgba(255,248,231,0.06)" }}><Logo /><button onClick={() => setSidebarOpen(false)} style={{ background: "none", border: "none" }}><I.X size={20} stroke={CR} /></button></div>
+                        <div style={{ padding: "24px 20px" }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20 }}>
+                                <Avatar name={adminProfile.full_name} color="#F87171" />
+                                <div><p style={{ fontSize: 15, fontWeight: 700, color: CR }}>{adminProfile.full_name}</p><p style={{ fontSize: 12, color: "rgba(255,248,231,0.4)" }}>{adminProfile.email}</p></div>
+                            </div>
+                        </div>
+                        <nav style={{ padding: "10px", flex: 1 }}>
+                            {UTIL_NAV.map(item => (
+                                <button key={item.id} onClick={() => { setView(item.id); setSidebarOpen(false) }} style={{ width: "100%", display: "flex", alignItems: "center", gap: 12, padding: "14px 16px", borderRadius: 12, border: "none", background: view === item.id ? "rgba(255,255,255,0.08)" : "none", color: view === item.id ? AM : CR, fontSize: 15, fontWeight: view === item.id ? 700 : 400, marginBottom: 4 }}>
+                                    <item.icon size={18} stroke="currentColor" />{item.label}
+                                </button>
                             ))}
+                            <Link href="/agencies" style={{ width: "100%", display: "flex", alignItems: "center", gap: 12, padding: "14px 16px", borderRadius: 12, color: "rgba(255,248,231,0.6)", fontSize: 15, textDecoration: "none" }}>
+                                <I.Globe size={18} stroke="currentColor" /> Patient Site
+                            </Link>
                         </nav>
+                        <div style={{ padding: "20px", borderTop: "1px solid rgba(255,248,231,0.06)" }}>
+                            <button onClick={() => window.location.href = "/auth/login"} style={{ width: "100%", padding: "12px", background: "rgba(248,113,113,0.1)", border: "1px solid rgba(248,113,113,0.2)", borderRadius: 12, color: "#F87171", fontWeight: 700, fontSize: 14 }}>Sign Out</button>
+                        </div>
                     </aside>
                 </>
             )}
@@ -677,7 +773,7 @@ export function AdminDashboardClient({
 
             {/* MOBILE BOTTOM NAV */}
             <nav className="bottom-nav" style={{ display: "none", position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 100, height: 70, background: "#0F2419ec", borderTop: "1px solid rgba(255,248,231,0.1)", backdropFilter: "blur(20px)", alignItems: "center", justifyContent: "space-around" }}>
-                {NAV_ITEMS.slice(0, 5).map(item => (
+                {CORE_NAV.map(item => (
                     <button key={item.id} onClick={() => setView(item.id)} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4, background: "none", border: "none", color: view === item.id ? AM : "rgba(255,248,231,0.4)" }}>
                         <item.icon size={22} stroke="currentColor" />
                         <span style={{ fontSize: 10, fontWeight: 700 }}>{item.label}</span>
