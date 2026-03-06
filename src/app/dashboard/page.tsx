@@ -162,12 +162,40 @@ export default async function DashboardPage() {
               </div>
             </div>
           ) : (
-            <div className="mt-5 rounded-2xl border border-dashed border-gray-300 bg-gray-50 p-6 text-center">
-              <p className="text-sm font-semibold text-gray-900">No active request yet</p>
-              <p className="text-xs text-gray-500 mt-1">When you start a switch request, your status and next steps appear here.</p>
-              <Link href="/switch/new" className="mt-4 inline-flex h-10 px-5 rounded-full bg-gray-900 text-white text-sm font-bold items-center gap-1.5">
-                Start new request <ArrowRight className="size-4" />
-              </Link>
+            <div className="mt-5 space-y-3">
+              {data.onboardingComplete ? (
+                /* Profile done — guide them to browse agencies and submit a request */
+                <div className="rounded-2xl border-2 border-green-200 bg-green-50 p-5">
+                  <div className="flex items-start gap-3">
+                    <div className="h-9 w-9 rounded-xl bg-green-100 border border-green-200 flex items-center justify-center shrink-0">
+                      <CheckCircle2 className="size-5 text-green-700" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[14px] font-bold text-green-900">Profile complete — ready to find an agency</p>
+                      <p className="text-[12px] text-green-700 mt-1">
+                        Browse agencies that match your insurance and care needs, then submit a switch request. Our team will coordinate everything.
+                      </p>
+                      <div className="flex flex-wrap gap-2 mt-3">
+                        <Link href="/agencies" className="h-9 px-4 rounded-xl bg-green-700 text-white text-xs font-bold inline-flex items-center gap-1.5 hover:bg-green-800 transition-colors">
+                          Browse agencies <ArrowRight className="size-3.5" />
+                        </Link>
+                        <Link href="/switch/new" className="h-9 px-4 rounded-xl border border-green-300 text-green-800 text-xs font-bold inline-flex items-center gap-1.5 hover:bg-green-100 transition-colors">
+                          Submit request directly
+                        </Link>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                /* Profile incomplete */
+                <div className="rounded-2xl border border-dashed border-gray-300 bg-gray-50 p-6 text-center">
+                  <p className="text-sm font-semibold text-gray-900">Complete your profile first</p>
+                  <p className="text-xs text-gray-500 mt-1">Finish setting up your profile so we can match you with the right agencies.</p>
+                  <Link href="/onboarding" className="mt-4 inline-flex h-10 px-5 rounded-full bg-gray-900 text-white text-sm font-bold items-center gap-1.5">
+                    Complete setup <ArrowRight className="size-4" />
+                  </Link>
+                </div>
+              )}
             </div>
           )}
         </section>
