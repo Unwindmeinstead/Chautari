@@ -124,17 +124,11 @@ export default async function ProfilePage() {
                 <Heart className="size-4 text-forest-500" />
                 <h2 className="font-fraunces text-lg font-semibold text-forest-800">Care Needs</h2>
               </div>
-              {d.care_type && (
-                <div>
-                  <p className="text-xs text-forest-400 mb-1">Care type</p>
-                  <Badge variant="default">{careTypeLabel(d.care_type)}</Badge>
-                </div>
-              )}
-              {d.services_needed && d.services_needed.length > 0 && (
+              {d.care_needs && d.care_needs.length > 0 && (
                 <div>
                   <p className="text-xs text-forest-400 mb-2">Services needed</p>
                   <div className="flex flex-wrap gap-2">
-                    {d.services_needed.map((s) => (
+                    {d.care_needs.map((s) => (
                       <Badge key={s} variant="secondary" className="text-xs">
                         {SERVICE_LABELS[s] ?? s.replace(/_/g, " ")}
                       </Badge>

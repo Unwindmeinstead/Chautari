@@ -100,7 +100,7 @@ export default async function DashboardPage() {
                     { label: "Personal info", done: !!data.profile?.full_name },
                     { label: "Address", done: !!data.patientDetails?.address_city },
                     { label: "Insurance", done: !!data.patientDetails?.payer_type },
-                    { label: "Care needs", done: !!(data.patientDetails as any)?.care_needs?.length || !!data.patientDetails?.care_type },
+                    { label: "Care needs", done: !!(data.patientDetails as any)?.care_needs?.length },
                     { label: "Situation", done: false },
                   ].map(({ label, done }) => (
                     <div key={label} className="flex items-center gap-1">
@@ -128,13 +128,12 @@ export default async function DashboardPage() {
           </p>
 
           {copy && currentRequest ? (
-            <div className="mt-5 rounded-2xl border border-gray-200 bg-gray-50 p-4 md:p-5 space-y-4">
-              <div>
-                <p className="text-[11px] font-bold uppercase tracking-widest text-gray-400">Current request status</p>
-                <h2 className="text-lg md:text-xl font-bold text-gray-900 mt-1">{copy.title}</h2>
-                <p className="text-sm text-gray-600 mt-1">{copy.detail}</p>
-                <p className="text-sm text-gray-700 mt-2 font-medium">{copy.next}</p>
-              </div>
+            <div className="mt-5 rounded-2xl border border-gray-200 bg-gray-50 p-4 md:p-5 space-y-4">              <div>
+              <p className="text-[11px] font-bold uppercase tracking-widest text-gray-400">Current request status</p>
+              <h2 className="text-lg md:text-xl font-bold text-gray-900 mt-1">{copy.title}</h2>
+              <p className="text-sm text-gray-600 mt-1">{copy.detail}</p>
+              <p className="text-sm text-gray-700 mt-2 font-medium">{copy.next}</p>
+            </div>
 
               <div>
                 <div className="h-2 rounded-full bg-gray-200 overflow-hidden">

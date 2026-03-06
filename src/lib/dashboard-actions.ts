@@ -4,7 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
-const BYPASS_AUTH = true;
+const BYPASS_AUTH = false;
 
 export interface DashboardData {
   profile: {
@@ -22,8 +22,7 @@ export interface DashboardData {
     address_zip: string | null;
     address_county: string | null;
     payer_type: string | null;
-    care_type: string | null;
-    services_needed: string[] | null;
+    care_needs: string[] | null;
   } | null;
   switchRequests: Array<{
     id: string;
@@ -58,9 +57,7 @@ export interface DashboardData {
 export async function getDashboardData(): Promise<DashboardData> {
   const supabase = await createClient();
 
-  const { data: { session } } = await supabase.auth.getSession();
-  const user = session?.user;
-  
+  const { data: { user } } = await supabase.auth.getUser();
   if (!user && !BYPASS_AUTH) {
     redirect("/auth/login?redirectedFrom=/dashboard");
   }
@@ -84,9 +81,6 @@ export async function getDashboardData(): Promise<DashboardData> {
   }
 
   const effectiveUser = user!;
-  if (!effectiveUser) {
-    redirect("/auth/login?redirectedFrom=/dashboard");
-  }
 
   const [profileRes, detailsRes, requestsRes, notificationsRes] = await Promise.all([
     supabase
@@ -98,7 +92,7 @@ export async function getDashboardData(): Promise<DashboardData> {
     supabase
       .from("patient_details")
       .select(
-        "address_line1, address_city, address_state, address_zip, address_county, payer_type, care_type, services_needed"
+        "address_line1, address_city, address_state, address_zip, address_county, payer_type, care_needs"
       )
       .eq("patient_id", effectiveUser.id)
       .single(),
@@ -141,7 +135,7 @@ export async function getDashboardData(): Promise<DashboardData> {
 
   const notifications = notificationsRes.data ?? [];
   const unreadCount = notifications.filter((n) => !n.read_at).length;
-  const onboardingComplete = !!(detailsRes.data?.payer_type);
+  const onboardingComplete = !!(detailsRes.data?.payer_type && detailsRes.data?.care_needs?.length);
 
   return {
     profile: { ...profileRes.data, email: effectiveUser.email ?? null },

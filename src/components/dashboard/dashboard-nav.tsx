@@ -142,12 +142,6 @@ export function ProfileCard({ profile, details }: { profile: DashboardData["prof
             {details.payer_type === "medicaid" ? "Medicaid" : details.payer_type === "medicare" ? "Medicare" : "Private Pay"}
           </div>
         )}
-        {details?.care_type && (
-          <div className="flex items-center gap-3 text-[13px] font-medium text-gray-600">
-            <Heart className="size-4 text-gray-400 shrink-0" />
-            {details.care_type === "home_health" ? "Home Health" : "Home Care"}
-          </div>
-        )}
         {profile?.phone && (
           <div className="flex items-center gap-3 text-[13px] font-medium text-gray-600">
             <Phone className="size-4 text-gray-400 shrink-0" />
