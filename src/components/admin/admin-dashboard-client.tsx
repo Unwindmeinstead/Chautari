@@ -121,11 +121,11 @@ const Card = ({ children, style = {} }: any) => (
 const CardHead = ({ title, sub, action }: any) => (
     <div style={{
         display: "flex", alignItems: "center", justifyContent: "space-between",
-        padding: "16px 22px", borderBottom: "1px solid rgba(255,248,231,0.06)"
+        padding: "18px 24px", borderBottom: "1px solid rgba(255,248,231,0.06)"
     }}>
         <div>
-            <p style={{ fontSize: 14, fontWeight: 700, color: CR, fontFamily: "'Fraunces',serif", letterSpacing: "-0.01em" }}>{title}</p>
-            {sub && <p style={{ fontSize: 11, color: "rgba(255,248,231,0.35)", marginTop: 2 }}>{sub}</p>}
+            <p style={{ fontSize: 15, fontWeight: 700, color: CR, fontFamily: "'Fraunces',serif", letterSpacing: "-0.01em" }}>{title}</p>
+            {sub && <p style={{ fontSize: 11, color: "rgba(255,248,231,0.3)", marginTop: 2 }}>{sub}</p>}
         </div>
         {action}
     </div>
@@ -134,37 +134,39 @@ const CardHead = ({ title, sub, action }: any) => (
 /* ── KPI stat tile ── */
 const KpiTile = ({ label, value, sub, accent, icon: Icon, trend }: any) => (
     <div style={{
-        background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,248,231,0.07)",
-        borderRadius: 18, padding: "18px 20px", position: "relative", overflow: "hidden"
+        background: "linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.01) 100%)",
+        border: "1px solid rgba(255,248,231,0.07)",
+        borderRadius: 22, padding: "22px 24px", position: "relative", overflow: "hidden",
+        boxShadow: "0 4px 20px rgba(0,0,0,0.15)"
     }}>
         <div style={{
-            position: "absolute", top: 0, left: 0, width: 3, height: "100%",
-            background: accent, borderRadius: "18px 0 0 18px", opacity: 0.7
+            position: "absolute", top: 0, left: 0, width: 4, height: "100%",
+            background: accent, borderRadius: "22px 0 0 22px", opacity: 0.6
         }} />
-        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 10 }}>
+        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 14 }}>
             <p style={{
-                fontSize: 10, fontWeight: 600, color: "rgba(255,248,231,0.4)",
-                letterSpacing: "0.1em", textTransform: "uppercase", fontFamily: "'DM Mono',monospace"
+                fontSize: 10, fontWeight: 700, color: "rgba(255,248,231,0.35)",
+                letterSpacing: "0.12em", textTransform: "uppercase", fontFamily: "'DM Mono',monospace"
             }}>{label}</p>
             <div style={{
-                width: 30, height: 30, borderRadius: 9, background: `${accent}15`,
-                border: `1px solid ${accent}25`, display: "flex", alignItems: "center", justifyContent: "center"
+                width: 32, height: 32, borderRadius: 10, background: `${accent}12`,
+                border: `1px solid ${accent}20`, display: "flex", alignItems: "center", justifyContent: "center"
             }}>
-                <Icon size={14} stroke={accent} />
+                <Icon size={16} stroke={accent} />
             </div>
         </div>
-        <p style={{
-            fontFamily: "'Fraunces',serif", fontSize: 32, fontWeight: 800, color: CR,
-            lineHeight: 1, letterSpacing: "-0.03em", marginBottom: 6
-        }}>{value}</p>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-            <p style={{ fontSize: 11, color: "rgba(255,248,231,0.35)", lineHeight: 1.4 }}>{sub}</p>
+        <div style={{ display: "flex", alignItems: "baseline", gap: 10, marginBottom: 8 }}>
+            <p style={{
+                fontFamily: "'Fraunces',serif", fontSize: 36, fontWeight: 800, color: CR,
+                lineHeight: 1, letterSpacing: "-0.04em"
+            }}>{value}</p>
             {trend && <span style={{
-                fontSize: 10, fontWeight: 700, color: "#4ADE80",
-                background: "rgba(74,222,128,0.1)", borderRadius: 100, padding: "2px 7px",
+                fontSize: 11, fontWeight: 700, color: "#4ADE80",
+                background: "rgba(74,222,128,0.08)", borderRadius: 100, padding: "2px 8px",
                 fontFamily: "'DM Mono',monospace"
             }}>{trend}</span>}
         </div>
+        <p style={{ fontSize: 12, color: "rgba(255,248,231,0.3)", lineHeight: 1.4, fontWeight: 400 }}>{sub}</p>
     </div>
 );
 
@@ -750,7 +752,7 @@ export function AdminDashboardClient({
                             </Link>
                         </nav>
                         <div style={{ padding: "20px", borderTop: "1px solid rgba(255,248,231,0.06)" }}>
-                            <button onClick={() => window.location.href = "/auth/login"} style={{ width: "100%", padding: "12px", background: "rgba(248,113,113,0.1)", border: "1px solid rgba(248,113,113,0.2)", borderRadius: 12, color: "#F87171", fontWeight: 700, fontSize: 14 }}>Sign Out</button>
+                            <Link href="/api/auth/signout" style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", padding: "12px", background: "rgba(248,113,113,0.1)", border: "1px solid rgba(248,113,113,0.2)", borderRadius: 12, color: "#F87171", fontWeight: 700, fontSize: 14, textDecoration: "none" }}>Sign Out</Link>
                         </div>
                     </aside>
                 </>
@@ -758,15 +760,22 @@ export function AdminDashboardClient({
 
             {/* MAIN CONTENT */}
             <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column" }}>
-                <header className="desktop-topbar" style={{ height: 60, padding: "0 40px", display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "1px solid rgba(255,248,231,0.06)", background: "#0F2419ec", backdropFilter: "blur(16px)", position: "sticky", top: 0, zIndex: 50 }}>
-                    <div><h1 style={{ fontSize: 15, fontWeight: 800, fontFamily: "'Fraunces',serif", textTransform: "capitalize" }}>{view}</h1><p style={{ fontSize: 10, color: "rgba(255,248,231,0.3)", fontFamily: "'DM Mono',monospace" }}>{dateStr}</p></div>
-                    <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-                        <div style={{ fontSize: 11, fontWeight: 700, color: "#4ADE80", background: "rgba(74,222,128,0.1)", borderRadius: 100, padding: "4px 12px", display: "flex", alignItems: "center", gap: 6 }}><span className="live-dot" style={{ width: 6, height: 6, background: "#4ADE80", borderRadius: "50%" }} />Live</div>
-                        <I.Bell size={18} stroke="rgba(255,248,231,0.4)" />
+                <header className="desktop-topbar" style={{ height: 64, padding: "0 40px", display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "1px solid rgba(255,248,231,0.08)", background: "rgba(15,36,25,0.85)", backdropFilter: "blur(20px)", position: "sticky", top: 0, zIndex: 50 }}>
+                    <div>
+                        <h1 style={{ fontSize: 16, fontWeight: 800, fontFamily: "'Fraunces',serif", textTransform: "capitalize", color: CR, lineHeight: 1 }}>{view}</h1>
+                        <p style={{ fontSize: 10, color: "rgba(255,248,231,0.3)", fontFamily: "'DM Mono',monospace", marginTop: 2 }}>{dateStr}</p>
+                    </div>
+                    <div style={{ display: "flex", alignItems: "center", gap: 18 }}>
+                        <div style={{ fontSize: 11, fontWeight: 700, color: "#4ADE80", background: "rgba(74,222,128,0.1)", border: "1px solid rgba(74,222,128,0.15)", borderRadius: 100, padding: "4px 14px", display: "flex", alignItems: "center", gap: 7 }}>
+                            <span className="live-dot" style={{ width: 6, height: 6, background: "#4ADE80", borderRadius: "50%" }} />
+                            LIVE MONITOR
+                        </div>
+                        <div style={{ width: 1, height: 20, background: "rgba(255,248,231,0.1)" }} />
+                        <I.Bell size={19} stroke="rgba(255,248,231,0.45)" style={{ cursor: "pointer" }} />
                     </div>
                 </header>
 
-                <main className="main-pad page-in" style={{ padding: 40, flex: 1, overflowY: "auto" }}>
+                <main className="main-pad page-in" style={{ padding: "40px 48px", flex: 1, overflowY: "auto" }}>
                     {VIEWS[view]}
                 </main>
             </div>
