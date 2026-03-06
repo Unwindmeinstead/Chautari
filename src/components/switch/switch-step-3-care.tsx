@@ -150,9 +150,13 @@ export function SwitchStep3Care({ onComplete, onBack, defaultValues, agencyServi
               </div>
             )}
 
-            {errors.services_requested && (
-              <p className="text-sm text-red-500">{errors.services_requested.message}</p>
-            )}
+            {/* Fallback when agency has no listed services for the selected care type */}
+            {((showHealthServices && availableHealthServices.length === 0) || !showHealthServices) &&
+              ((showCareServices && availableCareServices.length === 0) || !showCareServices) && (
+                <div className="rounded-xl border border-forest-100 bg-forest-50/50 p-4 text-sm text-forest-600">
+                  This agency hasn&apos;t listed specific services yet. Your request will include your care type and any special instructions below.
+                </div>
+              )}
 
             {/* Requested start date */}
             <Input
