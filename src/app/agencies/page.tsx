@@ -11,6 +11,12 @@ interface AgenciesPageProps {
   searchParams: { [key: string]: string | undefined };
 }
 
+/* ── Design tokens (match landing page) ── */
+const F = "#1A3D2B"; // forest
+const FD = "#0F2419"; // forest dark
+const CR = "#FFF8E7"; // cream
+const AM = "#E8933A"; // amber
+
 export default async function AgenciesPage({ searchParams }: AgenciesPageProps) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -32,46 +38,72 @@ export default async function AgenciesPage({ searchParams }: AgenciesPageProps) 
   const { agencies, total } = await searchAgencies(initialFilters, 1, 12);
 
   return (
-    <div className="min-h-screen bg-white text-gray-900 font-sans">
-      {/* Nav */}
-      <nav className="sticky top-0 z-30 bg-white border-b border-gray-100 shadow-[0_4px_24px_rgba(0,0,0,0.02)]">
-        <div className="max-w-[1200px] mx-auto px-4 sm:px-6 h-[68px] flex items-center justify-between gap-3 sm:gap-6">
-          <Link href="/" className="hover:opacity-80 transition-opacity shrink-0">
-            <Logo size="sm" />
-          </Link>
-          <div className="hidden md:flex items-center gap-6 text-[14px] font-semibold text-gray-500">
-            {user ? (
-              <Link href="/dashboard" className="hover:text-gray-900 transition-colors">Dashboard</Link>
-            ) : (
-              <Link href="/" className="hover:text-gray-900 transition-colors">Home</Link>
-            )}
-            <Link href="/agencies" className="text-gray-900 font-bold border-b-2 border-gray-900 pb-0.5">Find Agencies</Link>
-          </div>
+    <div style={{ minHeight: "100vh", background: FD, fontFamily: "'DM Sans', sans-serif", color: CR, overflowX: "hidden" }}>
+      <style dangerouslySetInnerHTML={{
+        __html: `
+        @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,700;0,800;0,900;1,700;1,800&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500;600&display=swap');
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background: ${FD}; }
+        @keyframes pulse-dot { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(.75)} }
+        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.5} }
+        @keyframes fadeUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+        .card-in { animation: fadeUp 0.5s ease forwards; }
+        select option { background: ${FD}; color: ${CR}; }
+      `}} />
+
+      {/* ── NAV ── */}
+      <nav style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 200, height: 64, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 clamp(16px,4vw,48px)", transition: "all 0.3s", background: "rgba(15,36,25,0.97)", borderBottom: "1px solid rgba(255,248,231,0.06)", backdropFilter: "blur(20px)" }}>
+        <Link href="/" style={{ textDecoration: "none" }}><Logo light /></Link>
+        <div style={{ display: "flex", alignItems: "center", gap: 28 }}>
+          <Link href="/" style={{ fontSize: 13, color: "rgba(255,248,231,0.45)", textDecoration: "none", transition: "color 0.2s" }} className="hover:text-[#FFF8E7]">Home</Link>
+          <Link href="/agencies" style={{ fontSize: 13, fontWeight: 600, color: AM, textDecoration: "none", borderBottom: `1px solid ${AM}`, paddingBottom: 1 }}>Find Agencies</Link>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           {user ? (
-            <Link href="/dashboard" className="h-9 px-3 sm:px-5 rounded-full border border-gray-200 text-[12px] sm:text-[13px] font-bold text-gray-700 flex items-center hover:border-gray-900 hover:text-gray-900 transition-all whitespace-nowrap">
-              <span className="hidden sm:inline">← </span>Dashboard
-            </Link>
+            <Link href="/dashboard" style={{ fontSize: 13, color: "rgba(255,248,231,0.5)", textDecoration: "none" }} className="hover:text-[#FFF8E7]">Dashboard</Link>
           ) : (
-            <Link href="/auth/login" className="h-9 px-4 sm:px-5 rounded-full bg-gray-900 text-white text-[12px] sm:text-[13px] font-bold flex items-center hover:bg-gray-800 transition-colors whitespace-nowrap">
-              Sign in
-            </Link>
+            <>
+              <Link href="/auth/login" style={{ fontSize: 13, color: "rgba(255,248,231,0.5)", textDecoration: "none" }} className="hover:text-[#FFF8E7]">Sign in</Link>
+              <Link href="/auth/register" style={{ fontSize: 13, fontWeight: 600, color: FD, background: AM, padding: "8px 20px", borderRadius: 100, textDecoration: "none", transition: "all 0.2s" }} className="hover:bg-[#D4822E] hover:-translate-y-px">
+                Start free
+              </Link>
+            </>
           )}
         </div>
       </nav>
 
-      <div className="max-w-[1200px] mx-auto px-4 sm:px-6 py-6 sm:py-10 space-y-6 sm:space-y-8">
-        {/* Header */}
-        <div className="space-y-2 pb-6 border-b border-gray-100">
-          <h1 className="text-[24px] sm:text-[28px] font-extrabold tracking-tight text-gray-900">
-            Find a Home Care Agency
-          </h1>
-          <p className="text-[14px] sm:text-[15px] font-medium text-gray-500 max-w-2xl">
-            {total > 0 ? `${total.toLocaleString()} agencies` : "Agencies"} verified to operate in Pennsylvania.
-            {!user && " Sign in for personalized recommendations based on your insurance."}
-          </p>
+      {/* ── PAGE HEADER ── */}
+      <div style={{ paddingTop: 64, background: F, borderBottom: "1px solid rgba(255,248,231,0.07)" }}>
+        <div style={{ maxWidth: 1280, margin: "0 auto", padding: "clamp(32px,5vw,56px) clamp(16px,4vw,48px) clamp(24px,4vw,40px)" }}>
+          {/* Eyebrow */}
+          <div style={{ display: "inline-flex", alignItems: "center", gap: 8, fontSize: 11, fontWeight: 500, letterSpacing: "0.12em", textTransform: "uppercase", color: AM, marginBottom: 12, fontFamily: "'DM Mono', monospace" }}>
+            <span style={{ width: 24, height: 1, background: AM }} /> Pennsylvania directory
+          </div>
+          <div style={{ display: "flex", flexWrap: "wrap", alignItems: "flex-end", justifyContent: "space-between", gap: 16 }}>
+            <div>
+              <h1 style={{ fontFamily: "'Fraunces', serif", fontSize: "clamp(32px,4vw,52px)", fontWeight: 800, letterSpacing: "-0.03em", lineHeight: 1.05, color: CR, marginBottom: 10 }}>
+                Find a Home Care <em style={{ fontStyle: "italic", color: AM }}>Agency.</em>
+              </h1>
+              <p style={{ fontSize: 15, fontWeight: 300, color: "rgba(255,248,231,0.6)", lineHeight: 1.7, maxWidth: 520 }}>
+                {total > 0 ? `${total.toLocaleString()} agencies` : "Agencies"} verified to operate in Pennsylvania.
+                {!user && " Sign in for personalized recommendations based on your insurance."}
+              </p>
+            </div>
+            {/* Quick stats */}
+            <div style={{ display: "flex", gap: 24, flexWrap: "wrap" }}>
+              {[["27+", "Verified agencies"], ["$97", "Flat switch fee"], ["5–7", "Days to switch"]].map(([val, lbl]) => (
+                <div key={lbl} style={{ textAlign: "center" }}>
+                  <div style={{ fontFamily: "'Fraunces', serif", fontSize: 26, fontWeight: 800, color: AM, lineHeight: 1 }}>{val}</div>
+                  <div style={{ fontSize: 10, color: "rgba(255,248,231,0.35)", textTransform: "uppercase", letterSpacing: "0.08em", marginTop: 3, fontFamily: "'DM Mono', monospace" }}>{lbl}</div>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
+      </div>
 
-        <Suspense fallback={<div className="text-gray-400 text-sm font-medium py-8">Loading agencies…</div>}>
+      <div style={{ maxWidth: 1280, margin: "0 auto", padding: "clamp(20px,3vw,36px) clamp(16px,4vw,48px) 80px" }}>
+        <Suspense fallback={<div style={{ color: "rgba(255,248,231,0.4)", fontSize: 14, fontWeight: 500, padding: "32px 0" }}>Loading agencies…</div>}>
           <AgencySearchClient
             initialAgencies={agencies}
             initialTotal={total}

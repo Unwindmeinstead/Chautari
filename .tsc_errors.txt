@@ -1,0 +1,20 @@
+
+> chautari@0.1.0 type-check
+> tsc --noEmit
+
+src/app/page.tsx(60,17): error TS7031: Binding element 'd' implicitly has an 'any' type.
+src/app/page.tsx(77,17): error TS7031: Binding element 'filled' implicitly has an 'any' type.
+src/app/page.tsx(82,35): error TS7031: Binding element 'open' implicitly has an 'any' type.
+src/app/page.tsx(108,28): error TS7031: Binding element 'value' implicitly has an 'any' type.
+src/app/page.tsx(131,20): error TS7031: Binding element 'q' implicitly has an 'any' type.
+src/app/page.tsx(131,23): error TS7031: Binding element 'a' implicitly has an 'any' type.
+src/app/page.tsx(167,21): error TS7006: Parameter 'e' implicitly has an 'any' type.
+src/app/page.tsx(167,24): error TS7006: Parameter 'id' implicitly has an 'any' type.
+src/app/page.tsx(315,40): error TS2339: Property 'style' does not exist on type 'EventTarget'.
+src/app/page.tsx(315,73): error TS2339: Property 'parentNode' does not exist on type 'EventTarget'.
+src/app/page.tsx(382,17): error TS2322: Type '{ children: ("" | Element)[]; key: string; className: string; style: { background: string; padding: string; position: "relative"; overflow: "hidden"; cursor: "default"; }; onMouseEnter: (e: MouseEvent<...>) => string; onMouseLeave: (e: MouseEvent<...>) => string; style2: { ...; }; }' is not assignable to type 'DetailedHTMLProps<HTMLAttributes<HTMLDivElement>, HTMLDivElement>'.
+  Property 'style2' does not exist on type 'DetailedHTMLProps<HTMLAttributes<HTMLDivElement>, HTMLDivElement>'. Did you mean 'style'?
+src/app/page.tsx(436,38): error TS2322: Type 'number' is not assignable to type 'string'.
+src/app/page.tsx(437,38): error TS2322: Type 'number' is not assignable to type 'string'.
+src/app/page.tsx(520,42): error TS2339: Property 'style' does not exist on type 'EventTarget'.
+src/app/page.tsx(520,75): error TS2339: Property 'parentNode' does not exist on type 'EventTarget'.

@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useCallback } from "react";
-import { ChevronLeft, ChevronRight, AlertCircle, Building2 } from "lucide-react";
+import Link from "next/link";
 import { AgencyCard, AgencyCardSkeleton } from "./agency-card";
 import { AgencyFilters, AgencySearchBar } from "./agency-filters";
 import { searchAgencies, type AgencySearchFilters } from "@/lib/agency-actions";
@@ -17,6 +17,23 @@ interface AgencySearchClientProps {
 }
 
 const PAGE_SIZE = 12;
+
+/* ── Design tokens ── */
+const F = "#1A3D2B"; // forest
+const FD = "#0F2419"; // forest dark
+const CR = "#FFF8E7"; // cream
+const AM = "#E8933A"; // amber
+
+/* ── SVG Icon base ── */
+const Icon = ({ d, size = 16, stroke = "currentColor", fill = "none", strokeWidth = 1.5 }: any) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill={fill} stroke={stroke} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round">
+    {Array.isArray(d) ? d.map((p: string, i: number) => <path key={i} d={p} />) : <path d={d} />}
+  </svg>
+);
+const ChevronL = ({ size = 16, stroke = "currentColor" }: any) => <Icon size={size} stroke={stroke} d="M15 18l-6-6 6-6" />;
+const ChevronR = ({ size = 16, stroke = "currentColor" }: any) => <Icon size={size} stroke={stroke} d="M9 18l6-6-6-6" />;
+const ArrowR = ({ size = 14, stroke = "currentColor" }: any) => <Icon size={size} stroke={stroke} d="M5 12h14M12 5l7 7-7 7" />;
+const Building = ({ size = 20, stroke = "currentColor" }: any) => <Icon size={size} stroke={stroke} d={["M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z", "M9 22V12h6v10"]} />;
 
 export function AgencySearchClient({
   initialAgencies,
@@ -50,7 +67,7 @@ export function AgencySearchClient({
     clearTimeout(queryRef.current);
     queryRef.current = setTimeout(() => {
       fetchAgencies(newFilters, 1);
-    }, newFilters.query !== filters.query ? 400 : 0);
+    }, (newFilters.query !== filters.query) ? 400 : 0);
   }
 
   function handlePageChange(newPage: number) {
@@ -62,34 +79,25 @@ export function AgencySearchClient({
   const hasPatientFilters = patientCounty || patientPayerType;
   const showPersonalisedBanner = hasPatientFilters && !filters.county && !filters.payer_type;
 
-  return (
-    <div className="space-y-6">
-      {/* Personalised banner */}
-      {showPersonalisedBanner && (
-        <div className="rounded-2xl bg-gray-50 border border-gray-200 p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div>
-            <p className="text-[14px] font-bold text-gray-900">Show agencies matching your profile?</p>
-            <p className="text-[12px] font-medium text-gray-500 mt-0.5">
-              {patientCounty && `${patientCounty} County`}{patientCounty && patientPayerType && " · "}{patientPayerType?.replace("_", " ")}
-            </p>
-          </div>
-          <div className="flex items-center gap-3 shrink-0 w-full sm:w-auto">
-            <button
-              onClick={() => handleFiltersChange({ ...filters, county: patientCounty ?? undefined, payer_type: (patientPayerType as any) ?? undefined })}
-              className="h-10 w-full sm:w-auto px-5 rounded-full bg-gray-900 text-white text-[12px] font-bold hover:bg-gray-800 transition-colors">
-              Apply my filters
-            </button>
-          </div>
-        </div>
-      )}
+  const activeFilterCount = [
+    filters.county && filters.county !== "all",
+    filters.care_type && filters.care_type !== "all",
+    filters.payer_type && filters.payer_type !== "all",
+    filters.language && filters.language !== "all",
+    filters.verified_only,
+    filters.accepting_patients,
+    filters.min_quality_score && filters.min_quality_score > 0,
+  ].filter(Boolean).length;
 
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
       {/* Search bar */}
       <AgencySearchBar
         value={filters.query ?? ""}
         onChange={q => handleFiltersChange({ ...filters, query: q })}
       />
 
-      <div className="flex flex-col lg:flex-row gap-5 lg:gap-7 items-start">
+      <div style={{ display: "flex", gap: 20, alignItems: "flex-start" }}>
         {/* Sidebar filters */}
         <AgencyFilters
           filters={filters}
@@ -99,87 +107,116 @@ export function AgencySearchClient({
         />
 
         {/* Results */}
-        <div className="flex-1 min-w-0 space-y-6">
-          {/* Results count (desktop) */}
-          <div className="hidden lg:flex items-center justify-between">
-            <p className="text-[13px] font-semibold text-gray-500">
-              {loading ? "Searching…" : `${total.toLocaleString()} agencies found`}
-            </p>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          {/* Result count & personalized banner */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 16, marginBottom: 16 }}>
+            {showPersonalisedBanner && (
+              <div style={{ background: F, border: "1px solid rgba(255,248,231,0.08)", borderRadius: 20, padding: "16px 24px", display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: 16 }}>
+                <div>
+                  <div style={{ fontFamily: "'Fraunces', serif", fontSize: 16, fontWeight: 700, color: CR }}>Show agencies matching your profile?</div>
+                  <div style={{ fontSize: 12, color: "rgba(255,248,231,0.5)" }}>
+                    {patientCounty && `${patientCounty} County`}{patientCounty && patientPayerType && " · "}{patientPayerType?.replace("_", " ")}
+                  </div>
+                </div>
+                <button
+                  onClick={() => handleFiltersChange({ ...filters, county: patientCounty ?? undefined, payer_type: (patientPayerType as any) ?? undefined })}
+                  style={{ background: AM, color: FD, fontSize: 13, fontWeight: 700, padding: "8px 20px", borderRadius: 100, border: "none", cursor: "pointer", transition: "all 0.2s" }}
+                  className="hover:bg-[#D4822E] hover:-translate-y-px">
+                  Apply my filters
+                </button>
+              </div>
+            )}
+
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <p style={{ fontSize: 13, fontWeight: 500, color: "rgba(255,248,231,0.45)", fontFamily: "'DM Mono', monospace" }}>
+                {loading ? "Searching…" : `${total.toLocaleString()} ${total === 1 ? "agency" : "agencies"} found`}
+              </p>
+              {activeFilterCount > 0 && (
+                <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11, color: AM, fontFamily: "'DM Mono', monospace" }}>
+                  <span style={{ width: 6, height: 6, borderRadius: "50%", background: AM }} />
+                  {activeFilterCount} filter{activeFilterCount > 1 ? "s" : ""} active
+                </div>
+              )}
+            </div>
           </div>
 
           {error && (
-            <div className="rounded-2xl bg-red-50 border border-red-100 p-4 flex items-center gap-3 text-red-700">
-              <AlertCircle className="size-5 shrink-0" />
-              <p className="text-[13px] font-semibold">{error}</p>
+            <div style={{ background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.2)", borderRadius: 16, padding: "12px 16px", color: "#FCA5A5", fontSize: 13, fontWeight: 500, marginBottom: 20 }}>
+              {error}
             </div>
           )}
 
-          {loading && (
-            <div className="grid grid-cols-1 xl:grid-cols-2 gap-3 sm:gap-4">
+          {loading ? (
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: 12 }}>
               {Array.from({ length: 6 }).map((_, i) => <AgencyCardSkeleton key={i} />)}
             </div>
-          )}
-
-          {!loading && agencies.length === 0 && !error && (
-            <div className="rounded-2xl border border-dashed border-gray-200 bg-gray-50/50 py-16 text-center px-6">
-              <div className="h-14 w-14 rounded-full bg-white border border-gray-200 flex items-center justify-center mx-auto mb-5">
-                <Building2 className="size-6 text-gray-400" />
+          ) : agencies.length === 0 ? (
+            <div style={{ textAlign: "center", padding: "80px 20px", border: "1px dashed rgba(255,248,231,0.1)", borderRadius: 20 }}>
+              <div style={{ width: 52, height: 52, borderRadius: "50%", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,248,231,0.08)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px" }}>
+                <Building size={22} stroke="rgba(255,248,231,0.3)" />
               </div>
-              <h3 className="text-[17px] font-bold text-gray-900 mb-2">No agencies found</h3>
-              <p className="text-[13px] font-medium text-gray-500 max-w-sm mx-auto mb-6">
-                Try adjusting your filters — for example, clear the county filter to see statewide agencies.
+              <h3 style={{ fontFamily: "'Fraunces', serif", fontSize: 20, fontWeight: 700, color: CR, marginBottom: 8 }}>No agencies found</h3>
+              <p style={{ fontSize: 13, color: "rgba(255,248,231,0.4)", marginBottom: 24, lineHeight: 1.7, maxWidth: 300, margin: "0 auto 24px" }}>
+                Try adjusting your filters — clearing the county filter shows statewide agencies.
               </p>
-              <button
-                onClick={() => handleFiltersChange({ query: filters.query })}
-                className="h-10 px-6 rounded-full border border-gray-300 text-[13px] font-bold text-gray-700 hover:border-gray-900 hover:text-gray-900 transition-all inline-flex items-center gap-2"
-              >
+              <button onClick={() => handleFiltersChange({ query: filters.query })}
+                style={{ fontSize: 13, fontWeight: 600, color: AM, background: "rgba(232,147,58,0.1)", border: "1px solid rgba(232,147,58,0.2)", borderRadius: 100, padding: "10px 24px", cursor: "pointer", fontFamily: "inherit", transition: "all 0.2s" }}
+                className="hover:bg-[#E8933A] hover:text-[#0F2419]">
                 Clear all filters
               </button>
             </div>
-          )}
-
-          {!loading && agencies.length > 0 && (
-            <div className="grid grid-cols-1 xl:grid-cols-2 gap-3 sm:gap-4">
-              {agencies.map(agency => <AgencyCard key={agency.id} agency={agency} />)}
-            </div>
-          )}
-
-          {/* Pagination */}
-          {!loading && totalPages > 1 && (
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-4">
-              <button
-                onClick={() => handlePageChange(page - 1)}
-                disabled={page === 1}
-                className="flex items-center justify-center gap-1.5 h-10 px-5 rounded-full border border-gray-200 text-[13px] font-bold text-gray-700 hover:border-gray-900 hover:text-gray-900 transition-all disabled:opacity-40 disabled:pointer-events-none w-full sm:w-auto"
-              >
-                <ChevronLeft className="size-4" /> Previous
-              </button>
-
-              <div className="flex items-center justify-center gap-1 order-first sm:order-none">
-                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                  let p = i + 1;
-                  if (totalPages > 5) {
-                    if (page <= 3) p = i + 1;
-                    else if (page >= totalPages - 2) p = totalPages - 4 + i;
-                    else p = page - 2 + i;
-                  }
-                  return (
-                    <button key={p} onClick={() => handlePageChange(p)}
-                      className={`h-9 w-9 rounded-full text-[13px] font-bold transition-colors ${p === page ? "bg-gray-900 text-white" : "text-gray-500 hover:bg-gray-100"}`}>
-                      {p}
-                    </button>
-                  );
-                })}
+          ) : (
+            <>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: 12 }}>
+                {agencies.map((agency, i) => (
+                  <div key={agency.id} className="card-in" style={{ animationDelay: `${i * 40}ms` }}>
+                    <AgencyCard agency={agency} />
+                  </div>
+                ))}
               </div>
 
-              <button
-                onClick={() => handlePageChange(page + 1)}
-                disabled={page === totalPages}
-                className="flex items-center justify-center gap-1.5 h-10 px-5 rounded-full border border-gray-200 text-[13px] font-bold text-gray-700 hover:border-gray-900 hover:text-gray-900 transition-all disabled:opacity-40 disabled:pointer-events-none w-full sm:w-auto"
-              >
-                Next <ChevronRight className="size-4" />
-              </button>
-            </div>
+              {/* Pagination */}
+              {totalPages > 1 && (
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 12, marginTop: 40, borderTop: "1px solid rgba(255,248,231,0.06)", paddingTop: 24 }}>
+                  <button
+                    onClick={() => handlePageChange(page - 1)}
+                    disabled={page === 1}
+                    style={{ background: "none", border: "none", cursor: page === 1 ? "default" : "pointer", opacity: page === 1 ? 0.2 : 1, color: CR, transition: "transform 0.2s" }}
+                    onMouseEnter={e => page !== 1 && (e.currentTarget.style.transform = "translateX(-4px)")}
+                    onMouseLeave={e => (e.currentTarget.style.transform = "none")}>
+                    <ChevronL size={24} />
+                  </button>
+                  <div style={{ display: "flex", gap: 12 }}>
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map(p => (
+                      <button key={p} onClick={() => handlePageChange(p)}
+                        style={{ width: 32, height: 32, borderRadius: 8, border: "none", cursor: "pointer", background: p === page ? AM : "rgba(255,255,255,0.05)", color: p === page ? FD : CR, fontSize: 13, fontWeight: 700, transition: "all 0.2s" }}>
+                        {p}
+                      </button>
+                    ))}
+                  </div>
+                  <button
+                    onClick={() => handlePageChange(page + 1)}
+                    disabled={page === totalPages}
+                    style={{ background: "none", border: "none", cursor: page === totalPages ? "default" : "pointer", opacity: page === totalPages ? 0.2 : 1, color: CR, transition: "transform 0.2s" }}
+                    onMouseEnter={e => page !== totalPages && (e.currentTarget.style.transform = "translateX(4px)")}
+                    onMouseLeave={e => (e.currentTarget.style.transform = "none")}>
+                    <ChevronR size={24} />
+                  </button>
+                </div>
+              )}
+
+              {/* Switch CTA banner */}
+              <div style={{ marginTop: 48, background: F, border: "1px solid rgba(255,248,231,0.08)", borderRadius: 20, padding: "24px 28px", display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: 16 }}>
+                <div>
+                  <div style={{ fontFamily: "'Fraunces', serif", fontSize: 18, fontWeight: 700, color: CR, marginBottom: 4 }}>Ready to switch agencies?</div>
+                  <p style={{ fontSize: 13, fontWeight: 300, color: "rgba(255,248,231,0.55)", lineHeight: 1.6 }}>We handle the paperwork and coordination. One-time $97 fee. Usually done in 5–7 days.</p>
+                </div>
+                <Link href="/auth/register" style={{ display: "inline-flex", alignItems: "center", gap: 8, background: AM, color: FD, fontSize: 13, fontWeight: 700, padding: "11px 24px", borderRadius: 100, textDecoration: "none", flexShrink: 0, transition: "all 0.2s", boxShadow: "0 8px 24px rgba(232,147,58,0.25)" }}
+                  className="hover:bg-[#D4822E] hover:-translate-y-px">
+                  Start your switch <ArrowR size={14} stroke={FD} />
+                </Link>
+              </div>
+            </>
           )}
         </div>
       </div>
