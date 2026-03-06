@@ -33,20 +33,37 @@ interface AgencyFiltersProps {
   loading?: boolean;
 }
 
-function FilterSelect({ label, value, onChange, options }: { label: string; value: string; onChange: (v: string) => void; options: { v: string | number; l: string }[] }) {
+const FilterIcon = ({ d, size = 18 }: any) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={AM} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+    <path d={d} />
+  </svg>
+);
+
+const FilterIcons = {
+  sort: "M3 6h18M7 12h10M10 18h4",
+  county: "M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z M12 7m-3 0a3 3 0 1 0 6 0a3 3 0 1 0-6 0",
+  care: "M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z M9 22V12h6v10",
+  payer: "M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z",
+  lang: "M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20z M2 12h20 M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z",
+  quality: "M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
+};
+
+function FilterSelect({ label, value, onChange, options, iconD }: { label: string; value: string; onChange: (v: string) => void; options: { v: string | number; l: string }[]; iconD: string }) {
   const [focused, setFocused] = React.useState(false);
   return (
-    <div>
-      <label style={{ display: "block", fontSize: 10, fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(255,248,231,0.4)", marginBottom: 6, fontFamily: "'DM Mono', monospace" }}>{label}</label>
+    <div style={{ flex: "1 1 100%", marginBottom: 4 }}>
+      <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(255,248,231,0.35)", marginBottom: 8, fontFamily: "'DM Mono', monospace" }}>
+        <FilterIcon d={iconD} size={12} /> {label}
+      </label>
       <div style={{ position: "relative" }}>
         <select value={String(value)} onChange={e => onChange(e.target.value)}
-          style={{ width: "100%", appearance: "none", background: "rgba(255,255,255,0.04)", border: focused ? `1px solid rgba(232,147,58,0.5)` : "1px solid rgba(255,248,231,0.1)", borderRadius: 12, padding: "9px 32px 9px 14px", fontSize: 13, fontWeight: 500, color: CR, cursor: "pointer", outline: "none", fontFamily: "inherit", transition: "border-color 0.2s" }}
+          style={{ width: "100%", appearance: "none", background: "rgba(255,255,255,0.04)", border: focused ? `1px solid ${AM}` : "1px solid rgba(255,248,231,0.1)", borderRadius: 14, padding: "12px 36px 12px 16px", fontSize: 14, fontWeight: 500, color: CR, cursor: "pointer", outline: "none", fontFamily: "inherit", transition: "all 0.2s" }}
           onFocus={() => setFocused(true)}
           onBlur={() => setFocused(false)}>
           {options.map(o => <option key={o.v} value={String(o.v)} style={{ background: FD, color: CR }}>{o.l}</option>)}
         </select>
-        <div style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }}>
-          <ChevronD size={13} stroke="rgba(255,248,231,0.4)" />
+        <div style={{ position: "absolute", right: 14, top: "50%", transform: "translateY(-50%)", pointerEvents: "none", opacity: 0.5 }}>
+          <ChevronD size={14} stroke={CR} />
         </div>
       </div>
     </div>
@@ -56,10 +73,10 @@ function FilterSelect({ label, value, onChange, options }: { label: string; valu
 function FilterToggle({ label, checked, onChange }: { label: string; checked: boolean; onChange: (v: boolean) => void }) {
   return (
     <button onClick={() => onChange(!checked)}
-      style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 14px", borderRadius: 12, border: `1px solid ${checked ? AM : "rgba(255,248,231,0.1)"}`, background: checked ? "rgba(232,147,58,0.1)" : "rgba(255,255,255,0.03)", cursor: "pointer", transition: "all 0.2s", fontFamily: "inherit" }}>
-      <span style={{ fontSize: 13, fontWeight: 500, color: checked ? AM : CR }}>{label}</span>
-      <div style={{ width: 36, height: 20, borderRadius: 10, background: checked ? AM : "rgba(255,248,231,0.1)", position: "relative", transition: "background 0.2s", flexShrink: 0 }}>
-        <div style={{ position: "absolute", top: 2, left: checked ? 18 : 2, width: 16, height: 16, borderRadius: "50%", background: "#fff", transition: "left 0.2s", boxShadow: "0 1px 4px rgba(0,0,0,0.3)" }} />
+      style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 18px", borderRadius: 16, border: `1px solid ${checked ? AM : "rgba(255,248,231,0.1)"}`, background: checked ? "rgba(232,147,58,0.08)" : "rgba(255,255,255,0.03)", cursor: "pointer", transition: "all 0.2s", fontFamily: "inherit" }}>
+      <span style={{ fontSize: 14, fontWeight: 600, color: checked ? AM : CR }}>{label}</span>
+      <div style={{ width: 40, height: 22, borderRadius: 100, background: checked ? AM : "rgba(255,248,231,0.15)", position: "relative", transition: "background 0.2s", flexShrink: 0 }}>
+        <div style={{ position: "absolute", top: 3, left: checked ? 21 : 3, width: 16, height: 16, borderRadius: "50%", background: checked ? FD : CR, transition: "left 0.2s, background 0.2s" }} />
       </div>
     </button>
   );
@@ -83,60 +100,77 @@ export function AgencyFilters({ filters, onChange, resultCount, loading }: Agenc
   }
 
   const filterPanel = (
-    <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+      {/* Primary sorting always at top */}
       <FilterSelect
-        label="Sort by"
+        label="Sort Results"
+        iconD={FilterIcons.sort}
         value={filters.sort_by ?? "verified"}
         onChange={v => onChange({ ...filters, sort_by: v as any })}
         options={SORT_OPTIONS}
       />
-      <div style={{ height: 1, background: "rgba(255,248,231,0.06)" }} />
-      <FilterSelect
-        label="County"
-        value={filters.county ?? "all"}
-        onChange={v => onChange({ ...filters, county: v === "all" ? undefined : v })}
-        options={[{ v: "all", l: "All counties" }, ...PA_COUNTIES.map(c => ({ v: c, l: c }))]}
-      />
-      <FilterSelect
-        label="Care Type"
-        value={filters.care_type ?? "all"}
-        onChange={v => onChange({ ...filters, care_type: v as any })}
-        options={CARE_TYPES}
-      />
-      <FilterSelect
-        label="Insurance Accepted"
-        value={filters.payer_type ?? "all"}
-        onChange={v => onChange({ ...filters, payer_type: v as any })}
-        options={PAYERS}
-      />
-      <FilterSelect
-        label="Language Spoken"
-        value={filters.language ?? "all"}
-        onChange={v => onChange({ ...filters, language: v === "all" ? undefined : v })}
-        options={LANGUAGES}
-      />
-      <FilterSelect
-        label="Minimum Quality Rating"
-        value={String(filters.min_quality_score ?? 0)}
-        onChange={v => onChange({ ...filters, min_quality_score: Number(v) })}
-        options={QUALITY_OPTS}
-      />
-      <div style={{ height: 1, background: "rgba(255,248,231,0.06)" }} />
-      <FilterToggle
-        label="Accepting patients now"
-        checked={filters.accepting_patients ?? false}
-        onChange={v => onChange({ ...filters, accepting_patients: v })}
-      />
-      <FilterToggle
-        label="Verified partners only"
-        checked={filters.verified_only ?? false}
-        onChange={v => onChange({ ...filters, verified_only: v })}
-      />
+
+      <div style={{ height: 1, background: "rgba(255,248,231,0.08)", margin: "4px 0" }} />
+
+      {/* Main filters in a grid on desktop-sidebar, vertical elsewhere */}
+      <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+        <FilterSelect
+          label="Location"
+          iconD={FilterIcons.county}
+          value={filters.county ?? "all"}
+          onChange={v => onChange({ ...filters, county: v === "all" ? undefined : v })}
+          options={[{ v: "all", l: "All counties" }, ...PA_COUNTIES.map(c => ({ v: c, l: c }))]}
+        />
+        <FilterSelect
+          label="Care Category"
+          iconD={FilterIcons.care}
+          value={filters.care_type ?? "all"}
+          onChange={v => onChange({ ...filters, care_type: v as any })}
+          options={CARE_TYPES}
+        />
+        <FilterSelect
+          label="Payment & Insurance"
+          iconD={FilterIcons.payer}
+          value={filters.payer_type ?? "all"}
+          onChange={v => onChange({ ...filters, payer_type: v as any })}
+          options={PAYERS}
+        />
+        <FilterSelect
+          label="Language Preference"
+          iconD={FilterIcons.lang}
+          value={filters.language ?? "all"}
+          onChange={v => onChange({ ...filters, language: v === "all" ? undefined : v })}
+          options={LANGUAGES}
+        />
+        <FilterSelect
+          label="Min Quality Score"
+          iconD={FilterIcons.quality}
+          value={String(filters.min_quality_score ?? 0)}
+          onChange={v => onChange({ ...filters, min_quality_score: Number(v) })}
+          options={QUALITY_OPTS}
+        />
+      </div>
+
+      <div style={{ height: 1, background: "rgba(255,248,231,0.08)", margin: "4px 0" }} />
+
+      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+        <FilterToggle
+          label="Accepting patients"
+          checked={filters.accepting_patients ?? false}
+          onChange={v => onChange({ ...filters, accepting_patients: v })}
+        />
+        <FilterToggle
+          label="Verified partners"
+          checked={filters.verified_only ?? false}
+          onChange={v => onChange({ ...filters, verified_only: v })}
+        />
+      </div>
+
       {activeCount > 0 && (
         <button onClick={clearAll}
-          style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, fontSize: 12, fontWeight: 600, color: "rgba(255,248,231,0.4)", background: "none", border: "none", cursor: "pointer", padding: "6px 0", fontFamily: "inherit", transition: "color 0.2s" }}
-          className="hover:text-[rgba(255,248,231,0.7)]">
-          <X size={12} stroke="currentColor" /> Clear all filters
+          style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, fontSize: 13, fontWeight: 600, color: AM, background: "rgba(232,147,58,0.08)", border: "1px solid rgba(232,147,58,0.15)", borderRadius: 12, padding: "10px 0", cursor: "pointer", fontFamily: "inherit", transition: "all 0.2s" }}
+          className="hover:bg-[rgba(232,147,58,0.15)]">
+          <X size={14} stroke="currentColor" /> Reset all filters
         </button>
       )}
     </div>
@@ -146,7 +180,7 @@ export function AgencyFilters({ filters, onChange, resultCount, loading }: Agenc
     <>
       <style>{`
         #filters-mobile-trigger { display: none; }
-        #filters-desktop-sidebar { display: block; width: 224px; flex-shrink: 0; position: sticky; top: 96px; align-self: flex-start; }
+        #filters-desktop-sidebar { display: block; width: 260px; flex-shrink: 0; position: sticky; top: 96px; align-self: flex-start; }
         
         @media (max-width: 1024px) {
           #filters-mobile-trigger { display: flex; }
@@ -155,19 +189,20 @@ export function AgencyFilters({ filters, onChange, resultCount, loading }: Agenc
         
         .mobile-filters-overlay {
           position: fixed; inset: 0; z-index: 999;
-          background: rgba(15,36,25,0.8);
-          backdrop-filter: blur(8px);
-          animation: fadeIn 0.3s ease;
+          background: rgba(10,24,18,0.7);
+          backdrop-filter: blur(12px);
+          animation: fadeIn 0.4s ease;
         }
         
         .mobile-filters-drawer {
-          position: fixed; bottom: 0; left: 0; right: 0; height: 85vh; 
+          position: fixed; bottom: 0; left: 0; right: 0; height: 90vh; 
           z-index: 1000; background: ${FD}; 
-          border-top: 1px solid rgba(255,248,231,0.1);
+          border-top: 1px solid rgba(255,248,231,0.15);
           border-radius: 32px 32px 0 0;
-          display: flex; flexDirection: column;
-          box-shadow: 0 -20px 40px rgba(0,0,0,0.4);
-          animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+          display: flex; 
+          flex-direction: column;
+          box-shadow: 0 -20px 60px rgba(0,0,0,0.5);
+          animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1);
         }
         
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
@@ -175,34 +210,53 @@ export function AgencyFilters({ filters, onChange, resultCount, loading }: Agenc
       `}</style>
 
       {/* Mobile trigger */}
-      <div id="filters-mobile-trigger">
-        <button onClick={() => setMobileOpen(true)}
-          style={{ display: "flex", alignItems: "center", gap: 8, height: 44, padding: "0 20px", borderRadius: 100, border: "1px solid rgba(255,248,231,0.15)", background: "rgba(255,255,255,0.06)", color: CR, fontSize: 13, fontWeight: 600, cursor: "pointer", transition: "all 0.2s" }}>
-          <Sliders size={14} stroke="rgba(255,248,231,0.5)" />
-          Filters
+      <div id="filters-mobile-trigger" style={{ flexDirection: "column", gap: 10, marginBottom: 16, width: "100%" }}>
+        <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 4 }}>
+          <div>
+            <h2 style={{ fontSize: 20, fontWeight: 800, color: CR, fontFamily: "'Fraunces', serif", marginBottom: 0 }}>Filters</h2>
+            <p style={{ fontSize: 12, color: "rgba(255,248,231,0.4)" }}>{resultCount.toLocaleString()} agencies found</p>
+          </div>
           {activeCount > 0 && (
-            <span style={{ fontSize: 10, fontWeight: 700, color: FD, background: AM, borderRadius: 100, padding: "2px 8px", fontFamily: "'DM Mono', monospace" }}>{activeCount}</span>
+            <button onClick={clearAll} style={{ background: "none", border: "none", color: AM, fontSize: 11, fontWeight: 800, fontFamily: "'DM Mono', monospace", letterSpacing: "0.05em", padding: "4px 0", cursor: "pointer" }}>RESET ALL</button>
+          )}
+        </div>
+        <button onClick={() => setMobileOpen(true)}
+          style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 10, height: 54, width: "100%", borderRadius: 16, border: `1.5px solid ${AM}`, background: "rgba(232,147,58,0.06)", color: CR, fontSize: 15, fontWeight: 700, cursor: "pointer", transition: "all 0.3s cubic-bezier(0.16, 1, 0.3, 1)", boxShadow: `0 8px 24px rgba(232,147,58,0.15), inset 0 0 12px rgba(232,147,58,0.1)`, appearance: "none", outline: "none", padding: "0 20px" }}
+          className="hover:scale-[0.98] active:scale-[0.96]">
+          <Sliders size={18} stroke={AM} />
+          Refine Search
+          {activeCount > 0 && (
+            <span style={{ fontSize: 11, fontWeight: 800, color: FD, background: AM, borderRadius: 100, padding: "2px 8px", minWidth: 22, height: 22, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 10px rgba(0,0,0,0.3)" }}>{activeCount}</span>
           )}
         </button>
-        <p style={{ fontSize: 13, fontWeight: 600, color: "rgba(255,248,231,0.45)", marginLeft: "auto" }}>
-          {loading ? "Searching…" : `${resultCount.toLocaleString()} found`}
-        </p>
       </div>
 
       {/* Mobile drawer */}
       {mobileOpen && (
         <>
           <div className="mobile-filters-overlay" onClick={() => setMobileOpen(false)} />
-          <div className="mobile-filters-drawer">
-            <div style={{ width: 40, height: 4, background: "rgba(255,248,231,0.2)", borderRadius: 2, margin: "12px auto 8px" }} />
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 24px", borderBottom: "1px solid rgba(255,248,231,0.06)" }}>
-              <h2 style={{ fontSize: 20, fontWeight: 700, color: CR, fontFamily: "'Fraunces', serif" }}>Refine Search</h2>
-              <button onClick={() => setMobileOpen(false)} style={{ background: "rgba(255,255,255,0.05)", border: "none", color: CR, cursor: "pointer", width: 32, height: 32, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center" }}><X size={20} /></button>
+          <div className="mobile-filters-drawer" style={{
+            background: "linear-gradient(to bottom, #122B1E, #0F2419)",
+          }}>
+            <div style={{ width: 44, height: 5, background: "rgba(255,248,231,0.15)", borderRadius: 10, margin: "16px auto 0", flexShrink: 0 }} />
+
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "28px 28px 16px", flexShrink: 0 }}>
+              <div>
+                <h2 style={{ fontSize: 28, fontWeight: 800, color: CR, fontFamily: "'Fraunces', serif", letterSpacing: "-0.02em" }}>Refine Search</h2>
+                <p style={{ fontSize: 13, color: "rgba(255,248,231,0.4)" }}>{resultCount.toLocaleString()} agencies match your criteria</p>
+              </div>
+              <button onClick={() => setMobileOpen(false)} style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,248,231,0.1)", color: CR, cursor: "pointer", width: 44, height: 44, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center" }}><X size={22} /></button>
             </div>
-            <div style={{ overflowY: "auto", padding: "24px 24px 120px", flex: 1 }}>{filterPanel}</div>
-            <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, background: FD, padding: "20px 24px 32px", borderTop: "1px solid rgba(255,248,231,0.06)", display: "flex", gap: 12 }}>
-              <button onClick={() => setMobileOpen(false)} style={{ flex: 1, height: 52, borderRadius: 100, background: AM, color: FD, fontSize: 15, fontWeight: 700, border: "none", cursor: "pointer", boxShadow: "0 8px 20px rgba(232,147,58,0.2)" }}>
-                Show Results
+
+            <div style={{ overflowY: "auto", padding: "10px 28px 40px", flex: 1 }}>
+              {filterPanel}
+            </div>
+
+            <div style={{ padding: "20px 28px 32px", background: "rgba(10,24,18,0.85)", backdropFilter: "blur(20px)", borderTop: "1px solid rgba(255,248,231,0.1)", flexShrink: 0 }}>
+              <button
+                onClick={() => setMobileOpen(false)}
+                style={{ width: "100%", height: 60, borderRadius: 100, background: AM, color: FD, fontSize: 16, fontWeight: 800, border: "none", cursor: "pointer", boxShadow: "0 10px 30px rgba(232,147,58,0.35)" }}>
+                Explore {resultCount.toLocaleString()} Agencies
               </button>
             </div>
           </div>
@@ -211,13 +265,13 @@ export function AgencyFilters({ filters, onChange, resultCount, loading }: Agenc
 
       {/* Desktop sidebar */}
       <div id="filters-desktop-sidebar">
-        <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,248,231,0.07)", borderRadius: 24, padding: 24 }}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, fontWeight: 600, color: CR }}>
-              <Sliders size={14} stroke="rgba(255,248,231,0.5)" /> Filters
+        <div style={{ background: "linear-gradient(135deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02))", border: "1px solid rgba(255,248,231,0.08)", borderRadius: 28, padding: 28, boxShadow: "0 10px 40px rgba(0,0,0,0.2)" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 24 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, fontSize: 16, fontWeight: 800, color: CR, fontFamily: "'Fraunces', serif" }}>
+              <Sliders size={18} stroke={AM} /> Filters
             </div>
             {activeCount > 0 && (
-              <span style={{ fontSize: 10, fontWeight: 700, color: FD, background: AM, borderRadius: 100, padding: "2px 8px", fontFamily: "'DM Mono', monospace" }}>{activeCount}</span>
+              <span style={{ fontSize: 11, fontWeight: 800, color: FD, background: AM, borderRadius: 100, padding: "2px 10px", fontFamily: "'DM Mono', monospace" }}>{activeCount}</span>
             )}
           </div>
           {filterPanel}
@@ -230,20 +284,20 @@ export function AgencyFilters({ filters, onChange, resultCount, loading }: Agenc
 export function AgencySearchBar({ value, onChange }: { value: string; onChange: (q: string) => void }) {
   const [focused, setFocused] = React.useState(false);
   return (
-    <div style={{ position: "relative", marginBottom: 24 }}>
-      <div style={{ position: "absolute", left: 16, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }}>
-        <Search size={16} stroke="rgba(255,248,231,0.3)" />
+    <div style={{ position: "relative", marginBottom: 32 }}>
+      <div style={{ position: "absolute", left: 20, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }}>
+        <Search size={20} stroke={AM} style={{ opacity: focused ? 1 : 0.4 }} />
       </div>
       <input type="text" value={value} onChange={e => onChange(e.target.value)}
-        placeholder="Search agencies by name…"
-        style={{ width: "100%", height: 52, paddingLeft: 44, paddingRight: value ? 44 : 16, background: "rgba(255,255,255,0.05)", border: focused ? `1px solid rgba(232,147,58,0.5)` : "1px solid rgba(255,248,231,0.1)", borderRadius: 16, fontSize: 14, fontWeight: 400, color: CR, outline: "none", fontFamily: "inherit", transition: "border-color 0.2s", caretColor: AM }}
+        placeholder="Search clinical or local agency names…"
+        style={{ width: "100%", height: 60, paddingLeft: 56, paddingRight: value ? 56 : 24, background: "rgba(255,255,255,0.04)", border: focused ? `2px solid ${AM}` : "1px solid rgba(255,248,231,0.15)", borderRadius: 20, fontSize: 15, fontWeight: 400, color: CR, outline: "none", fontFamily: "inherit", transition: "all 0.2s", caretColor: AM, boxShadow: focused ? "0 0 0 4px rgba(232,147,58,0.1)" : "none" }}
         onFocus={() => setFocused(true)}
         onBlur={() => setFocused(false)}
       />
       {value && (
         <button onClick={() => onChange("")}
-          style={{ position: "absolute", right: 14, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", padding: 4, color: "rgba(255,248,231,0.4)", display: "flex", alignItems: "center" }}>
-          <X size={15} stroke="currentColor" />
+          style={{ position: "absolute", right: 18, top: "50%", transform: "translateY(-50%)", background: "rgba(255,255,255,0.06)", border: "none", cursor: "pointer", padding: 6, borderRadius: "50%", color: CR, display: "flex", alignItems: "center", transition: "all 0.2s" }} className="hover:scale-90">
+          <X size={16} stroke="currentColor" />
         </button>
       )}
     </div>

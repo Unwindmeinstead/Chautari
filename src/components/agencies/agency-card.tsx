@@ -148,14 +148,15 @@ export function AgencyCard({ agency, highlighted = false, showSelectButton = fal
   const style = {
     display: "flex",
     flexDirection: "column" as const,
-    background: hovered ? "rgba(255,255,255,0.07)" : "rgba(255,255,255,0.04)",
-    border: `1px solid ${hovered || highlighted ? "rgba(255,248,231,0.14)" : "rgba(255,248,231,0.07)"}`,
-    borderRadius: 20,
+    background: "rgba(255,255,255,0.03)",
+    border: `1px solid rgba(255,248,231,0.08)`,
+    borderRadius: 24,
     overflow: "hidden",
     cursor: "pointer",
-    transition: "all 0.22s ease",
-    transform: hovered ? "translateY(-2px)" : "translateY(0)",
-    position: "relative" as const
+    transition: "all 0.3s cubic-bezier(0.16, 1, 0.3, 1)",
+    position: "relative" as const,
+    boxShadow: hovered ? "0 12px 32px rgba(0,0,0,0.3), 0 0 0 1px rgba(232,147,58,0.2)" : "0 4px 12px rgba(0,0,0,0.1)",
+    transform: hovered ? "translateY(-4px) scale(1.01)" : "none",
   };
 
   const handleCardClick = () => {
@@ -173,7 +174,62 @@ export function AgencyCard({ agency, highlighted = false, showSelectButton = fal
       onMouseLeave={() => setHovered(false)}
       onClick={handleCardClick}
     >
-      {cardContent}
+      <div style={{ padding: "24px 24px 20px" }}>
+        {/* Amber top glow */}
+        <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 3, background: `linear-gradient(90deg, ${AM}, transparent)`, opacity: hovered || highlighted ? 1 : 0, transition: "opacity 0.3s" }} />
+
+        {/* Header */}
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 14, marginBottom: 16 }}>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 10 }}>
+              {agency.is_verified_partner && (
+                <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 10, fontWeight: 700, color: "#4ADE80", background: "rgba(74,222,128,0.1)", border: "1px solid rgba(74,222,128,0.2)", borderRadius: 100, padding: "3px 10px", fontFamily: "'DM Mono', monospace" }}>
+                  <Check size={10} stroke="#4ADE80" /> VERIFIED
+                </span>
+              )}
+              <span style={{ fontSize: 10, fontWeight: 700, color: AM, background: "rgba(232,147,58,0.1)", border: "1px solid rgba(232,147,58,0.2)", borderRadius: 100, padding: "3px 10px", fontFamily: "'DM Mono', monospace" }}>
+                {careTypeLabel(agency.care_types[0])}
+              </span>
+            </div>
+            <h3 style={{ fontFamily: "'Fraunces', serif", fontSize: 18, fontWeight: 800, color: CR, lineHeight: 1.2, letterSpacing: "-0.01em", marginBottom: 4 }}>{agency.name}</h3>
+            {agency.dba_name && <p style={{ fontSize: 12, color: "rgba(255,248,231,0.3)", fontWeight: 400 }}>{agency.dba_name}</p>}
+          </div>
+          {score && (
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 4, flexShrink: 0, background: "rgba(255,255,255,0.03)", padding: "6px 10px", borderRadius: 12, border: "1px solid rgba(255,248,231,0.06)" }}>
+              <div style={{ display: "flex", gap: 1 }}>
+                {[1, 2, 3, 4, 5].map(i => <Star key={i} filled={i <= Math.round(score)} size={10} />)}
+              </div>
+              <span style={{ fontFamily: "'DM Mono', monospace", fontSize: 12, fontWeight: 700, color: AM }}>{score.toFixed(1)}</span>
+            </div>
+          )}
+        </div>
+
+        {/* Meta */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 20 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: "rgba(255,248,231,0.5)" }}>
+            <MapPin size={14} stroke={AM} style={{ opacity: 0.7 }} />
+            {agency.address_city}, PA <span style={{ opacity: 0.5 }}>· {agency.service_counties.length} Counties</span>
+          </div>
+          {agency.avg_response_hours && (
+            <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: "rgba(255,248,231,0.5)" }}>
+              <Clock size={14} stroke={AM} style={{ opacity: 0.7 }} />
+              Responds in ~{agency.avg_response_hours}h
+            </div>
+          )}
+        </div>
+
+        {/* Action */}
+        <div style={{ borderTop: "1px solid rgba(255,248,231,0.06)", paddingTop: 16, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <div style={{ display: "flex", gap: 4 }}>
+            {agency.languages_spoken.slice(0, 2).map(l => (
+              <span key={l} style={{ fontSize: 11, fontWeight: 600, color: "rgba(255,248,231,0.35)", background: "rgba(255,255,255,0.03)", padding: "2px 8px", borderRadius: 6 }}>{l.toUpperCase()}</span>
+            ))}
+          </div>
+          <span style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13, fontWeight: 700, color: hovered ? AM : "rgba(255,248,231,0.4)", transition: "all 0.2s" }}>
+            Details <ArrowR size={14} stroke={hovered ? AM : "rgba(255,248,231,0.4)"} />
+          </span>
+        </div>
+      </div>
     </div>
   );
 }

@@ -94,8 +94,9 @@ export function AgencySearchClient({
       <style>{`
         .search-main { display: flex; gap: 24px; align-items: flex-start; }
         @media (max-width: 1024px) {
-          .search-main { flex-direction: column; }
+          .search-main { flex-direction: column-reverse; gap: 12px; }
           .results-grid { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)) !important; }
+          .results-header { display: none !important; }
         }
         @media (max-width: 640px) {
           .results-grid { grid-template-columns: 1fr !important; }
@@ -109,43 +110,35 @@ export function AgencySearchClient({
       />
 
       <div className="search-main">
-        {/* Sidebar filters */}
-        <AgencyFilters
-          filters={filters}
-          onChange={handleFiltersChange}
-          resultCount={total}
-          loading={loading}
-        />
-
-        {/* Results column */}
+        {/* Results column - now on the left for desktop, filters on right */}
         <div style={{ flex: 1, width: "100%", minWidth: 0 }}>
           {/* Result count & personalized banner area */}
-          <div style={{ display: "flex", flexDirection: "column", gap: 16, marginBottom: 16 }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 16, marginBottom: 24 }}>
             {showPersonalisedBanner && (
-              <div style={{ background: F, border: "1px solid rgba(255,248,231,0.08)", borderRadius: 20, padding: "16px 24px", display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: 16 }}>
+              <div style={{ background: "rgba(232,147,58,0.08)", border: "1px solid rgba(232,147,58,0.15)", borderRadius: 24, padding: "20px 28px", display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: 16 }}>
                 <div>
-                  <div style={{ fontFamily: "'Fraunces', serif", fontSize: 16, fontWeight: 700, color: CR }}>Show agencies matching your profile?</div>
-                  <div style={{ fontSize: 12, color: "rgba(255,248,231,0.5)" }}>
+                  <div style={{ fontFamily: "'Fraunces', serif", fontSize: 18, fontWeight: 700, color: CR, marginBottom: 4 }}>Show agencies matching your profile?</div>
+                  <div style={{ fontSize: 13, color: "rgba(255,248,231,0.5)", fontWeight: 400 }}>
                     {patientCounty && `${patientCounty} County`}{patientCounty && patientPayerType && " · "}{patientPayerType?.replace("_", " ")}
                   </div>
                 </div>
                 <button
                   onClick={() => handleFiltersChange({ ...filters, county: patientCounty ?? undefined, payer_type: (patientPayerType as any) ?? undefined })}
-                  style={{ background: AM, color: FD, fontSize: 13, fontWeight: 700, padding: "8px 20px", borderRadius: 100, border: "none", cursor: "pointer", transition: "all 0.2s" }}
-                  className="hover:bg-[#D4822E] hover:-translate-y-px">
+                  style={{ background: AM, color: FD, fontSize: 14, fontWeight: 700, padding: "10px 24px", borderRadius: 100, border: "none", cursor: "pointer", transition: "all 0.2s", boxShadow: "0 4px 15px rgba(232,147,58,0.25)" }}
+                  className="hover:scale-[0.98] active:scale-95">
                   Apply my filters
                 </button>
               </div>
             )}
 
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-              <p style={{ fontSize: 13, fontWeight: 500, color: "rgba(255,248,231,0.45)", fontFamily: "'DM Mono', monospace" }}>
-                {loading ? "Searching…" : `${total.toLocaleString()} ${total === 1 ? "agency" : "agencies"} found`}
+            <div className="results-header" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 8px" }}>
+              <p style={{ fontSize: 14, fontWeight: 500, color: "rgba(255,248,231,0.4)", fontFamily: "'DM Mono', monospace" }}>
+                {loading ? "Counting…" : `${total.toLocaleString()} agency results`}
               </p>
               {activeFilterCount > 0 && (
-                <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11, color: AM, fontFamily: "'DM Mono', monospace" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12, color: AM, fontWeight: 600, fontFamily: "'DM Mono', monospace", background: "rgba(232,147,58,0.08)", padding: "4px 12px", borderRadius: 100 }}>
                   <span style={{ width: 6, height: 6, borderRadius: "50%", background: AM }} />
-                  {activeFilterCount} filter{activeFilterCount > 1 ? "s" : ""} active
+                  {activeFilterCount} Active
                 </div>
               )}
             </div>
@@ -232,6 +225,14 @@ export function AgencySearchClient({
             )}
           </div>
         </div>
+
+        {/* Sidebar filters - now on the right for desktop */}
+        <AgencyFilters
+          filters={filters}
+          onChange={handleFiltersChange}
+          resultCount={total}
+          loading={loading}
+        />
       </div>
     </div>
   );
