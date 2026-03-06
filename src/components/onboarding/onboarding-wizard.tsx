@@ -22,11 +22,13 @@ const TOTAL_STEPS = 5;
 
 interface OnboardingWizardProps {
   userName?: string | null;
+  initialStep?: number;
+  initialData?: Partial<OnboardingData>;
 }
 
-export function OnboardingWizard({ userName }: OnboardingWizardProps) {
+export function OnboardingWizard({ userName, initialStep = 0, initialData }: OnboardingWizardProps) {
   const router = useRouter();
-  const [currentStep, setCurrentStep] = React.useState(0);
+  const [currentStep, setCurrentStep] = React.useState(initialStep);
   const [saving, setSaving] = React.useState(false);
   const [savingDraft, setSavingDraft] = React.useState(false);
   const [saveError, setSaveError] = React.useState<string | null>(null);
@@ -34,15 +36,19 @@ export function OnboardingWizard({ userName }: OnboardingWizardProps) {
 
   async function handleSaveAndExit() {
     setSavingDraft(true);
-    await saveOnboardingDraft(formData);
+    const result = await saveOnboardingDraft(formData);
     setSavingDraft(false);
+    if (result?.error) {
+      console.error("Draft save failed:", result.error);
+    }
     router.push("/dashboard");
   }
 
-  // Accumulated form data across steps
+  // Accumulated form data — seeded with any saved draft from the server
   const [formData, setFormData] = React.useState<Partial<OnboardingData>>({
     preferred_lang: "en",
     address_state: "PA",
+    ...initialData,
   });
 
   const progress = ((currentStep) / TOTAL_STEPS) * 100;

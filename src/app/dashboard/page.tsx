@@ -4,12 +4,8 @@ import { getDashboardData } from "@/lib/dashboard-actions";
 import { DashboardNav, RequestCard } from "@/components/dashboard/dashboard-nav";
 import { AdminPreviewBanner } from "@/components/admin/admin-preview-banner";
 import {
-  ArrowRight,
-  Bell,
-  Calendar,
-  ClipboardList,
-  MessageSquare,
-  Upload,
+  ArrowRight, Bell, Calendar, ClipboardList,
+  MessageSquare, Upload, CheckCircle2, AlertCircle,
 } from "lucide-react";
 
 export const metadata = { title: "Dashboard | SwitchMyCare" };
@@ -85,6 +81,45 @@ export default async function DashboardPage() {
       <DashboardNav userName={data.profile?.full_name ?? null} unreadCount={data.unreadCount} />
 
       <main className="max-w-[1100px] mx-auto px-4 md:px-6 mt-6 md:mt-10 space-y-6 md:space-y-8">
+
+        {/* ── Resume setup banner ─────────────────────────────────────────── */}
+        {!data.onboardingComplete && (
+          <section className="rounded-2xl border-2 border-amber-200 bg-amber-50 p-4 md:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex items-start gap-3">
+              <div className="h-9 w-9 rounded-xl bg-amber-100 border border-amber-200 flex items-center justify-center shrink-0">
+                <AlertCircle className="size-5 text-amber-600" />
+              </div>
+              <div>
+                <p className="text-[14px] font-bold text-amber-900">Your profile setup isn't complete</p>
+                <p className="text-[12px] text-amber-700 mt-0.5">
+                  Finish setting up your profile so we can match you with the right home care agencies.
+                  Your progress has been saved — pick up right where you left off.
+                </p>
+                <div className="flex items-center gap-4 mt-2">
+                  {[
+                    { label: "Personal info", done: !!data.profile?.full_name },
+                    { label: "Address", done: !!data.patientDetails?.address_city },
+                    { label: "Insurance", done: !!data.patientDetails?.payer_type },
+                    { label: "Care needs", done: !!(data.patientDetails as any)?.care_needs?.length || !!data.patientDetails?.care_type },
+                    { label: "Situation", done: false },
+                  ].map(({ label, done }) => (
+                    <div key={label} className="flex items-center gap-1">
+                      <CheckCircle2 className={`size-3.5 ${done ? "text-emerald-500" : "text-amber-300"}`} />
+                      <span className={`text-[10px] font-medium ${done ? "text-emerald-700" : "text-amber-600"}`}>{label}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+            <Link
+              href="/onboarding"
+              className="shrink-0 h-10 px-5 rounded-xl bg-amber-600 text-white text-sm font-bold inline-flex items-center gap-2 hover:bg-amber-700 transition-colors"
+            >
+              Continue setup <ArrowRight className="size-4" />
+            </Link>
+          </section>
+        )}
+
         <section className="rounded-2xl border border-gray-200 bg-white p-4 md:p-6">
           <p className="text-[12px] font-bold uppercase tracking-widest text-gray-400">{greeting}</p>
           <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight text-gray-900 mt-2">Hi {firstName} 👋</h1>
