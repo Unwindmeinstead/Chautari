@@ -226,18 +226,18 @@ export default async function AgencyDetailPage({ params }: AgencyDetailPageProps
                 {/* CTA — top right */}
                 <div className="hero-cta" style={{ flexShrink: 0, display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 8 }}>
                   {existingSwitchRequest ? (
-                    <div style={{ display: "inline-flex", alignItems: "center", gap: 7, background: "rgba(74,222,128,0.08)", border: "1px solid rgba(74,222,128,0.2)", color: "#4ADE80", fontSize: 13, fontWeight: 600, padding: "10px 18px", borderRadius: 100, fontFamily: "'DM Mono', monospace" }}>
+                    <div style={{ display: "inline-flex", alignItems: "center", gap: 7, background: "rgba(74,222,128,0.08)", border: "1px solid rgba(74,222,128,0.2)", color: "#4ADE80", fontSize: 13, fontWeight: 600, padding: "12px 24px", borderRadius: 100, fontFamily: "'DM Mono', monospace" }}>
                       <Check size={13} stroke="#4ADE80" /> Request submitted
                     </div>
                   ) : (
-                    <>
-                      <Link href={`/switch/new?agency=${agency.id}`} style={{ display: "inline-flex", alignItems: "center", gap: 8, background: AM, color: FD, fontSize: 14, fontWeight: 700, padding: "13px 26px", borderRadius: 100, border: "none", cursor: "pointer", fontFamily: "inherit", transition: "all .2s", boxShadow: "0 4px 20px rgba(232,147,58,0.3)" }} className="hero-cta-btn hover:bg-[#D4822E] hover:-translate-y-[2px] hover:shadow-[0_10px_32px_rgba(232,147,58,0.4)]">
-                        <Heart size={15} stroke={FD} /> Select this agency
+                    <div style={{ display: "flex", flexDirection: "column", gap: 8, alignItems: "center" }}>
+                      <Link href={`/switch/new?agency=${agency.id}`} style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8, background: AM, color: FD, fontSize: 14, fontWeight: 800, padding: "14px 28px", borderRadius: 100, border: "none", cursor: "pointer", fontFamily: "inherit", transition: "all .2s", boxShadow: "0 4px 20px rgba(232,147,58,0.3)", width: "100%", whiteSpace: "nowrap" }} className="hero-cta-btn hover:bg-[#D4822E] hover:-translate-y-[2px] hover:shadow-[0_10px_32px_rgba(232,147,58,0.4)]">
+                        <Heart size={16} stroke={FD} fill={FD} /> Select this agency
                       </Link>
-                      <span className="hero-cta-text" style={{ fontSize: 11, color: "rgba(255,248,231,0.35)", fontWeight: 500 }}>
+                      <span className="hero-cta-text" style={{ fontSize: 11, color: "rgba(255,248,231,0.35)", fontWeight: 600, letterSpacing: "0.02em" }}>
                         Free · $97 one-time fee to switch
                       </span>
-                    </>
+                    </div>
                   )}
                 </div>
               </div>
@@ -378,20 +378,22 @@ export default async function AgencyDetailPage({ params }: AgencyDetailPageProps
               </GlassCard>
             ) : (
               <GlassCard className="fu2">
-                <div style={{ padding: "22px 20px" }}>
+                <div style={{ padding: "22px 20px", display: "flex", flexDirection: "column" }}>
                   <h3 style={{ fontFamily: "'Fraunces', serif", fontSize: 18, fontWeight: 800, color: CR, letterSpacing: "-0.02em", marginBottom: 8 }}>
                     Ready to switch?
                   </h3>
-                  <p style={{ fontSize: 13, fontWeight: 300, color: "rgba(255,248,231,0.5)", lineHeight: 1.75, marginBottom: 20 }}>
+                  <p style={{ fontSize: 13, fontWeight: 400, color: "rgba(255,248,231,0.45)", lineHeight: 1.6, marginBottom: 20 }}>
                     SwitchMyCare handles all the paperwork and coordinates with your
                     current and new agency.
                   </p>
-                  <Link href={`/switch/new?agency=${agency.id}`} style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, background: AM, color: FD, fontSize: 14, fontWeight: 700, padding: "13px", borderRadius: 100, border: "none", cursor: "pointer", fontFamily: "inherit", transition: "all .2s", boxShadow: "0 4px 20px rgba(232,147,58,0.3)" }} className="hover:bg-[#D4822E] hover:-translate-y-[2px] hover:shadow-[0_10px_32px_rgba(232,147,58,0.4)]">
-                    <Heart size={15} stroke={FD} /> Select this agency
-                  </Link>
-                  <p style={{ fontSize: 11, color: "rgba(255,248,231,0.35)", textAlign: "center", marginTop: 10, fontWeight: 500 }}>
-                    Free · $97 one-time fee to switch
-                  </p>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 8, alignItems: "center" }}>
+                    <Link href={`/switch/new?agency=${agency.id}`} style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8, background: AM, color: FD, fontSize: 14, fontWeight: 800, padding: "14px 28px", borderRadius: 100, border: "none", cursor: "pointer", fontFamily: "inherit", transition: "all .2s", boxShadow: "0 4px 20px rgba(232,147,58,0.3)", width: "100%", whiteSpace: "nowrap" }} className="hover:bg-[#D4822E] hover:-translate-y-[2px] hover:shadow-[0_10px_32px_rgba(232,147,58,0.4)]">
+                      <Heart size={16} stroke={FD} fill={FD} /> Select this agency
+                    </Link>
+                    <p style={{ fontSize: 11, color: "rgba(255,248,231,0.35)", textAlign: "center", fontWeight: 600, letterSpacing: "0.02em" }}>
+                      Free · $97 one-time fee to switch
+                    </p>
+                  </div>
                 </div>
               </GlassCard>
             )}

@@ -7,6 +7,7 @@ import { careTypeLabel, payerLabel } from "@/lib/utils";
 import type { Agency } from "@/types/database";
 
 /* ── Design tokens ── */
+const FD = "#0F2419"; // forest dark
 const CR = "#FFF8E7"; // cream
 const AM = "#E8933A"; // amber
 
@@ -132,8 +133,9 @@ export function AgencyCard({ agency, highlighted = false, showSelectButton = fal
         {showSelectButton && onSelect ? (
           <button
             onClick={(e) => { e.preventDefault(); e.stopPropagation(); onSelect(agency); }}
-            style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 12, fontWeight: 600, color: AM, background: "rgba(232,147,58,0.1)", border: "1px solid rgba(232,147,58,0.2)", borderRadius: 100, padding: "6px 16px", cursor: "pointer", fontFamily: "inherit", transition: "all 0.2s" }}
-            className="hover:bg-[#E8933A] hover:text-[#0F2419]">
+            style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 12, fontWeight: 800, color: FD, background: AM, border: "none", borderRadius: 100, padding: "8px 18px", cursor: "pointer", fontFamily: "inherit", transition: "all 0.2s", boxShadow: "0 4px 12px rgba(232,147,58,0.2)" }}
+            className="hover:scale-[1.03] hover:shadow-[0_6px_20px_rgba(232,147,58,0.3)]">
+            <Icon size={13} stroke={FD} fill={FD} d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
             Select agency
           </button>
         ) : (
