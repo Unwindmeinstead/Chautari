@@ -238,13 +238,10 @@ export default async function AdminDashboardPage() {
               </div>
             ) : pendingAgencies.agencies.map((a, i) => (
               <Link key={a.id} href={`/admin/agencies/${a.id}`}
-                className="flex items-center gap-4 px-6 py-4 transition-colors group"
+                className="flex items-center gap-4 px-6 py-4 transition-colors group hover:bg-white/[0.03]"
                 style={{
                   borderBottom: i < pendingAgencies.agencies.length - 1 ? DIVIDER : "none",
-                  background: "transparent",
                 }}
-                onMouseEnter={e => (e.currentTarget.style.background = "rgba(148,163,184,0.04)")}
-                onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
               >
                 <div className="h-9 w-9 rounded-xl flex items-center justify-center shrink-0"
                   style={{ background: `${AMBER}12`, border: `1px solid ${AMBER}20` }}>
@@ -283,10 +280,8 @@ export default async function AdminDashboardPage() {
               </div>
             ) : recentRequests.requests.map((r, i) => (
               <Link key={r.id} href={`/admin/requests/${r.id}`}
-                className="flex items-center gap-4 px-6 py-3.5 transition-colors"
-                style={{ borderBottom: i < recentRequests.requests.length - 1 ? DIVIDER : "none", background: "transparent" }}
-                onMouseEnter={e => (e.currentTarget.style.background = "rgba(148,163,184,0.03)")}
-                onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
+                className="flex items-center gap-4 px-6 py-3.5 transition-colors hover:bg-white/[0.03]"
+                style={{ borderBottom: i < recentRequests.requests.length - 1 ? DIVIDER : "none" }}
               >
                 <div className="h-8 w-8 rounded-full flex items-center justify-center shrink-0 text-[11px] font-bold"
                   style={{ background: `${BLUE}15`, color: BLUE, border: `1px solid ${BLUE}20` }}>
@@ -369,10 +364,8 @@ export default async function AdminDashboardPage() {
                 { href: "/admin/audit", label: "Audit Log", icon: Shield, desc: "Immutable trail", accent: TEAL },
               ].map(({ href, label, icon: Icon, desc, accent }) => (
                 <Link key={href} href={href}
-                  className="flex items-center gap-3 p-3 rounded-xl transition-all group"
-                  style={{ border: DIVIDER, background: "transparent" }}
-                  onMouseEnter={e => (e.currentTarget.style.background = "rgba(148,163,184,0.05)")}
-                  onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
+                  className="flex items-center gap-3 p-3 rounded-xl transition-all group hover:bg-white/[0.05]"
+                  style={{ border: DIVIDER }}
                 >
                   <div className="h-8 w-8 rounded-lg flex items-center justify-center shrink-0"
                     style={{ background: `${accent}15`, border: `1px solid ${accent}25` }}>
