@@ -113,12 +113,12 @@ export default function AuthLayout({
         {/* Subtle bg glow */}
         <div style={{ position: "absolute", top: "30%", left: "50%", transform: "translate(-50%,-50%)", width: 500, height: 400, borderRadius: "50%", background: "radial-gradient(circle, rgba(26,61,43,0.4), transparent 70%)", pointerEvents: "none" }} />
 
-        {/* Mobile Logo */}
-        <div style={{ position: "absolute", top: 24, left: 24 }} className="lg:hidden">
-          <Logo size="sm" />
-        </div>
+        <div style={{ width: "100%", maxWidth: 420, position: "relative", zIndex: 1, display: "flex", flexDirection: "column" }}>
+          {/* Mobile Logo */}
+          <div style={{ marginBottom: 48, alignSelf: "flex-start" }} className="lg:hidden">
+            <Logo light size="sm" />
+          </div>
 
-        <div style={{ width: "100%", maxWidth: 420, position: "relative", zIndex: 1 }}>
           {children}
         </div>
       </div>

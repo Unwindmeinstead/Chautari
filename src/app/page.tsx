@@ -343,16 +343,30 @@ export default function LandingPage() {
       </section>
 
       {/* ══════════ STATS ══════════ */}
-      <div style={{ background: F, display: "grid", gridTemplateColumns: "repeat(4, 1fr)" }}>
-        <style>{`@media(max - width: 640px) { #stats - grid{ grid - template - columns: repeat(2, 1fr)!important } .stat - cell{ border - bottom: 1px solid rgba(255, 248, 231, 0.07)!important } } `}</style>
-        <div id="stats-grid" style={{ background: F, display: "contents" }}>
+      <div style={{ background: F, borderTop: "1px solid rgba(255,248,231,0.07)", borderBottom: "1px solid rgba(255,248,231,0.07)" }}>
+        <style>{`
+          #stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); }
+          @media(max-width: 768px) { #stats-grid { grid-template-columns: repeat(2, 1fr); } }
+          @media(max-width: 480px) { #stats-grid { grid-template-columns: 1fr; } }
+          .stat-cell { border-right: 1px solid rgba(255,248,231,0.07); border-bottom: 1px solid rgba(255,248,231,0.07); }
+          @media(min-width: 769px) { .stat-cell:last-child { border-right: none; } .stat-cell { border-bottom: none; } }
+          @media(max-width: 768px) { 
+            .stat-cell:nth-child(2n) { border-right: none; }
+            .stat-cell:nth-last-child(-n+2) { border-bottom: none; }
+          }
+          @media(max-width: 480px) {
+            .stat-cell { border-right: none; }
+            .stat-cell:last-child { border-bottom: none; }
+          }
+        `}</style>
+        <div id="stats-grid">
           {[
             { value: 27, suffix: "+", label: "Verified agencies" },
             { value: 5, suffix: "–7 days", label: "Avg switch time" },
             { value: 3, suffix: "+", label: "Languages" },
             { value: 97, prefix: "$", label: "One-time fee" },
           ].map((s, i) => (
-            <div key={i} className="stat-cell" style={{ padding: "28px 20px", textAlign: "center", borderRight: i < 3 ? "1px solid rgba(255,248,231,0.07)" : "none", transition: "background 0.2s" }}
+            <div key={i} className="stat-cell" style={{ padding: "28px 20px", textAlign: "center", transition: "background 0.2s" }}
               onMouseEnter={e => e.currentTarget.style.background = "rgba(255,255,255,0.03)"}
               onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
               <AnimatedCounter value={s.value} prefix={s.prefix} suffix={s.suffix} />
