@@ -1,5 +1,8 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
+import { createClient } from "@/lib/supabase/client";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 /* -- Fonts -- */
 const FontLoader = () => (
@@ -148,6 +151,26 @@ function FAQItem({ q, a, defaultOpen = false }: any) {
 export default function LandingPage() {
   const [navDark, setNavDark] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [user, setUser] = useState<any>(null);
+  const [profile, setProfile] = useState<any>(null);
+  const supabase = createClient();
+  const router = useRouter();
+
+  useEffect(() => {
+    async function getUser() {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        setUser(user);
+        const { data: prof } = await supabase
+          .from("profiles")
+          .select("*")
+          .eq("id", user.id)
+          .single();
+        if (prof) setProfile(prof);
+      }
+    }
+    getUser();
+  }, []);
 
   useEffect(() => {
     const onScroll = () => setNavDark(window.scrollY > 60);
@@ -189,7 +212,7 @@ export default function LandingPage() {
         transition: "background 0.35s ease, border-color 0.35s ease",
       }}>
         <div style={{ display: "flex", alignItems: "center", gap: 32 }}>
-          <a href="#" style={{ textDecoration: "none" }}><Logo light={navDark} /></a>
+          <Link href="/" style={{ textDecoration: "none" }}><Logo light={navDark} /></Link>
 
           {/* Desktop nav links - adjacent to logo, hidden on smaller desktop if space is tight */}
           <div style={{ display: "flex", alignItems: "center", gap: 24 }} className="desktop-nav">
@@ -203,22 +226,40 @@ export default function LandingPage() {
         </div>
 
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          {/* Sign in — desktop only */}
-          <a href="/auth/login" className="desktop-nav" style={{ fontSize: 13, textDecoration: "none", color: navDark ? "rgba(255,248,231,0.55)" : MU, fontWeight: 400, transition: "color 0.2s", marginRight: 12 }}>Sign in</a>
-          {/* CTA */}
-          <a href="/auth/register" style={{
-            fontSize: 13, fontWeight: 600, letterSpacing: "0.01em", padding: "8px 20px",
-            borderRadius: 100, textDecoration: "none", whiteSpace: "nowrap",
-            background: navDark ? AM : F, color: navDark ? FD : CR,
-            transition: "all 0.2s ease", boxShadow: "0 6px 20px rgba(26,61,43,0.18)",
-          }}
-            onMouseEnter={e => e.currentTarget.style.transform = "translateY(-1px)"}
-            onMouseLeave={e => e.currentTarget.style.transform = "translateY(0)"}>
-            Start free
-          </a>
+          {user ? (
+            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+              <Link href="/dashboard" className="desktop-nav" style={{ fontSize: 13, textDecoration: "none", color: navDark ? "rgba(255,248,231,0.55)" : MU, fontWeight: 500, transition: "color 0.2s" }}>
+                Dashboard
+              </Link>
+              <Link href="/profile" style={{ textDecoration: "none", display: "flex", alignItems: "center", gap: 8, background: "rgba(26,61,43,0.05)", padding: "4px 12px 4px 6px", borderRadius: 100, border: "1px solid rgba(26,61,43,0.1)" }}>
+                <div style={{ width: 28, height: 28, borderRadius: "50%", background: `linear-gradient(135deg, ${F}, ${FM})`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 700, color: CR }}>
+                  {(profile?.full_name || user.email)?.[0].toUpperCase()}
+                </div>
+                <span className="desktop-nav" style={{ fontSize: 13, fontWeight: 600, color: F }}>
+                  {profile?.full_name?.split(" ")[0] || "User"}
+                </span>
+              </Link>
+            </div>
+          ) : (
+            <>
+              {/* Sign in — desktop only */}
+              <a href="/auth/login" className="desktop-nav" style={{ fontSize: 13, textDecoration: "none", color: navDark ? "rgba(255,248,231,0.55)" : MU, fontWeight: 400, transition: "color 0.2s", marginRight: 12 }}>Sign in</a>
+              {/* CTA */}
+              <a href="/auth/register" style={{
+                fontSize: 13, fontWeight: 600, letterSpacing: "0.01em", padding: "8px 20px",
+                borderRadius: 100, textDecoration: "none", whiteSpace: "nowrap",
+                background: navDark ? AM : F, color: navDark ? FD : CR,
+                transition: "all 0.2s ease", boxShadow: "0 6px 20px rgba(26,61,43,0.18)",
+              }}
+                onMouseEnter={e => e.currentTarget.style.transform = "translateY(-1px)"}
+                onMouseLeave={e => e.currentTarget.style.transform = "translateY(0)"}>
+                Start free
+              </a>
+            </>
+          )}
           {/* Hamburger */}
           <button onClick={() => setMenuOpen(v => !v)}
-            style={{ display: "none", background: "none", border: "none", cursor: "pointer", padding: 6, color: navDark ? CR : F }}
+            style={{ background: "none", border: "none", cursor: "pointer", padding: 6, color: navDark ? CR : F }}
             className="hamburger">
             {menuOpen ? <X /> : <Menu />}
           </button>
@@ -232,16 +273,35 @@ export default function LandingPage() {
           boxShadow: "0 12px 40px rgba(26,61,43,0.12)",
           display: menuOpen ? "flex" : "none", flexDirection: "column", gap: 4,
         }}>
-          {[["#how-it-works", "How it works"], ["#agencies", "Find agencies"], ["#rights", "Your rights"], ["#faq", "FAQ"], ["/auth/login", "Sign in"]].map(([h, l]) => (
-            <a key={h} href={h} onClick={e => h.startsWith('#') ? scrollTo(e, h) : setMenuOpen(false)}
+          {[["#how-it-works", "How it works"], ["#agencies", "Find agencies"], ["#rights", "Your rights"], ["#faq", "FAQ"]].map(([h, l]) => (
+            <a key={h} href={h} onClick={e => scrollTo(e, h)}
               style={{ display: "block", padding: "10px 4px", fontSize: 15, fontWeight: 500, color: F, textDecoration: "none", borderBottom: "1px solid rgba(26,61,43,0.06)" }}>
               {l}
             </a>
           ))}
-          <a href="/auth/register" style={{
-            display: "block", marginTop: 12, textAlign: "center", padding: "12px", borderRadius: 12,
-            background: F, color: CR, fontSize: 15, fontWeight: 600, textDecoration: "none",
-          }}>Start free — it's always free to browse</a>
+          {user ? (
+            <>
+              <Link href="/dashboard" onClick={() => setMenuOpen(false)}
+                style={{ display: "block", padding: "10px 4px", fontSize: 15, fontWeight: 500, color: F, textDecoration: "none", borderBottom: "1px solid rgba(26,61,43,0.06)" }}>
+                Go to Dashboard
+              </Link>
+              <Link href="/profile" onClick={() => setMenuOpen(false)}
+                style={{ display: "block", padding: "10px 4px", fontSize: 15, fontWeight: 500, color: F, textDecoration: "none" }}>
+                My Profile ({profile?.full_name?.split(" ")[0] || "User"})
+              </Link>
+            </>
+          ) : (
+            <>
+              <a href="/auth/login" onClick={() => setMenuOpen(false)}
+                style={{ display: "block", padding: "10px 4px", fontSize: 15, fontWeight: 500, color: F, textDecoration: "none", borderBottom: "1px solid rgba(26,61,43,0.06)" }}>
+                Sign in
+              </a>
+              <a href="/auth/register" style={{
+                display: "block", marginTop: 12, textAlign: "center", padding: "12px", borderRadius: 12,
+                background: F, color: CR, fontSize: 15, fontWeight: 600, textDecoration: "none",
+              }}>Start free</a>
+            </>
+          )}
         </div>
       </nav>
 
@@ -347,16 +407,11 @@ export default function LandingPage() {
         <style>{`
           #stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); }
           @media(max-width: 768px) { #stats-grid { grid-template-columns: repeat(2, 1fr); } }
-          @media(max-width: 480px) { #stats-grid { grid-template-columns: 1fr; } }
           .stat-cell { border-right: 1px solid rgba(255,248,231,0.07); border-bottom: 1px solid rgba(255,248,231,0.07); }
           @media(min-width: 769px) { .stat-cell:last-child { border-right: none; } .stat-cell { border-bottom: none; } }
           @media(max-width: 768px) { 
             .stat-cell:nth-child(2n) { border-right: none; }
             .stat-cell:nth-last-child(-n+2) { border-bottom: none; }
-          }
-          @media(max-width: 480px) {
-            .stat-cell { border-right: none; }
-            .stat-cell:last-child { border-bottom: none; }
           }
         `}</style>
         <div id="stats-grid">
@@ -556,22 +611,35 @@ export default function LandingPage() {
           <style>{`@media(min - width: 640px) { #serve - grid{ grid - template - columns: repeat(2, 1fr)!important } } @media(min - width: 1024px) { #serve - grid{ grid - template - columns: repeat(4, 1fr)!important } } `}</style>
           <div id="serve-grid" style={{ display: "grid", gridTemplateColumns: "1fr", gap: 16 }}>
             {[
-              { Icon: Heart, title: "Current patients", body: "Not happy with your current care? You have the right to switch to a better agency at any time — no permission needed." },
-              { Icon: Users, title: "Family members", body: "Helping a parent or loved one? We guide you through every step — no guesswork, no bureaucracy." },
-              { Icon: Building, title: "Hospital discharge", body: "Going home after a hospital stay? You don't have to accept who your discharge planner suggests." },
-              { Icon: Globe, title: "Non-English speakers", body: "Pittsburgh's Nepali, Bhutanese, Hindi communities deserve agencies with staff who speak their language." },
-            ].map(({ Icon, title, body }, i) => (
+              { Icon: Heart, title: "Current patients", body: "Not happy with your current care? You have the right to switch to a better agency at any time — no permission needed.", img: "/images/serve/patients.png" },
+              { Icon: Users, title: "Family members", body: "Helping a parent or loved one? We guide you through every step — no guesswork, no bureaucracy.", img: "/images/serve/family.png" },
+              { Icon: Building, title: "Hospital discharge", body: "Going home after a hospital stay? You don't have to accept who your discharge planner suggests.", img: "/images/serve/discharge.png" },
+              { Icon: Globe, title: "Non-English speakers", body: "Pittsburgh's Nepali, Bhutanese, Hindi communities deserve agencies with staff who speak their language.", img: "/images/serve/diverse.png" },
+            ].map(({ Icon, title, body, img }, i) => (
               <div key={title} className={`reveal d${Math.min(i + 1, 3)} `}
-                style={{ background: "#fff", border: "1px solid rgba(26,61,43,0.09)", borderRadius: 20, padding: 28, position: "relative", overflow: "hidden", transition: "all 0.25s ease" }}
-                onMouseEnter={e => { e.currentTarget.style.boxShadow = "0 12px 40px rgba(26,61,43,0.12)"; e.currentTarget.style.transform = "translateY(-4px)"; }}
+                style={{ background: "#fff", border: "1px solid rgba(26,61,43,0.09)", borderRadius: 24, padding: 0, position: "relative", overflow: "hidden", transition: "all 0.25s ease", display: "flex", flexDirection: "column" }}
+                onMouseEnter={e => { e.currentTarget.style.boxShadow = "0 20px 60px rgba(26,61,43,0.14)"; e.currentTarget.style.transform = "translateY(-6px)"; }}
                 onMouseLeave={e => { e.currentTarget.style.boxShadow = "none"; e.currentTarget.style.transform = "translateY(0)"; }}>
-                <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: 3, background: `linear - gradient(90deg, ${F}, ${AM})`, transform: "scaleX(0)", transformOrigin: "left", transition: "transform 0.3s ease" }}
-                  className="serve-bar" />
-                <div style={{ width: 52, height: 52, borderRadius: 16, background: `linear - gradient(135deg, ${F}, ${FM})`, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 16 }}>
-                  <Icon size={26} stroke="#FFFFFF" />
+
+                <div style={{ height: 180, width: "100%", position: "relative" }}>
+                  <img src={img} alt={title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                  <div style={{
+                    position: "absolute", bottom: -22, left: 24, width: 48, height: 48,
+                    borderRadius: 14, background: `linear-gradient(135deg, ${F}, ${FM})`,
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    boxShadow: "0 8px 20px rgba(0,0,0,0.2)",
+                    border: "3px solid #fff"
+                  }}>
+                    <Icon size={24} stroke="#FFFFFF" />
+                  </div>
                 </div>
-                <div className="ff" style={{ fontSize: 18, fontWeight: 700, color: F, marginBottom: 8, lineHeight: 1.3 }}>{title}</div>
-                <div style={{ fontSize: 13, fontWeight: 300, color: MU, lineHeight: 1.75 }}>{body}</div>
+
+                <div style={{ borderBottom: `2px solid transparent`, height: 3, position: "absolute", bottom: 0, left: 0, right: 0, background: `linear-gradient(90deg, ${F}, ${AM})`, transform: "scaleX(0)", transformOrigin: "left", transition: "transform 0.4s ease" }} className="serve-bar" />
+
+                <div style={{ padding: "40px 24px 32px" }}>
+                  <div className="ff" style={{ fontSize: 20, fontWeight: 700, color: F, marginBottom: 12, lineHeight: 1.25 }}>{title}</div>
+                  <div style={{ fontSize: 14, fontWeight: 300, color: MU, lineHeight: 1.7 }}>{body}</div>
+                </div>
               </div>
             ))}
           </div>

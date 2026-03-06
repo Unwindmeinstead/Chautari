@@ -28,6 +28,14 @@ export default function AuthLayout({
         .fade-up-d3 { animation: fadeUp 0.6s 0.3s ease both; }
         input::placeholder { color: rgba(255,248,231,0.25); }
         input:-webkit-autofill { -webkit-box-shadow: 0 0 0 100px #0F2419 inset !important; -webkit-text-fill-color: #FFF8E7 !important; }
+        
+        #auth-left-panel { display: flex; width: 44%; }
+        #auth-mobile-logo { display: none; }
+        
+        @media (max-width: 1024px) {
+          #auth-left-panel { display: none; }
+          #auth-mobile-logo { display: block; margin-top: -24px; }
+        }
       ` }} />
 
       {/* ══════════ LEFT PANEL — branding ══════════ */}
@@ -40,7 +48,7 @@ export default function AuthLayout({
         flexDirection: "column",
         justifyContent: "space-between",
         padding: "clamp(36px,5vw,56px)"
-      }} className="hidden lg:flex">
+      }} id="auth-left-panel">
 
         {/* Noise grain */}
         <div style={{ position: "absolute", inset: 0, opacity: 0.025, backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`, pointerEvents: "none" }} />
@@ -115,7 +123,7 @@ export default function AuthLayout({
 
         <div style={{ width: "100%", maxWidth: 420, position: "relative", zIndex: 1, display: "flex", flexDirection: "column" }}>
           {/* Mobile Logo */}
-          <div style={{ marginBottom: 48, alignSelf: "flex-start" }} className="lg:hidden">
+          <div id="auth-mobile-logo" style={{ marginBottom: 48, alignSelf: "flex-start" }}>
             <Logo light size="sm" />
           </div>
 

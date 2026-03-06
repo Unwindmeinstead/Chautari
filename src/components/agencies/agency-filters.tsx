@@ -144,40 +144,75 @@ export function AgencyFilters({ filters, onChange, resultCount, loading }: Agenc
 
   return (
     <>
+      <style>{`
+        #filters-mobile-trigger { display: none; }
+        #filters-desktop-sidebar { display: block; width: 224px; flex-shrink: 0; position: sticky; top: 96px; align-self: flex-start; }
+        
+        @media (max-width: 1024px) {
+          #filters-mobile-trigger { display: flex; }
+          #filters-desktop-sidebar { display: none; }
+        }
+        
+        .mobile-filters-overlay {
+          position: fixed; inset: 0; z-index: 999;
+          background: rgba(15,36,25,0.8);
+          backdrop-filter: blur(8px);
+          animation: fadeIn 0.3s ease;
+        }
+        
+        .mobile-filters-drawer {
+          position: fixed; bottom: 0; left: 0; right: 0; height: 85vh; 
+          z-index: 1000; background: ${FD}; 
+          border-top: 1px solid rgba(255,248,231,0.1);
+          border-radius: 32px 32px 0 0;
+          display: flex; flexDirection: column;
+          box-shadow: 0 -20px 40px rgba(0,0,0,0.4);
+          animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+      `}</style>
+
       {/* Mobile trigger */}
-      <div className="lg:hidden flex items-center gap-3">
+      <div id="filters-mobile-trigger">
         <button onClick={() => setMobileOpen(true)}
-          style={{ display: "flex", alignItems: "center", gap: 8, height: 40, padding: "0 20px", borderRadius: 100, border: "1px solid rgba(255,248,231,0.1)", background: "rgba(255,255,255,0.05)", color: CR, fontSize: 13, fontWeight: 600, cursor: "pointer", transition: "all 0.2s" }}
-          className="hover:border-white">
+          style={{ display: "flex", alignItems: "center", gap: 8, height: 44, padding: "0 20px", borderRadius: 100, border: "1px solid rgba(255,248,231,0.15)", background: "rgba(255,255,255,0.06)", color: CR, fontSize: 13, fontWeight: 600, cursor: "pointer", transition: "all 0.2s" }}>
           <Sliders size={14} stroke="rgba(255,248,231,0.5)" />
           Filters
           {activeCount > 0 && (
             <span style={{ fontSize: 10, fontWeight: 700, color: FD, background: AM, borderRadius: 100, padding: "2px 8px", fontFamily: "'DM Mono', monospace" }}>{activeCount}</span>
           )}
         </button>
-        <p style={{ fontSize: 13, fontWeight: 600, color: "rgba(255,248,231,0.45)" }}>
-          {loading ? "Searching…" : `${resultCount.toLocaleString()} agencies`}
+        <p style={{ fontSize: 13, fontWeight: 600, color: "rgba(255,248,231,0.45)", marginLeft: "auto" }}>
+          {loading ? "Searching…" : `${resultCount.toLocaleString()} found`}
         </p>
       </div>
 
-      {/* Mobile drawer (Simplified placeholder for vibe match) */}
+      {/* Mobile drawer */}
       {mobileOpen && (
-        <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, zIndex: 300, display: "flex", flexDirection: "column", background: FD }}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 20px", borderBottom: "1px solid rgba(255,248,231,0.06)" }}>
-            <h2 style={{ fontSize: 17, fontWeight: 700, color: CR }}>Filters</h2>
-            <button onClick={() => setMobileOpen(false)} style={{ background: "none", border: "none", color: CR, cursor: "pointer" }}><X size={24} /></button>
+        <>
+          <div className="mobile-filters-overlay" onClick={() => setMobileOpen(false)} />
+          <div className="mobile-filters-drawer">
+            <div style={{ width: 40, height: 4, background: "rgba(255,248,231,0.2)", borderRadius: 2, margin: "12px auto 8px" }} />
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 24px", borderBottom: "1px solid rgba(255,248,231,0.06)" }}>
+              <h2 style={{ fontSize: 20, fontWeight: 700, color: CR, fontFamily: "'Fraunces', serif" }}>Refine Search</h2>
+              <button onClick={() => setMobileOpen(false)} style={{ background: "rgba(255,255,255,0.05)", border: "none", color: CR, cursor: "pointer", width: 32, height: 32, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center" }}><X size={20} /></button>
+            </div>
+            <div style={{ overflowY: "auto", padding: "24px 24px 120px", flex: 1 }}>{filterPanel}</div>
+            <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, background: FD, padding: "20px 24px 32px", borderTop: "1px solid rgba(255,248,231,0.06)", display: "flex", gap: 12 }}>
+              <button onClick={() => setMobileOpen(false)} style={{ flex: 1, height: 52, borderRadius: 100, background: AM, color: FD, fontSize: 15, fontWeight: 700, border: "none", cursor: "pointer", boxShadow: "0 8px 20px rgba(232,147,58,0.2)" }}>
+                Show Results
+              </button>
+            </div>
           </div>
-          <div style={{ overflowY: "auto", padding: "20px 20px 100px" }}>{filterPanel}</div>
-          <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, background: FD, padding: "20px", borderTop: "1px solid rgba(255,248,231,0.06)", display: "flex", gap: 12 }}>
-            <button onClick={() => setMobileOpen(false)} style={{ flex: 1, padding: "12px", borderRadius: 100, background: AM, color: FD, fontWeight: 700, border: "none", cursor: "pointer" }}>Show results</button>
-          </div>
-        </div>
+        </>
       )}
 
       {/* Desktop sidebar */}
-      <div className="hidden lg:block w-56 shrink-0 sticky top-24 self-start">
-        <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,248,231,0.07)", borderRadius: 20, padding: 20 }}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 18 }}>
+      <div id="filters-desktop-sidebar">
+        <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,248,231,0.07)", borderRadius: 24, padding: 24 }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, fontWeight: 600, color: CR }}>
               <Sliders size={14} stroke="rgba(255,248,231,0.5)" /> Filters
             </div>

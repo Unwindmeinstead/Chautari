@@ -91,13 +91,24 @@ export function AgencySearchClient({
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+      <style>{`
+        .search-main { display: flex; gap: 24px; align-items: flex-start; }
+        @media (max-width: 1024px) {
+          .search-main { flex-direction: column; }
+          .results-grid { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)) !important; }
+        }
+        @media (max-width: 640px) {
+          .results-grid { grid-template-columns: 1fr !important; }
+        }
+      `}</style>
+
       {/* Search bar */}
       <AgencySearchBar
         value={filters.query ?? ""}
         onChange={q => handleFiltersChange({ ...filters, query: q })}
       />
 
-      <div style={{ display: "flex", gap: 20, alignItems: "flex-start" }}>
+      <div className="search-main">
         {/* Sidebar filters */}
         <AgencyFilters
           filters={filters}
@@ -106,9 +117,9 @@ export function AgencySearchClient({
           loading={loading}
         />
 
-        {/* Results */}
-        <div style={{ flex: 1, minWidth: 0 }}>
-          {/* Result count & personalized banner */}
+        {/* Results column */}
+        <div style={{ flex: 1, width: "100%", minWidth: 0 }}>
+          {/* Result count & personalized banner area */}
           <div style={{ display: "flex", flexDirection: "column", gap: 16, marginBottom: 16 }}>
             {showPersonalisedBanner && (
               <div style={{ background: F, border: "1px solid rgba(255,248,231,0.08)", borderRadius: 20, padding: "16px 24px", display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: 16 }}>
@@ -146,78 +157,80 @@ export function AgencySearchClient({
             </div>
           )}
 
-          {loading ? (
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: 12 }}>
-              {Array.from({ length: 6 }).map((_, i) => <AgencyCardSkeleton key={i} />)}
-            </div>
-          ) : agencies.length === 0 ? (
-            <div style={{ textAlign: "center", padding: "80px 20px", border: "1px dashed rgba(255,248,231,0.1)", borderRadius: 20 }}>
-              <div style={{ width: 52, height: 52, borderRadius: "50%", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,248,231,0.08)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px" }}>
-                <Building size={22} stroke="rgba(255,248,231,0.3)" />
+          <div style={{ minHeight: 400 }}>
+            {loading ? (
+              <div className="results-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: 12 }}>
+                {Array.from({ length: 6 }).map((_, i) => <AgencyCardSkeleton key={i} />)}
               </div>
-              <h3 style={{ fontFamily: "'Fraunces', serif", fontSize: 20, fontWeight: 700, color: CR, marginBottom: 8 }}>No agencies found</h3>
-              <p style={{ fontSize: 13, color: "rgba(255,248,231,0.4)", marginBottom: 24, lineHeight: 1.7, maxWidth: 300, margin: "0 auto 24px" }}>
-                Try adjusting your filters — clearing the county filter shows statewide agencies.
-              </p>
-              <button onClick={() => handleFiltersChange({ query: filters.query })}
-                style={{ fontSize: 13, fontWeight: 600, color: AM, background: "rgba(232,147,58,0.1)", border: "1px solid rgba(232,147,58,0.2)", borderRadius: 100, padding: "10px 24px", cursor: "pointer", fontFamily: "inherit", transition: "all 0.2s" }}
-                className="hover:bg-[#E8933A] hover:text-[#0F2419]">
-                Clear all filters
-              </button>
-            </div>
-          ) : (
-            <>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: 12 }}>
-                {agencies.map((agency, i) => (
-                  <div key={agency.id} className="card-in" style={{ animationDelay: `${i * 40}ms` }}>
-                    <AgencyCard agency={agency} />
-                  </div>
-                ))}
-              </div>
-
-              {/* Pagination */}
-              {totalPages > 1 && (
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 12, marginTop: 40, borderTop: "1px solid rgba(255,248,231,0.06)", paddingTop: 24 }}>
-                  <button
-                    onClick={() => handlePageChange(page - 1)}
-                    disabled={page === 1}
-                    style={{ background: "none", border: "none", cursor: page === 1 ? "default" : "pointer", opacity: page === 1 ? 0.2 : 1, color: CR, transition: "transform 0.2s" }}
-                    onMouseEnter={e => page !== 1 && (e.currentTarget.style.transform = "translateX(-4px)")}
-                    onMouseLeave={e => (e.currentTarget.style.transform = "none")}>
-                    <ChevronL size={24} />
-                  </button>
-                  <div style={{ display: "flex", gap: 12 }}>
-                    {Array.from({ length: totalPages }, (_, i) => i + 1).map(p => (
-                      <button key={p} onClick={() => handlePageChange(p)}
-                        style={{ width: 32, height: 32, borderRadius: 8, border: "none", cursor: "pointer", background: p === page ? AM : "rgba(255,255,255,0.05)", color: p === page ? FD : CR, fontSize: 13, fontWeight: 700, transition: "all 0.2s" }}>
-                        {p}
-                      </button>
-                    ))}
-                  </div>
-                  <button
-                    onClick={() => handlePageChange(page + 1)}
-                    disabled={page === totalPages}
-                    style={{ background: "none", border: "none", cursor: page === totalPages ? "default" : "pointer", opacity: page === totalPages ? 0.2 : 1, color: CR, transition: "transform 0.2s" }}
-                    onMouseEnter={e => page !== totalPages && (e.currentTarget.style.transform = "translateX(4px)")}
-                    onMouseLeave={e => (e.currentTarget.style.transform = "none")}>
-                    <ChevronR size={24} />
-                  </button>
+            ) : agencies.length === 0 ? (
+              <div style={{ textAlign: "center", padding: "80px 20px", border: "1px dashed rgba(255,248,231,0.1)", borderRadius: 20 }}>
+                <div style={{ width: 52, height: 52, borderRadius: "50%", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,248,231,0.08)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px" }}>
+                  <Building size={22} stroke="rgba(255,248,231,0.3)" />
                 </div>
-              )}
-
-              {/* Switch CTA banner */}
-              <div style={{ marginTop: 48, background: F, border: "1px solid rgba(255,248,231,0.08)", borderRadius: 20, padding: "24px 28px", display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: 16 }}>
-                <div>
-                  <div style={{ fontFamily: "'Fraunces', serif", fontSize: 18, fontWeight: 700, color: CR, marginBottom: 4 }}>Ready to switch agencies?</div>
-                  <p style={{ fontSize: 13, fontWeight: 300, color: "rgba(255,248,231,0.55)", lineHeight: 1.6 }}>We handle the paperwork and coordination. One-time $97 fee. Usually done in 5–7 days.</p>
-                </div>
-                <Link href="/auth/register" style={{ display: "inline-flex", alignItems: "center", gap: 8, background: AM, color: FD, fontSize: 13, fontWeight: 700, padding: "11px 24px", borderRadius: 100, textDecoration: "none", flexShrink: 0, transition: "all 0.2s", boxShadow: "0 8px 24px rgba(232,147,58,0.25)" }}
-                  className="hover:bg-[#D4822E] hover:-translate-y-px">
-                  Start your switch <ArrowR size={14} stroke={FD} />
-                </Link>
+                <h3 style={{ fontFamily: "'Fraunces', serif", fontSize: 20, fontWeight: 700, color: CR, marginBottom: 8 }}>No agencies found</h3>
+                <p style={{ fontSize: 13, color: "rgba(255,248,231,0.4)", marginBottom: 24, lineHeight: 1.7, maxWidth: 300, margin: "0 auto 24px" }}>
+                  Try adjusting your filters — clearing the county filter shows statewide agencies.
+                </p>
+                <button onClick={() => handleFiltersChange({ query: filters.query })}
+                  style={{ fontSize: 13, fontWeight: 600, color: AM, background: "rgba(232,147,58,0.1)", border: "1px solid rgba(232,147,58,0.2)", borderRadius: 100, padding: "10px 24px", cursor: "pointer", fontFamily: "inherit", transition: "all 0.2s" }}
+                  className="hover:bg-[#E8933A] hover:text-[#0F2419]">
+                  Clear all filters
+                </button>
               </div>
-            </>
-          )}
+            ) : (
+              <>
+                <div className="results-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: 12 }}>
+                  {agencies.map((agency, i) => (
+                    <div key={agency.id} className="card-in" style={{ animationDelay: `${i * 40}ms` }}>
+                      <AgencyCard agency={agency} />
+                    </div>
+                  ))}
+                </div>
+
+                {/* Pagination */}
+                {totalPages > 1 && (
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 12, marginTop: 40, borderTop: "1px solid rgba(255,248,231,0.06)", paddingTop: 24 }}>
+                    <button
+                      onClick={() => handlePageChange(page - 1)}
+                      disabled={page === 1}
+                      style={{ background: "none", border: "none", cursor: page === 1 ? "default" : "pointer", opacity: page === 1 ? 0.2 : 1, color: CR, transition: "transform 0.2s" }}
+                      onMouseEnter={e => page !== 1 && (e.currentTarget.style.transform = "translateX(-4px)")}
+                      onMouseLeave={e => (e.currentTarget.style.transform = "none")}>
+                      <ChevronL size={24} />
+                    </button>
+                    <div style={{ display: "flex", gap: 12 }}>
+                      {Array.from({ length: totalPages }, (_, i) => i + 1).map(p => (
+                        <button key={p} onClick={() => handlePageChange(p)}
+                          style={{ width: 32, height: 32, borderRadius: 8, border: "none", cursor: "pointer", background: p === page ? AM : "rgba(255,255,255,0.05)", color: p === page ? FD : CR, fontSize: 13, fontWeight: 700, transition: "all 0.2s" }}>
+                          {p}
+                        </button>
+                      ))}
+                    </div>
+                    <button
+                      onClick={() => handlePageChange(page + 1)}
+                      disabled={page === totalPages}
+                      style={{ background: "none", border: "none", cursor: page === totalPages ? "default" : "pointer", opacity: page === totalPages ? 0.2 : 1, color: CR, transition: "transform 0.2s" }}
+                      onMouseEnter={e => page !== totalPages && (e.currentTarget.style.transform = "translateX(4px)")}
+                      onMouseLeave={e => (e.currentTarget.style.transform = "none")}>
+                      <ChevronR size={24} />
+                    </button>
+                  </div>
+                )}
+
+                {/* Switch CTA banner */}
+                <div style={{ marginTop: 48, background: F, border: "1px solid rgba(255,248,231,0.08)", borderRadius: 20, padding: "24px 28px", display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: 16 }}>
+                  <div>
+                    <div style={{ fontFamily: "'Fraunces', serif", fontSize: 18, fontWeight: 700, color: CR, marginBottom: 4 }}>Ready to switch agencies?</div>
+                    <p style={{ fontSize: 13, fontWeight: 300, color: "rgba(255,248,231,0.55)", lineHeight: 1.6 }}>We handle the paperwork and coordination. One-time $97 fee. Usually done in 5–7 days.</p>
+                  </div>
+                  <Link href="/auth/register" style={{ display: "inline-flex", alignItems: "center", gap: 8, background: AM, color: FD, fontSize: 13, fontWeight: 700, padding: "11px 24px", borderRadius: 100, textDecoration: "none", flexShrink: 0, transition: "all 0.2s", boxShadow: "0 8px 24px rgba(232,147,58,0.25)" }}
+                    className="hover:bg-[#D4822E] hover:-translate-y-px">
+                    Start your switch <ArrowR size={14} stroke={FD} />
+                  </Link>
+                </div>
+              </>
+            )}
+          </div>
         </div>
       </div>
     </div>

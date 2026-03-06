@@ -130,19 +130,11 @@ export default function ResetPasswordPage() {
   return (
     <div className="space-y-0">
       <div className="fade-up" style={{ display: "inline-flex", alignItems: "center", gap: 8, fontSize: 11, fontWeight: 500, letterSpacing: "0.12em", textTransform: "uppercase", color: AM, marginBottom: 16, fontFamily: "'DM Mono', monospace" }}>
-        <span style={{ width: 20, height: 1, background: AM }} /> Troubleshooting
+        <span style={{ width: 24, height: 1, background: AM }} /> Troubleshooting
       </div>
 
-      <div className="fade-up-d1">
-        <Link href="/auth/login" style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 13, color: "rgba(255,248,231,0.45)", textDecoration: "none", marginBottom: 24, transition: "color 0.2s" }}
-          onMouseEnter={e => e.currentTarget.style.color = AM}
-          onMouseLeave={e => e.currentTarget.style.color = "rgba(255,248,231,0.45)"}>
-          <ArrowL size={14} stroke="currentColor" /> Back to sign in
-        </Link>
-      </div>
-
-      <h1 className="fade-up-d2" style={{ fontFamily: "'Fraunces', serif", fontSize: "clamp(28px, 4vw, 40px)", fontWeight: 800, lineHeight: 1.05, color: CR, marginBottom: 10 }}>Reset your<br /><em style={{ fontStyle: "italic", color: AM }}>password.</em></h1>
-      <p className="fade-up-d3" style={{ fontSize: 14, fontWeight: 300, color: "rgba(255,248,231,0.55)", lineHeight: 1.7, marginBottom: 32 }}>
+      <h1 className="fade-up-d1" style={{ fontFamily: "'Fraunces', serif", fontSize: "clamp(28px, 4vw, 40px)", fontWeight: 800, lineHeight: 1.05, color: CR, marginBottom: 10 }}>Reset your<br /><em style={{ fontStyle: "italic", color: AM }}>password.</em></h1>
+      <p className="fade-up-d2" style={{ fontSize: 14, fontWeight: 300, color: "rgba(255,248,231,0.55)", lineHeight: 1.7, marginBottom: 32 }}>
         Enter your email and we&apos;ll send a link to get back into your account.
       </p>
 
@@ -176,6 +168,14 @@ export default function ResetPasswordPage() {
           )}
         </button>
       </form>
+
+      {/* Footer link */}
+      <div style={{ textAlign: "center", marginTop: 28 }}>
+        <Link href="/auth/login" style={{ fontSize: 14, fontWeight: 600, color: CR, textDecoration: "none", borderBottom: `1px solid rgba(255,248,231,0.2)`, paddingBottom: 1, transition: "all 0.2s" }}
+          className="hover:text-[#E8933A] hover:border-[#E8933A]">
+          Back to sign in
+        </Link>
+      </div>
     </div>
   );
 }
