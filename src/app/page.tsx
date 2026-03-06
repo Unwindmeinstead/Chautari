@@ -53,64 +53,16 @@ export default function HomePage() {
   const [navDark, setNavDark] = React.useState(false);
   const [mobileMenu, setMobileMenu] = React.useState(false);
   const [authUser, setAuthUser] = React.useState<{ name: string; email: string } | null>(null);
-  const [authLoading, setAuthLoading] = React.useState(true);
 
-  // Check auth state on mount and listen for changes
+  // Check auth state on mount
   React.useEffect(() => {
     const supabase = createClient();
-
-    const getUser = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      // Also check localStorage as backup
-      const storedUser = typeof window !== "undefined" ? localStorage.getItem("chautari_user") : null;
-      
-      if (session?.user) {
-        const name = (session.user.user_metadata?.full_name as string) ?? session.user.email?.split('@')[0] ?? 'Account';
-        const userData = { name: name.split(' ')[0], email: session.user.email ?? '' };
-        setAuthUser(userData);
-        localStorage.setItem("chautari_user", JSON.stringify(userData));
-      } else if (storedUser) {
-        try {
-          setAuthUser(JSON.parse(storedUser));
-        } catch {
-          setAuthUser(null);
-        }
-      } else {
-        setAuthUser(null);
-      }
-      setAuthLoading(false);
-    };
-
-    getUser();
-
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === "SIGNED_IN" || event === "SIGNED_OUT" || event === "TOKEN_REFRESHED") {
-        if (session?.user) {
-          const name = (session.user.user_metadata?.full_name as string) ?? session.user.email?.split('@')[0] ?? 'Account';
-          const userData = { name: name.split(' ')[0], email: session.user.email ?? '' };
-          setAuthUser(userData);
-          localStorage.setItem("chautari_user", JSON.stringify(userData));
-        } else if (event === "SIGNED_OUT") {
-          setAuthUser(null);
-          localStorage.removeItem("chautari_user");
-        }
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user) {
+        const name = (user.user_metadata?.full_name as string) ?? user.email?.split('@')[0] ?? 'Account';
+        setAuthUser({ name: name.split(' ')[0], email: user.email ?? '' });
       }
     });
-
-    // Also check auth when page becomes visible
-    const handleVisibility = () => {
-      if (document.visibilityState === "visible") {
-        getUser();
-      }
-    };
-    document.addEventListener("visibilitychange", handleVisibility);
-
-    return () => {
-      subscription.unsubscribe();
-      document.removeEventListener("visibilitychange", handleVisibility);
-    };
   }, []);
 
   React.useEffect(() => {
@@ -213,7 +165,7 @@ export default function HomePage() {
 
         {/* ═══════════════════  NAV  ═══════════════════════════════════════════ */}
         <nav
-          className={`fixed top-0 left-0 right-0 z-[200] h-[68px] flex items-center justify-between px-6 lg:px-12 transition-all duration-400 border-b ${navDark
+          className={`fixed top-0 left-0 right-0 z-[200] h-[68px] flex items-center justify-between px-6 md:px-12 transition-all duration-400 border-b ${navDark
             ? "bg-[#0F2419]/97 border-transparent"
             : "bg-cream/90 border-[rgba(26,61,43,0.08)]"
             }`}
@@ -222,31 +174,32 @@ export default function HomePage() {
           <Link href="/" className="transition-colors">
             <Logo size="md" />
           </Link>
-          <div className="hidden lg:flex items-center gap-6">
+          <div className="hidden md:flex items-center gap-8">
             {[["#how-it-works", "How it works"], ["#agencies", "Find agencies"], ["#rights", "Your rights"], ["#faq", "FAQ"]].map(([href, label]) => (
-              <Link key={href} href={href} onClick={(e) => handleSmoothScroll(e, href)} className={`text-[13px] font-medium no-underline transition-colors cursor-pointer ${navDark ? "text-cream/90 hover:text-cream" : "text-[#3D5A45] hover:text-forest-600"}`}>{label}</Link>
+              <Link key={href} href={href} onClick={(e) => handleSmoothScroll(e, href)} className={`text-[13px] no-underline transition-colors cursor-pointer ${navDark ? "text-cream/55 hover:text-cream" : "text-[#6B7B6E] hover:text-forest-600"}`}>{label}</Link>
             ))}
           </div>
-          <div className="flex items-center gap-2 lg:gap-3">
-            {!authLoading && authUser ? (
-              <Link href="/dashboard" className={`text-[13px] lg:text-[14px] font-semibold no-underline transition-colors ${navDark ? "text-cream hover:text-cream" : "text-forest-600 hover:text-forest-800"}`}>{authUser.name}</Link>
-            ) : !authLoading ? (
-              <Link href="/auth/login" className={`text-[13px] font-medium no-underline transition-colors px-3 lg:px-4 py-1.5 lg:py-2 rounded-full ${navDark ? "text-cream hover:bg-white/10" : "text-forest-600 hover:bg-forest-50"}`}>Sign in</Link>
-            ) : null}
-            <Link href="/auth/register" className={`text-[12px] lg:text-[13px] font-medium tracking-wide px-4 lg:px-5 py-1.5 lg:py-2 rounded-full no-underline transition-all hover:-translate-y-px ${navDark ? "bg-amber-500 text-[#0F2419]" : "bg-forest-600 text-cream"}`} style={{ boxShadow: "0 8px 24px rgba(26,61,43,0.15)" }}>
-              Start for free
+          <div className="flex items-center gap-2 sm:gap-3">
+            {/* Sign in / name — desktop only, hidden on mobile (shown in hamburger instead) */}
+            {authUser ? (
+              <Link href="/dashboard" className={`text-[13px] font-semibold no-underline transition-colors hidden md:inline ${navDark ? "text-cream/70 hover:text-cream" : "text-forest-600 hover:text-forest-800"}`}>{authUser.name}</Link>
+            ) : (
+              <Link href="/auth/login" className={`text-[13px] no-underline transition-colors hidden md:inline ${navDark ? "text-cream/45 hover:text-cream" : "text-[#6B7B6E] hover:text-forest-600"}`}>Sign in</Link>
+            )}
+            <Link href="/auth/register" className={`text-[12px] sm:text-[13px] font-medium tracking-wide px-4 sm:px-5 py-2 rounded-full no-underline transition-all hover:-translate-y-px whitespace-nowrap ${navDark ? "bg-amber-500 text-[#0F2419]" : "bg-forest-600 text-cream"}`} style={{ boxShadow: "0 8px 24px rgba(26,61,43,0.15)" }}>
+              Start free
             </Link>
             {/* Mobile toggle */}
-            <button onClick={() => setMobileMenu(!mobileMenu)} className="lg:hidden p-2 rounded-lg" aria-label="Menu">
+            <button onClick={() => setMobileMenu(!mobileMenu)} className="md:hidden p-2 rounded-lg" aria-label="Menu">
               <svg className="w-5 h-5" fill="none" stroke={navDark ? "#FFF8E7" : "#1A3D2B"} viewBox="0 0 24 24">
                 {mobileMenu ? <path strokeLinecap="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /> : <path strokeLinecap="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />}
               </svg>
             </button>
           </div>
           {mobileMenu && (
-            <div className="absolute top-[68px] left-0 right-0 bg-cream border-b border-forest-100 px-6 py-4 space-y-3 lg:hidden">
+            <div className="absolute top-[68px] left-0 right-0 bg-cream border-b border-forest-100 px-6 py-4 space-y-3 md:hidden">
               {[["#how-it-works", "How it works"], ["#agencies", "Find agencies"], ["#rights", "Your rights"], ["#faq", "FAQ"],
-              ...(!authLoading && authUser ? [["/dashboard", authUser.name]] : !authLoading ? [["/auth/login", "Sign in"]] : [])].map(([h, l]) => (
+              ...(authUser ? [["/dashboard", authUser.name]] : [["/auth/login", "Sign in"]])].map(([h, l]) => (
                 <Link key={h} href={h} onClick={(e) => { if (h.startsWith('#')) { e.preventDefault(); const element = document.querySelector(h); if (element) { element.scrollIntoView({ behavior: 'smooth' }); } } setMobileMenu(false); }} className="block py-2 text-forest-600 font-medium text-sm">{l}</Link>
               ))}
             </div>
@@ -259,7 +212,7 @@ export default function HomePage() {
           <div className="flex flex-col justify-center px-8 sm:px-12 lg:px-20 py-16 lg:py-20 relative z-[2]">
             <div className="absolute top-[-200px] right-[-100px] w-[600px] h-[600px] rounded-full pointer-events-none" style={{ background: "radial-gradient(circle, rgba(232,147,58,0.06), transparent 70%)" }} />
 
-            <div className="inline-flex items-center gap-2.5 mb-8 font-mono text-[13px] font-medium tracking-[0.12em] uppercase text-amber-500">
+            <div className="inline-flex items-center gap-2.5 mb-8 font-mono text-[11px] font-medium tracking-[0.12em] uppercase text-amber-500">
               <span className="w-7 h-px bg-amber-500" />Serving Pennsylvania residents
             </div>
 
@@ -271,31 +224,20 @@ export default function HomePage() {
               SwitchMyCare guides Pennsylvania Medicaid and Medicare patients through finding and switching home health or home care agencies — simply, guided, and free to browse. When you decide to switch, there&apos;s a one-time $97 coordination fee for paperwork and support.
             </p>
 
-            <div className="flex items-center gap-3.5 flex-wrap mb-12">
-              <Link href="/agencies" className="bg-forest-600 text-cream text-sm font-medium tracking-wide px-7 py-3.5 rounded-full no-underline inline-flex items-center gap-2 transition-all hover:bg-[#2A5C41] hover:-translate-y-0.5" style={{ boxShadow: "0 12px 36px rgba(26,61,43,0.22)" }}>
+            <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-3.5 mb-12">
+              <Link href="/agencies" className="bg-forest-600 text-cream text-sm font-medium tracking-wide px-7 py-3.5 rounded-full no-underline inline-flex items-center justify-center gap-2 transition-all hover:bg-[#2A5C41] hover:-translate-y-0.5" style={{ boxShadow: "0 12px 36px rgba(26,61,43,0.22)" }}>
                 Browse agencies
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8H13M13 8L9 4M13 8L9 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
               </Link>
-              <Link href="#how-it-works" onClick={(e) => handleSmoothScroll(e, '#how-it-works')} className="text-base text-[#6B7B6E] no-underline inline-flex items-center gap-1.5 hover:text-forest-600 transition-colors font-medium cursor-pointer">See how it works ↓</Link>
+              <Link href="#how-it-works" onClick={(e) => handleSmoothScroll(e, '#how-it-works')} className="text-base text-[#6B7B6E] no-underline inline-flex items-center gap-1.5 hover:text-forest-600 transition-colors font-medium cursor-pointer self-start sm:self-auto">See how it works ↓</Link>
             </div>
 
-            <div className="flex items-center gap-2.5 flex-wrap pt-7 border-t border-[rgba(26,61,43,0.08)]">
-              <span className="inline-flex items-center gap-2 px-3.5 py-2 rounded-full bg-[rgba(26,61,43,0.06)] text-[13px] font-medium text-forest-700">
-                <svg className="w-4 h-4 text-forest-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
-                HIPAA compliant
-              </span>
-              <span className="inline-flex items-center gap-2 px-3.5 py-2 rounded-full bg-[rgba(232,147,58,0.1)] text-[13px] font-medium text-amber-700">
-                <svg className="w-4 h-4 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                Free for patients
-              </span>
-              <span className="inline-flex items-center gap-2 px-3.5 py-2 rounded-full bg-[rgba(26,61,43,0.06)] text-[13px] font-medium text-forest-700">
-                <svg className="w-4 h-4 text-forest-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                PA-verified
-              </span>
-              <span className="inline-flex items-center gap-2 px-3.5 py-2 rounded-full bg-forest-600 text-[13px] font-medium text-cream">
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129" /></svg>
-                English · नेपाली · हिन्दी
-              </span>
+            <div className="flex items-center gap-7 flex-wrap pt-7 border-t border-[rgba(26,61,43,0.08)]">
+              {["HIPAA compliant", "Free for patients to browse", "PA-verified agencies only", "English · नेपाली · हिन्दी"].map((t) => (
+                <div key={t} className="flex items-center gap-2 text-sm text-[#6B7B6E] font-medium">
+                  <div className="w-[5px] h-[5px] rounded-full bg-[#3D7A57] shrink-0" />{t}
+                </div>
+              ))}
             </div>
           </div>
 
@@ -315,7 +257,7 @@ export default function HomePage() {
             <div className="absolute bottom-8 left-7 z-10 bg-cream/95 rounded-2xl p-4 px-5 flex items-center gap-3.5 min-w-[210px] shadow-modal" style={{ backdropFilter: "blur(8px)" }}>
               <div className="w-[38px] h-[38px] rounded-[10px] bg-[rgba(26,61,43,0.08)] flex items-center justify-center shrink-0"><Building2 className="w-5 h-5 text-forest-600" /></div>
               <div>
-                <div className="text-[12px] font-medium text-[#6B7B6E] tracking-[0.04em] uppercase">Pittsburgh directory</div>
+                <div className="text-[10px] font-medium text-[#6B7B6E] tracking-[0.04em] uppercase">Pittsburgh agencies</div>
                 <div className="text-[17px] font-bold text-forest-600 leading-tight font-fraunces">27+ listed</div>
               </div>
             </div>
@@ -344,7 +286,7 @@ export default function HomePage() {
 
         {/* ═══════════════════  HOW IT WORKS  ═══════════════════════════════ */}
         <section className="py-20 lg:py-28 px-8 lg:px-20" id="how-it-works">
-          <div className="inline-flex items-center gap-2.5 font-mono text-[13px] font-medium tracking-[0.12em] uppercase text-amber-500 mb-5">
+          <div className="inline-flex items-center gap-2.5 font-mono text-[11px] font-medium tracking-[0.12em] uppercase text-amber-500 mb-5">
             Simple process<span className="w-8 h-px bg-amber-500" />
           </div>
           <h2 className="font-fraunces text-[clamp(40px,4.5vw,62px)] font-bold leading-[1.05] tracking-[-1.5px] text-forest-600 reveal">
@@ -443,7 +385,7 @@ export default function HomePage() {
         {/* ═══════════════════  YOUR RIGHTS  ═══════════════════════════════ */}
         <section className="bg-[#F5EDDA] grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24 items-center py-20 lg:py-28 px-8 lg:px-20" id="rights">
           <div className="reveal">
-            <div className="inline-flex items-center gap-2.5 font-mono text-[13px] font-medium tracking-[0.12em] uppercase text-amber-500 mb-5">Federal law<span className="w-8 h-px bg-amber-500" /></div>
+            <div className="inline-flex items-center gap-2.5 font-mono text-[11px] font-medium tracking-[0.12em] uppercase text-amber-500 mb-5">Federal law<span className="w-8 h-px bg-amber-500" /></div>
             <h2 className="font-fraunces text-[52px] font-bold tracking-[-1.5px] leading-[1.05] text-forest-600 mb-5">Switching is<br />your <em className="italic text-amber-500">right.</em></h2>
             <p className="text-[16px] font-light leading-[1.75] text-[#6B7B6E] mb-9">Under Medicare&apos;s Conditions of Participation, you can change your home health agency at any time, for any reason — or no reason at all.</p>
             <div className="flex flex-col gap-3">
@@ -473,7 +415,7 @@ export default function HomePage() {
 
         {/* ═══════════════════  WHO WE SERVE  ═══════════════════════════════ */}
         <section className="py-20 lg:py-28 px-8 lg:px-20">
-          <div className="inline-flex items-center gap-2.5 font-mono text-[13px] font-medium tracking-[0.12em] uppercase text-amber-500 mb-5">Who we serve<span className="w-8 h-px bg-amber-500" /></div>
+          <div className="inline-flex items-center gap-2.5 font-mono text-[11px] font-medium tracking-[0.12em] uppercase text-amber-500 mb-5">Who we serve<span className="w-8 h-px bg-amber-500" /></div>
           <h2 className="font-fraunces text-[clamp(40px,4.5vw,62px)] font-bold leading-[1.05] tracking-[-1.5px] text-forest-600 reveal">Built for<br />Pennsylvania families.</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mt-14">
             {[
@@ -496,7 +438,7 @@ export default function HomePage() {
 
         {/* ═══════════════════  TESTIMONIALS  ═══════════════════════════════ */}
         <section className="bg-forest-600 py-20 lg:py-28 px-8 lg:px-20">
-          <div className="inline-flex items-center gap-2.5 font-mono text-[13px] font-medium tracking-[0.12em] uppercase text-amber-300 mb-5">Real stories<span className="w-8 h-px bg-amber-300" /></div>
+          <div className="inline-flex items-center gap-2.5 font-mono text-[11px] font-medium tracking-[0.12em] uppercase text-amber-300 mb-5">Real stories<span className="w-8 h-px bg-amber-300" /></div>
           <h2 className="font-fraunces text-[clamp(40px,4.5vw,62px)] font-bold leading-[1.05] tracking-[-1.5px] text-cream mb-14 reveal">Families trust<br />SwitchMyCare.</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {[
@@ -524,7 +466,7 @@ export default function HomePage() {
         {/* ═══════════════════  FAQ  ═══════════════════════════════════════ */}
         <section className="bg-[#F5EDDA] grid grid-cols-1 lg:grid-cols-[340px_1fr] gap-16 lg:gap-24 py-20 lg:py-28 px-8 lg:px-20" id="faq">
           <div className="reveal">
-            <div className="inline-flex items-center gap-2.5 font-mono text-[13px] font-medium tracking-[0.12em] uppercase text-amber-500 mb-5">Common questions<span className="w-8 h-px bg-amber-500" /></div>
+            <div className="inline-flex items-center gap-2.5 font-mono text-[11px] font-medium tracking-[0.12em] uppercase text-amber-500 mb-5">Common questions<span className="w-8 h-px bg-amber-500" /></div>
             <h2 className="font-fraunces text-[clamp(36px,4vw,52px)] font-bold leading-[1.05] tracking-[-1.5px] text-forest-600 mb-4">We're here<br />to help.</h2>
             <p className="text-[15px] font-light text-[#6B7B6E] leading-[1.75] mt-4">Need assistance? Our team is here for you. Call <a href="tel:+14125551234" className="text-forest-600 font-medium no-underline">(412) 555-1234</a></p>
           </div>
