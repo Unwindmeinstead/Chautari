@@ -678,7 +678,7 @@ export function AdminDashboardClient({
           .desktop-topbar{display:none!important}
           .mobile-header{display:flex!important}
           .bottom-nav{display:flex!important}
-          .main-pad{padding:16px 16px 100px!important}
+          .main-pad{padding:96px 20px 120px!important}
           .desktop-view{display:none!important}
           .mobile-view{display:block!important}
         }
@@ -760,7 +760,7 @@ export function AdminDashboardClient({
 
             {/* MAIN CONTENT */}
             <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column" }}>
-                <header className="desktop-topbar" style={{ height: 64, padding: "0 40px", display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "1px solid rgba(255,248,231,0.08)", background: "rgba(15,36,25,0.85)", backdropFilter: "blur(20px)", position: "sticky", top: 0, zIndex: 50 }}>
+                <header className="desktop-topbar" style={{ height: 64, padding: "0 40px", display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "1px solid rgba(255,248,231,0.08)", background: "rgba(15,36,25,0.85)", backdropFilter: "blur(20px)", position: "sticky", top: 0, zIndex: 50, marginBottom: 4 }}>
                     <div>
                         <h1 style={{ fontSize: 16, fontWeight: 800, fontFamily: "'Fraunces',serif", textTransform: "capitalize", color: CR, lineHeight: 1 }}>{view}</h1>
                         <p style={{ fontSize: 10, color: "rgba(255,248,231,0.3)", fontFamily: "'DM Mono',monospace", marginTop: 2 }}>{dateStr}</p>
@@ -775,7 +775,7 @@ export function AdminDashboardClient({
                     </div>
                 </header>
 
-                <main className="main-pad page-in" style={{ padding: "40px 48px", flex: 1, overflowY: "auto" }}>
+                <main className="main-pad page-in" style={{ padding: "60px 48px", flex: 1, overflowY: "auto" }}>
                     {VIEWS[view]}
                 </main>
             </div>
