@@ -9,19 +9,23 @@ const BYPASS_AUTH = false;
 async function requireAdmin() {
   const supabase = await createClient();
 
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user && !BYPASS_AUTH) redirect("/auth/login");
+  const { data: authData, error: authError } = await supabase.auth.getUser();
+  const user = authData?.user;
+
+  if ((!user || authError) && !BYPASS_AUTH) redirect("/auth/login");
 
   const { data: profile } = await supabase
     .from("profiles")
     .select("role, full_name")
     .eq("id", user?.id ?? "")
-    .single();
+    .maybeSingle();
 
-  if (!BYPASS_AUTH && profile?.role !== "switchmycare_admin") redirect("/dashboard");
+  if (!BYPASS_AUTH && profile?.role !== "switchmycare_admin") {
+    redirect("/dashboard");
+  }
 
-  const safeUser = user ?? { id: "bypass-admin-user", email: "admin@local.test" } as any;
-  const safeProfile = profile ?? { role: "switchmycare_admin", full_name: "Bypass Admin" } as any;
+  const safeUser = user ?? ({ id: "bypass-admin-user", email: "admin@local.test" } as any);
+  const safeProfile = profile ?? ({ role: "switchmycare_admin", full_name: "Bypass Admin" } as any);
 
   return { supabase, user: safeUser, profile: safeProfile };
 }
