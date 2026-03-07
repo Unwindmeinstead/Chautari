@@ -288,7 +288,7 @@ function OverviewView({ setView, setSelectedReq, agency, staff, requests, notifi
                 </div>
             )}
 
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }} className="header-stack">
                 <div>
                     <p style={{
                         fontSize: 10, fontWeight: 600, color: "rgba(255,248,231,0.35)",
@@ -298,45 +298,49 @@ function OverviewView({ setView, setSelectedReq, agency, staff, requests, notifi
                     </p>
                     <h2 style={{
                         fontFamily: "'Fraunces',serif", fontSize: 24, fontWeight: 800,
-                        color: CR, letterSpacing: "-0.02em", lineHeight: 1
+                        color: CR, letterSpacing: "-0.02em", lineHeight: 1.1
                     }}>{agency.name}</h2>
-                    <p style={{ fontSize: 12, color: "rgba(255,248,231,0.4)", marginTop: 3 }}>
+                    <p style={{ fontSize: 12, color: "rgba(255,248,231,0.4)", marginTop: 5 }}>
                         {staff.full_name || staff.email} · <span style={{ textTransform: "capitalize" }}>{staff.role}</span>
-                        {pending.length > 0 && <span style={{ color: "#FBBF24", fontWeight: 600 }}> · {pending.length} actions needed</span>}
+                        {pending.length > 0 && <span style={{ color: "#FBBF24", fontWeight: 600 }} className="hide-mobile"> · {pending.length} actions needed</span>}
                     </p>
                 </div>
                 <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                     <div style={{
-                        display: "flex", alignItems: "center", gap: 8, padding: "8px 14px",
-                        background: "rgba(74,222,128,0.08)", border: "1px solid rgba(74,222,128,0.2)",
-                        borderRadius: 12, cursor: "pointer"
+                        display: "flex", alignItems: "center", gap: 10, padding: "10px 16px",
+                        background: agency.is_accepting_patients ? "rgba(74,222,128,0.08)" : "rgba(255,255,255,0.03)",
+                        border: agency.is_accepting_patients ? "1px solid rgba(74,222,128,0.2)" : "1px solid rgba(255,248,231,0.08)",
+                        borderRadius: 14, cursor: "pointer"
                     }}>
                         <div style={{
-                            width: 36, height: 20, borderRadius: 10, background: "rgba(74,222,128,0.3)",
-                            border: "1px solid rgba(74,222,128,0.4)", position: "relative"
+                            width: 36, height: 20, borderRadius: 10,
+                            background: agency.is_accepting_patients ? "rgba(74,222,128,0.2)" : "rgba(255,255,255,0.1)",
+                            border: agency.is_accepting_patients ? "1px solid rgba(74,222,128,0.3)" : "1px solid rgba(255,248,231,0.15)",
+                            position: "relative"
                         }}>
                             <div style={{
-                                position: "absolute", top: 2, left: agency.is_accepting_patients ? 18 : 2, width: 16, height: 16, borderRadius: "50%",
-                                background: "#4ADE80", boxShadow: "0 1px 3px rgba(0,0,0,0.3)"
+                                position: "absolute", top: 2, left: agency.is_accepting_patients ? 18 : 2, width: 14, height: 14, borderRadius: "50%",
+                                background: agency.is_accepting_patients ? "#4ADE80" : "rgba(255,255,255,0.4)",
+                                transition: "all .2s ease"
                             }} />
                         </div>
-                        <span style={{ fontSize: 12, fontWeight: 600, color: "#4ADE80" }}>{agency.is_accepting_patients ? "Accepting patients" : "Paused"}</span>
+                        <span style={{ fontSize: 13, fontWeight: 700, color: agency.is_accepting_patients ? "#4ADE80" : "rgba(255,248,231,0.4)" }}>
+                            {agency.is_accepting_patients ? "Accepting patients" : "Paused"}
+                        </span>
                     </div>
                 </div>
             </div>
 
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 12 }} className="kpi-grid">
+            <div className="kpi-grid">
                 <KpiTile label="New" value={submitted.length} sub="Awaiting response" accent="#FBBF24" icon={I.Reqs} alert={submitted.length > 0} />
                 <KpiTile label="Active" value={active.length} sub="In progress" accent="#60A5FA" icon={I.Activity} />
                 <KpiTile label="Completed" value={completed.length} sub="All time" accent="#4ADE80" icon={I.Check} />
-            </div>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 12 }} className="kpi-grid">
                 <KpiTile label="Avg Response" value={`${agency.average_response_time_hours || 0}h`} sub="Rolling 30 days" accent="#A78BFA" icon={I.Clock} />
                 <KpiTile label="Acceptance" value="82%" sub="Last 90 days" accent={AM} icon={I.Trend} />
-                <KpiTile label="Notifications" value={unread} sub="Unread alerts" accent="#F87171" icon={I.Notifs} alert={unread > 0} />
+                <KpiTile label="Unread" value={unread} sub="Alerts" accent="#F87171" icon={I.Notifs} alert={unread > 0} />
             </div>
 
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 288px", gap: 16, alignItems: "start" }} className="dash-grid">
+            <div className="dash-grid">
                 <Card>
                     <CardHead title="Request Pipeline"
                         sub="Sorted by urgency — oldest first"
@@ -380,10 +384,10 @@ function OverviewView({ setView, setSelectedReq, agency, staff, requests, notifi
                                                     <span style={{ fontSize: 11, color: "rgba(255,248,231,0.35)" }}>Starts {r.requested_start_date ? new Date(r.requested_start_date).toLocaleDateString() : "ASAP"}</span>
                                                 </div>
                                             </div>
-                                            <div style={{ display: "flex", gap: 7, flexShrink: 0, flexWrap: "wrap" }}>
+                                            <div className="pipeline-actions" style={{ display: "flex", gap: 7, flexShrink: 0 }}>
                                                 <button onClick={(e: any) => { e.stopPropagation() }}
                                                     style={{
-                                                        height: 30, padding: "0 12px", borderRadius: 9, fontSize: 11, fontWeight: 700,
+                                                        height: 30, padding: "0 14px", borderRadius: 10, fontSize: 11, fontWeight: 700,
                                                         background: "rgba(74,222,128,0.15)", border: "1px solid rgba(74,222,128,0.3)",
                                                         color: "#4ADE80", cursor: "pointer", fontFamily: "inherit", transition: "all .15s"
                                                     }}
@@ -393,7 +397,7 @@ function OverviewView({ setView, setSelectedReq, agency, staff, requests, notifi
                                                 </button>
                                                 <button onClick={(e: any) => { e.stopPropagation() }}
                                                     style={{
-                                                        height: 30, padding: "0 12px", borderRadius: 9, fontSize: 11, fontWeight: 600,
+                                                        height: 30, padding: "0 14px", borderRadius: 10, fontSize: 11, fontWeight: 600,
                                                         background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,248,231,0.1)",
                                                         color: "rgba(255,248,231,0.6)", cursor: "pointer", fontFamily: "inherit", transition: "all .15s"
                                                     }}
@@ -651,12 +655,29 @@ export function AgencyPortalClient({ agency, member, requests, notifications, st
         .page-in{animation:fu .35s ease both}
         @keyframes pulse-live{0%,100%{opacity:1}50%{opacity:.35}}
         .live{animation:pulse-live 2s ease-in-out infinite}
+        
+        /* Grid Optimization */
+        .kpi-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+        .dash-grid { display: grid; grid-template-columns: 1fr 288px; gap: 16px; align-items: start; }
+        
         @media(max-width:1023px){
           .desktop-sidebar{display:none!important}
           .mobile-topbar{display:flex!important}
           .bottom-nav{display:flex!important}
-          .main-pad{padding:80px 20px 100px!important}
+          .main-pad{padding:24px 16px 100px!important}
+          .kpi-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+          .dash-grid { grid-template-columns: 1fr; gap: 20px; }
+          .hide-mobile { display: none !important; }
         }
+        
+        @media(max-width:640px){
+          .kpi-grid { grid-template-columns: 1fr; }
+          .pipeline-actions { width: 100%; display: grid !important; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px; }
+          .pipeline-actions button { height: 38px !important; font-size: 13px !important; }
+          .header-stack { flex-direction: column !important; align-items: flex-start !important; }
+          .header-stack > div { width: 100% !important; }
+        }
+
         @media(min-width:1024px){
           .mobile-topbar{display:none!important}
           .bottom-nav{display:none!important}
