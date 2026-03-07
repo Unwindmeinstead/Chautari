@@ -12,7 +12,7 @@ interface MessageThreadProps {
   conversation: ConversationWithContext;
   currentUserId: string;
   currentUserName: string;
-  currentRole: "patient" | "agency_staff";
+  currentRole: "patient" | "agency_staff" | "admin";
 }
 
 const BLOCKED_STATUSES = ["denied", "cancelled"];
@@ -161,10 +161,11 @@ export function MessageThread({
     return new Intl.DateTimeFormat("en-US", { weekday: "long", month: "short", day: "numeric" }).format(d);
   }
 
-  const otherPartyName =
-    currentRole === "patient"
-      ? conversation.agency_name
-      : conversation.patient_name ?? "Patient";
+  const otherPartyName = React.useMemo(() => {
+    if (currentRole === "admin") return `${conversation.patient_name ?? "Patient"} & ${conversation.agency_name}`;
+    if (currentRole === "patient") return conversation.agency_name;
+    return conversation.patient_name ?? "Patient";
+  }, [currentRole, conversation]);
 
   return (
     <div className="flex flex-col h-full">
@@ -204,12 +205,16 @@ export function MessageThread({
                     !isMine &&
                     (!prevMsg || prevMsg.sender_id !== msg.sender_id);
 
+                  const senderName = msg.sender_role === "admin"
+                    ? "Platform Admin"
+                    : (msg.sender_role === "patient" ? (conversation.patient_name || "Patient") : conversation.agency_name);
+
                   return (
                     <MessageBubble
                       key={msg.id}
                       message={msg}
                       isMine={isMine}
-                      senderName={isMine ? currentUserName : otherPartyName}
+                      senderName={isMine ? "Me" : senderName}
                       showSender={showSender}
                     />
                   );

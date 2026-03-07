@@ -9,7 +9,7 @@ export interface Message {
   id: string;
   conversation_id: string;
   sender_id: string;
-  sender_role: "patient" | "agency_staff";
+  sender_role: "patient" | "agency_staff" | "admin";
   body: string;
   is_read: boolean;
   read_at: string | null;
@@ -24,6 +24,7 @@ export interface Conversation {
   last_message_at: string | null;
   patient_unread: number;
   agency_unread: number;
+  admin_unread: number;
   created_at: string;
 }
 
@@ -138,8 +139,16 @@ export async function sendMessage(
 
   if (!conv) return { error: "Conversation not found" };
 
-  let senderRole: "patient" | "agency_staff";
-  if (conv.patient_id === user.id) {
+  let senderRole: "patient" | "agency_staff" | "admin";
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .maybeSingle();
+
+  if (profile?.role === "switchmycare_admin") {
+    senderRole = "admin";
+  } else if (conv.patient_id === user.id) {
     senderRole = "patient";
   } else {
     // Check agency membership
@@ -207,20 +216,26 @@ export async function markMessagesRead(
 
   if (!conv) return { error: "Not found" };
 
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .maybeSingle();
+
   const isPatient = conv.patient_id === user.id;
+  const isAdmin = profile?.role === "switchmycare_admin";
 
-  // Mark unread messages from the OTHER party as read
-  const unreadSenderRole = isPatient ? "agency_staff" : "patient";
-
+  // Mark messages from other parties as read
+  // (In a 3-way conversation, mark every message not by the current user as read)
   await supabase
     .from("messages")
     .update({ is_read: true, read_at: new Date().toISOString() })
     .eq("conversation_id", conversationId)
-    .eq("sender_role", unreadSenderRole)
+    .neq("sender_id", user.id)
     .eq("is_read", false);
 
   // Reset unread count for this party
-  const unreadField = isPatient ? "patient_unread" : "agency_unread";
+  const unreadField = isAdmin ? "admin_unread" : (isPatient ? "patient_unread" : "agency_unread");
   await supabase
     .from("conversations")
     .update({ [unreadField]: 0 })
@@ -279,8 +294,7 @@ export async function getAgencyConversations(): Promise<{
       .from("messages")
       .select("conversation_id, body, created_at")
       .in("conversation_id", convs.map((c) => c.id))
-      .order("created_at", { ascending: false })
-      .limit(convs.length * 1), // rough limit; we'll dedupe in JS
+      .order("created_at", { ascending: false }),
   ]);
 
   const requestMap = Object.fromEntries(
@@ -301,6 +315,78 @@ export async function getAgencyConversations(): Promise<{
     conversations: convs.map((c) => ({
       ...c,
       agency_name: "",
+      patient_name: profileMap[c.patient_id]?.full_name ?? null,
+      request_status: requestMap[c.request_id]?.status ?? "unknown",
+      last_message_preview: lastMsgMap[c.id]
+        ? lastMsgMap[c.id].slice(0, 80) + (lastMsgMap[c.id].length > 80 ? "…" : "")
+        : null,
+    })),
+  };
+}
+
+// ─── Get all conversations for admin ─────────────────────────────────────────
+
+export async function getAdminConversations(): Promise<{
+  conversations: (Conversation & {
+    agency_name: string;
+    patient_name: string | null;
+    request_status: string;
+    last_message_preview: string | null;
+  })[];
+  error?: string;
+}> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { conversations: [], error: "Not authenticated" };
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .maybeSingle();
+
+  if (profile?.role !== "switchmycare_admin") {
+    return { conversations: [], error: "Not authorized" };
+  }
+
+  const { data: convs } = await supabase
+    .from("conversations")
+    .select("*")
+    .order("last_message_at", { ascending: false, nullsFirst: false });
+
+  if (!convs?.length) return { conversations: [] };
+
+  // Fetch agencies + request statuses + patient profiles
+  const agencyIds = Array.from(new Set(convs.map((c) => c.agency_id)));
+  const requestIds = convs.map((c) => c.request_id);
+  const patientIds = Array.from(new Set(convs.map((c) => c.patient_id)));
+
+  const [agenciesRes, requestsRes, profilesRes, lastMsgsRes] = await Promise.all([
+    supabase.from("agencies").select("id, name").in("id", agencyIds),
+    supabase.from("switch_requests").select("id, status").in("id", requestIds),
+    supabase.from("profiles").select("id, full_name").in("id", patientIds),
+    supabase
+      .from("messages")
+      .select("conversation_id, body, created_at")
+      .in("conversation_id", convs.map((c) => c.id))
+      .order("created_at", { ascending: false }),
+  ]);
+
+  const agencyMap = Object.fromEntries((agenciesRes.data ?? []).map((a) => [a.id, a.name]));
+  const requestMap = Object.fromEntries((requestsRes.data ?? []).map((r) => [r.id, r]));
+  const profileMap = Object.fromEntries((profilesRes.data ?? []).map((p) => [p.id, p]));
+
+  const lastMsgMap: Record<string, string> = {};
+  for (const msg of lastMsgsRes.data ?? []) {
+    if (!lastMsgMap[msg.conversation_id]) {
+      lastMsgMap[msg.conversation_id] = msg.body;
+    }
+  }
+
+  return {
+    conversations: convs.map((c) => ({
+      ...c,
+      agency_name: agencyMap[c.agency_id] ?? "Unknown Agency",
       patient_name: profileMap[c.patient_id]?.full_name ?? null,
       request_status: requestMap[c.request_id]?.status ?? "unknown",
       last_message_preview: lastMsgMap[c.id]

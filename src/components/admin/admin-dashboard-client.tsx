@@ -75,6 +75,7 @@ const I = {
     Refresh: (p: any) => <Ic {...p} d={["M23 4v6h-6", "M1 20v-6h6", "M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"]} />,
     Ban: (p: any) => <Ic {...p} d={["M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20z", "M4.93 4.93l14.14 14.14"]} />,
     UserChk: (p: any) => <Ic {...p} d={["M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2", "M9 7m-4 0a4 4 0 1 0 8 0a4 4 0 1 0-8 0", "M17 11l2 2 4-4"]} />,
+    MessageSquare: (p: any) => <Ic {...p} d={["M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"]} />,
 };
 
 /* ── Logo ── */
@@ -335,6 +336,7 @@ export function AdminDashboardClient({
     const [qUsers, setQUsers] = useState("");
     const [qAgencies, setQAgencies] = useState("");
     const [qRequests, setQRequests] = useState("");
+    const [adminUnread, setAdminUnread] = useState(0);
 
     const now = new Date();
     const dateStr = now.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
@@ -699,15 +701,82 @@ export function AdminDashboardClient({
         </div>
     );
 
+    const Messages = () => {
+        const [convs, setConvs] = useState<any[]>([]);
+        const [loading, setLoading] = useState(true);
+
+        useEffect(() => {
+            async function load() {
+                const { getAdminConversations } = await import("@/lib/messaging-actions");
+                const { conversations, error } = await getAdminConversations();
+                if (!error) setConvs(conversations);
+                setLoading(false);
+            }
+            load();
+        }, []);
+
+        return (
+            <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
+                    <h2 style={{ fontFamily: "'Fraunces',serif", fontSize: 22, fontWeight: 800, color: CR }}>Platform Messaging</h2>
+                </div>
+                <Card>
+                    <CardHead title="Secure Conversations" sub="Admin oversight and participation in patient-agency threads" />
+                    {loading ? (
+                        <div style={{ padding: 40, textAlign: "center", color: MU }}>Loading conversations…</div>
+                    ) : convs.length === 0 ? (
+                        <Empty icon={I.MessageSquare} text="No active conversations" />
+                    ) : (
+                        <div className="divide-y divide-zinc-100">
+                            <TableWrap>
+                                <thead><tr><Th>Patient</Th><Th>Agency</Th><Th>Last Message</Th><Th right>Actions</Th></tr></thead>
+                                <tbody>
+                                    {convs.map(c => (
+                                        <tr key={c.id}>
+                                            <Td><p style={{ fontWeight: 600 }}>{c.patient_name || "Patient"}</p></Td>
+                                            <Td muted>{c.agency_name}</Td>
+                                            <Td muted>
+                                                <p style={{ fontSize: 12, maxWidth: 240, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                                                    {c.last_message_preview || "No messages yet"}
+                                                </p>
+                                                <p style={{ fontSize: 10, color: MU }}>{c.last_message_at ? new Date(c.last_message_at).toLocaleString() : "-"}</p>
+                                            </Td>
+                                            <Td right>
+                                                <Link href={`/admin/messages/${c.id}`} style={{ color: AM, fontSize: 12, fontWeight: 700, textDecoration: "none" }}>Open Thread</Link>
+                                            </Td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </TableWrap>
+                        </div>
+                    )}
+                </Card>
+            </div>
+        );
+    };
+
     const VIEWS: Record<string, any> = {
         overview: <Overview />, requests: <Requests />, agencies: <Agencies />,
-        users: <Users />, audit: <Audit />, settings: <Settings />
+        users: <Users />, messages: <Messages />, audit: <Audit />, settings: <Settings />
     };
+
+    useEffect(() => {
+        async function loadUnread() {
+            const { getAdminConversations } = await import("@/lib/messaging-actions");
+            const { conversations, error } = await getAdminConversations();
+            if (!error && conversations) {
+                const total = conversations.reduce((acc, c) => acc + (c.admin_unread || 0), 0);
+                setAdminUnread(total);
+            }
+        }
+        loadUnread();
+    }, []);
 
     const CORE_NAV = [
         { id: "overview", label: "Overview", icon: I.Home, badge: null },
         { id: "requests", label: "Requests", icon: I.Requests, badge: stats.activeRequests },
         { id: "agencies", label: "Agencies", icon: I.Agency, badge: stats.pendingAgencyApprovals },
+        { id: "messages", label: "Messages", icon: I.MessageSquare, badge: adminUnread },
         { id: "users", label: "Users", icon: I.Users, badge: null },
         { id: "audit", label: "Logs", icon: I.Audit, badge: null },
     ];
