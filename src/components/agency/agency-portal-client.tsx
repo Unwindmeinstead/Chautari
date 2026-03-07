@@ -572,7 +572,16 @@ function RequestDetailView({ reqId, setView, requests }: any) {
             <div style={{ display: "grid", gridTemplateColumns: "1fr 264px", gap: 16, alignItems: "start" }} className="detail-grid">
                 <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
                     <Card>
-                        <CardHead title="Patient Information" />
+                        <CardHead title="Patient Information"
+                            action={
+                                <button
+                                    onClick={() => setView("messages")}
+                                    style={{ background: AM, color: FD, border: "none", borderRadius: 10, padding: "8px 16px", fontWeight: 800, fontSize: 12, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}
+                                >
+                                    <I.Msgs size={14} stroke={FD} /> Message Patient
+                                </button>
+                            }
+                        />
                         <div style={{ padding: "18px 22px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }} className="info-grid">
                             <div>
                                 <p style={{ fontSize: 10, fontWeight: 600, color: "rgba(255,248,231,0.3)", letterSpacing: "0.1em", textTransform: "uppercase", fontFamily: "'DM Mono',monospace", marginBottom: 5 }}>Full name</p>
@@ -594,17 +603,80 @@ function RequestDetailView({ reqId, setView, requests }: any) {
     );
 }
 
-const NAV_ITEMS = [
-    { id: "overview", label: "Overview", icon: I.Home, badge: null },
-    { id: "requests", label: "Requests", icon: I.Reqs, badge: null },
-    { id: "messages", label: "Messages", icon: I.Msgs, badge: null },
-    { id: "team", label: "Team", icon: I.Team, badge: null },
-    { id: "profile", label: "Profile", icon: I.Profile, badge: null },
-    { id: "notifs", label: "Alerts", icon: I.Notifs, badge: null },
-    { id: "settings", label: "Settings", icon: I.Settings, badge: null },
-];
+function MessagesView({ conversations }: { conversations: any[] }) {
+    const totalUnread = conversations.reduce((sum, c) => sum + (c.agency_unread || 0), 0);
 
-export function AgencyPortalClient({ agency, member, requests, notifications, staff }: any) {
+    return (
+        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
+                <div>
+                    <h2 style={{ fontFamily: "'Fraunces',serif", fontSize: 22, fontWeight: 800, color: CR, letterSpacing: "-0.02em" }}>Messages</h2>
+                    <p style={{ fontSize: 12, color: "rgba(255,248,231,0.4)", marginTop: 2 }}>
+                        {conversations.length} total conversations · <span style={{ color: "#FBBF24", fontWeight: 600 }}>{totalUnread} unread</span>
+                    </p>
+                </div>
+            </div>
+
+            <Card style={{ overflow: "hidden" }}>
+                {conversations.length === 0 ? (
+                    <Empty icon={I.Msgs} title="No conversations" sub="Once patients start requesting switches, secure chat threads will appear here." />
+                ) : (
+                    <div style={{ display: "grid" }}>
+                        {conversations.map((conv, i) => (
+                            <Link
+                                key={conv.id}
+                                href={`/agency/messages/${conv.id}`}
+                                style={{
+                                    padding: "16px 22px",
+                                    borderBottom: i < conversations.length - 1 ? "1px solid rgba(255,248,231,0.05)" : "none",
+                                    display: "flex", alignItems: "center", gap: 14,
+                                    textDecoration: "none",
+                                    transition: "background .15s"
+                                }}
+                                onMouseEnter={(e: any) => e.currentTarget.style.background = "rgba(255,255,255,0.03)"}
+                                onMouseLeave={(e: any) => e.currentTarget.style.background = "transparent"}
+                            >
+                                <Avatar name={conv.patient_name || "?"} size={40} color={conv.agency_unread > 0 ? "#60A5FA" : "rgba(255,248,231,0.5)"} />
+                                <div style={{ flex: 1, minWidth: 0 }}>
+                                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 3 }}>
+                                        <p style={{ fontSize: 13, fontWeight: conv.agency_unread > 0 ? 800 : 600, color: conv.agency_unread > 0 ? "#60A5FA" : CR }}>
+                                            {conv.patient_name || "Patient"}
+                                        </p>
+                                        <p style={{ fontSize: 10, color: "rgba(255,248,231,0.25)", fontFamily: "'DM Mono',monospace" }}>
+                                            {conv.last_message_at ? new Date(conv.last_message_at).toLocaleDateString() : ""}
+                                        </p>
+                                    </div>
+                                    <p style={{ fontSize: 12, color: "rgba(255,248,231,0.4)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                                        {conv.last_message_preview || "No messages yet"}
+                                    </p>
+                                </div>
+                                {conv.agency_unread > 0 && (
+                                    <div style={{ background: AM, color: FD, fontSize: 10, fontWeight: 800, minWidth: 18, height: 18, borderRadius: 9, display: "flex", alignItems: "center", justifyContent: "center", padding: "0 5px" }}>
+                                        {conv.agency_unread}
+                                    </div>
+                                )}
+                            </Link>
+                        ))}
+                    </div>
+                )}
+            </Card>
+        </div>
+    );
+}
+
+
+export function AgencyPortalClient({
+    agency, member, requests, notifications, conversations = [], staff
+}: any) {
+    const NAV_ITEMS = [
+        { id: "overview", label: "Overview", icon: I.Home, badge: null },
+        { id: "requests", label: "Requests", icon: I.Reqs, badge: null },
+        { id: "messages", label: "Messages", icon: I.Msgs, badge: conversations.reduce((sum: number, c: any) => sum + (c.agency_unread || 0), 0) || null },
+        { id: "team", label: "Team", icon: I.Team, badge: null },
+        { id: "profile", label: "Profile", icon: I.Profile, badge: null },
+        { id: "notifs", label: "Alerts", icon: I.Notifs, badge: null },
+        { id: "settings", label: "Settings", icon: I.Settings, badge: null },
+    ];
     const [view, setView] = useState("overview");
     const [selectedReq, setSelectedReq] = useState(null);
     const [drawerOpen, setDrawer] = useState(false);
@@ -635,7 +707,7 @@ export function AgencyPortalClient({ agency, member, requests, notifications, st
             case "overview": return <OverviewView setView={setView} setSelectedReq={setSelectedReq} agency={agency} staff={staff} requests={requests} notifications={notifications} />;
             case "requests": return <RequestsView setView={setView} setSelectedReq={setSelectedReq} requests={requests} />;
             case "request-detail": return <RequestDetailView reqId={selectedReq} setView={setView} requests={requests} />;
-            case "messages": return <Empty icon={I.Msgs} title="Messages Coming Soon" sub="HIPAA-compliant secure messaging is currently under maintenance." />;
+            case "messages": return <MessagesView conversations={conversations} />;
             case "team": return <Empty icon={I.Team} title="Team Management Coming Soon" sub="Manage your agency staff and roles here. (Feature coming soon)" />;
             case "profile": return <Empty icon={I.Profile} title="Profile Editing Coming Soon" sub="Update your agency's public listing, services, and coverage area." />;
             case "notifs": return <Empty icon={I.Notifs} title="Notifications Coming Soon" sub="View all your recent activity and alerts." />;

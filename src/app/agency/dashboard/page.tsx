@@ -1,6 +1,7 @@
 import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import { getAgencyPortalData } from "@/lib/agency-portal-actions";
+import { getAgencyConversations } from "@/lib/messaging-actions";
 import { AgencyPortalClient } from "@/components/agency/agency-portal-client";
 import { AdminPreviewBanner } from "@/components/admin/admin-preview-banner";
 import { Building2 } from "lucide-react";
@@ -134,6 +135,8 @@ export default async function AgencyDashboardPage() {
     title: member.title
   };
 
+  const { conversations } = await getAgencyConversations();
+
   return (
     <>
       {viewAs && <AdminPreviewBanner viewingAs={viewAs} />}
@@ -142,6 +145,7 @@ export default async function AgencyDashboardPage() {
         member={member}
         requests={requests}
         notifications={notifications || []}
+        conversations={conversations || []}
         staff={staff}
       />
     </>
